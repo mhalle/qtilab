@@ -74,7 +74,7 @@ def sample_dtd(V, M=48, prior=Prior(), g=None, dtype=torch.float64, device="cpu"
     return micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g)
 
 
-def micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g=None):
+def micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g=None, return_comp=False):
     """Draw M micro-tensors per voxel from per-compartment parameters, each (V, K) (mu: (V, K, 3)).
 
     w: compartment weights (rows sum to 1); d_iso: compartment mean diffusivity; d_del: shape
@@ -96,7 +96,7 @@ def micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g=None):
     nn = axis.unsqueeze(-1) * axis.unsqueeze(-2)
     eye = torch.eye(3, dtype=dtype, device=device)
     D = d_perp[..., None, None] * eye + (d_par - d_perp)[..., None, None] * nn
-    return vec6(D)
+    return (vec6(D), comp) if return_comp else vec6(D)
 
 
 BRAIN_CLASSES = ("WM", "GM", "WM+CSF", "GM+CSF")
@@ -107,8 +107,9 @@ def _unit(shape, g, dtype, device):
     return v / v.norm(dim=-1, keepdim=True)
 
 
-def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15)):
-    """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)).
+def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15),
+                 return_free=False):
+    """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)[, free-water mask (V, M)]).
 
     Compartments are Gaussian (no restriction or exchange); values in um^2/ms are typical of the
     biophysical-modeling literature, not fitted to any dataset.
@@ -165,14 +166,18 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     w[:, :6] = w[:, :6] * (1 - fw)[:, None]
     w[:, 6] = fw
     d_iso[:, 6], d_del[:, 6], spread[:, 6] = 3.0, 0.0, 0.0
-    return micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g), cls
+    d6, comp = micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g, return_comp=True)
+    return (d6, cls, comp == 6) if return_free else (d6, cls)
 
 
-def dtd_params(d6, s0=None):
-    """Exact QTI parameters (V, 28) of a discrete, equally weighted DTD (V, M, 6)."""
-    mean = d6.mean(1)
+def dtd_params(d6, s0=None, weights=None):
+    """Exact QTI parameters (V, 28) of a discrete DTD (V, M, 6); equal weights unless ``weights`` (V, M)."""
+    if weights is None:
+        weights = torch.ones(d6.shape[:2], dtype=d6.dtype, device=d6.device)
+    w = weights / weights.sum(1, keepdim=True).clamp_min(1e-30)
+    mean = (w.unsqueeze(-1) * d6).sum(1)
     x = d6 - mean.unsqueeze(1)
-    C = torch.einsum("vmi,vmj->vij", x, x) / d6.shape[1]
+    C = torch.einsum("vm,vmi,vmj->vij", w, x, x)
     ls0 = torch.zeros(d6.shape[0], 1, dtype=d6.dtype, device=d6.device) if s0 is None else torch.log(s0).unsqueeze(-1)
     return torch.cat([ls0, mean, vec21(C)], dim=-1)
 

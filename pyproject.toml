@@ -9,6 +9,7 @@ dependencies = [
     "numpy",
     "torch",
     "nibabel",
+    "zuko>=1.2",
 ]
 
 [project.optional-dependencies]

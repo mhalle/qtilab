@@ -5,3 +5,4 @@ data/
 results/*.npz
 !results/clarabel_ref_*.npz
 .pytest_cache/
+results/*.log
