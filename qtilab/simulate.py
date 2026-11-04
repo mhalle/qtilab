@@ -107,8 +107,18 @@ def _unit(shape, g, dtype, device):
     return v / v.norm(dim=-1, keepdim=True)
 
 
+BRAIN_PRIORS = {
+    # v1: first brain-like prior (2026-11-04). Real WM turned out more anisotropic than this.
+    1: dict(f_ax=(0.4, 0.7), ax_d=(0.65, 0.85), ex_d=(0.8, 1.1), ex_dd=(0.2, 0.5), wm_disp=(0.05, 0.4),
+            gm_fn=(0.2, 0.45), gm_nd=(0.6, 0.9), gm_fs=(0.1, 0.3), gm_sd=(0.3, 0.7), gm_ed=(0.9, 1.3), gm_edd=(0.0, 0.2)),
+    # v2: wider: higher axonal fraction, more anisotropic extra-axonal space, wider diffusivities.
+    2: dict(f_ax=(0.4, 0.85), ax_d=(0.55, 0.95), ex_d=(0.6, 1.2), ex_dd=(0.2, 0.8), wm_disp=(0.03, 0.4),
+            gm_fn=(0.2, 0.55), gm_nd=(0.5, 1.0), gm_fs=(0.05, 0.3), gm_sd=(0.2, 0.8), gm_ed=(0.7, 1.4), gm_edd=(0.0, 0.3)),
+}
+
+
 def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15),
-                 return_free=False):
+                 return_free=False, version=2):
     """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)[, free-water mask (V, M)]).
 
     Compartments are Gaussian (no restriction or exchange); values in um^2/ms are typical of the
@@ -122,7 +132,10 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
       extracellular space for the rest; 0-15% free water.
     * WM+CSF, GM+CSF: the same tissue plus 10-90% free water (D 3.0): partial volume at
       ventricles and sulci.
+
+    Ranges above are ``version=1``; ``version=2`` (default) widens them, see ``BRAIN_PRIORS``.
     """
+    P = BRAIN_PRIORS[version]
     kw = dict(dtype=dtype, device=device)
     u = lambda lo, hi, shape=(V,): lo + (hi - lo) * torch.rand(shape, generator=g, **kw)
     lu = lambda lo, hi, shape=(V,): torch.exp(torch.log(torch.tensor(lo, **kw)) + torch.rand(shape, generator=g, **kw) * torch.log(torch.tensor(hi / lo, **kw)))
@@ -137,23 +150,23 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     bw = torch.distributions.Dirichlet(torch.full((3,), 2.0, **kw)).sample((V,))
     bw = torch.where(torch.arange(3, device=device) < nb[:, None], bw, torch.zeros_like(bw))
     bw = bw / bw.sum(-1, keepdim=True)
-    f_ax = u(0.4, 0.7, (V, 3))
+    f_ax = u(*P['f_ax'], (V, 3))
     for k in range(3):
         a, e = 2 * k, 2 * k + 1
         w[:, a] = bw[:, k] * f_ax[:, k]; w[:, e] = bw[:, k] * (1 - f_ax[:, k])
-        d_iso[:, a] = u(0.65, 0.85); d_del[:, a] = u(0.9, 1.0)
-        d_iso[:, e] = u(0.8, 1.1); d_del[:, e] = u(0.2, 0.5)
-        dk = lu(0.05, 0.4); disp[:, a] = dk; disp[:, e] = dk
+        d_iso[:, a] = u(*P['ax_d']); d_del[:, a] = u(0.9, 1.0)
+        d_iso[:, e] = u(*P['ex_d']); d_del[:, e] = u(*P['ex_dd'])
+        dk = lu(*P['wm_disp']); disp[:, a] = dk; disp[:, e] = dk
         mu[:, e] = mu[:, a]
     fw_wm = u(0.0, 0.10)
 
     # --- gray matter (slots 0 neurite, 1 soma, 2 extracellular)
     gw = torch.zeros(V, K, **kw); gd = torch.zeros(V, K, **kw); gdd = torch.zeros(V, K, **kw); gdisp = torch.ones(V, K, **kw)
-    f_n, f_s = u(0.2, 0.45), u(0.1, 0.3)
+    f_n, f_s = u(*P['gm_fn']), u(*P['gm_fs'])
     gw[:, 0], gw[:, 1], gw[:, 2] = f_n, f_s, 1 - f_n - f_s
-    gd[:, 0], gdd[:, 0], gdisp[:, 0] = u(0.6, 0.9), u(0.8, 1.0), lu(0.8, 3.0)
-    gd[:, 1], gdd[:, 1] = u(0.3, 0.7), 0.0
-    gd[:, 2], gdd[:, 2], gdisp[:, 2] = u(0.9, 1.3), u(0.0, 0.2), lu(0.5, 3.0)
+    gd[:, 0], gdd[:, 0], gdisp[:, 0] = u(*P['gm_nd']), u(0.8, 1.0), lu(0.8, 3.0)
+    gd[:, 1], gdd[:, 1] = u(*P['gm_sd']), 0.0
+    gd[:, 2], gdd[:, 2], gdisp[:, 2] = u(*P['gm_ed']), u(*P['gm_edd']), lu(0.5, 3.0)
     fw_gm = u(0.0, 0.15)
 
     sel = wm[:, None]

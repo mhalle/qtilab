@@ -118,11 +118,17 @@ class SimBatch:
     S: torch.Tensor
 
 
-def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32):
-    """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal)."""
-    d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True)
+def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32, prior_version=2,
+                   log_snr=True):
+    """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal).
+
+    SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
+    """
+    d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version)
     clean = simulate.signal(d6, protocol.b6.to(d6.dtype))
-    s = torch.empty(V, dtype=d6.dtype).uniform_(*snr, generator=g)
+    u = torch.rand(V, dtype=d6.dtype, generator=g)
+    lo, hi = snr
+    s = torch.exp(torch.log(torch.tensor(lo)) + u * torch.log(torch.tensor(hi / lo))) if log_snr else lo + (hi - lo) * u
     S = simulate.rician(clean, 1.0 / s, g)
     x = features(S, protocol.b6.to(d6.dtype), protocol.b.to(d6.dtype), protocol.b_delta().to(d6.dtype))
     return SimBatch(x.to(dtype), targets(d6, free).to(dtype), cls, S)

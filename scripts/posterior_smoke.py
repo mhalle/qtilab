@@ -16,7 +16,18 @@ sys.path.insert(0, ".")
 from qtilab import fit, posterior, scalars, simulate  # noqa: E402
 from qtilab.hhs import session_protocol  # noqa: E402
 
-steps = int(sys.argv[1]) if len(sys.argv) > 1 else 3000
+import argparse  # noqa: E402
+
+ap = argparse.ArgumentParser()
+ap.add_argument("steps", type=int, nargs="?", default=3000)
+ap.add_argument("--prior", type=int, default=1, help="brain prior version (1 = smoke test, 2 = widened)")
+ap.add_argument("--snr", type=float, nargs=2, default=(15.0, 60.0), help="training SNR range at b=0 (log-uniform)")
+ap.add_argument("--test-snr", type=float, nargs=2, default=(20.0, 35.0))
+ap.add_argument("--tag", default="")
+args = ap.parse_args()
+steps = args.steps
+tag = args.tag
+model_path = f"results/posterior_smoke_hhs{tag}.pt"
 torch.set_num_threads(2)
 prot = session_protocol("01", "01")
 g = torch.Generator().manual_seed(11)
@@ -26,9 +37,9 @@ sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=max(st
 
 t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
-    net.load_state_dict(torch.load("results/posterior_smoke_hhs.pt"))
+    net.load_state_dict(torch.load(model_path))
 for step in range(1, steps + 1):
-    b = posterior.simulate_batch(prot, 512, g=g)
+    b = posterior.simulate_batch(prot, 512, g=g, snr=tuple(args.snr), prior_version=args.prior)
     loss = -net.log_prob(b.x, b.y).mean()
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
@@ -36,12 +47,12 @@ for step in range(1, steps + 1):
     if step % 250 == 0:
         print(f"step {step}: NLL {loss.item():.3f}  ({time.perf_counter() - t0:.0f} s)", flush=True)
 if steps:
-    torch.save(net.state_dict(), "results/posterior_smoke_hhs.pt")
+    torch.save(net.state_dict(), model_path)
 
 # ---- held-out evaluation
 net.eval()
 gt = torch.Generator().manual_seed(12345)
-test = posterior.simulate_batch(prot, 4000, g=gt, snr=(20.0, 35.0))
+test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=args.prior)
 smp = net.sample(test.x, n=100)                         # (n, V, T)
 pm = smp.mean(0).numpy()
 y = test.y.numpy()
@@ -91,4 +102,5 @@ for i, k in enumerate(T):
     print(f"  {k:7s} {cov50[i]:.2f} / {cov90[i]:.2f}   median 90% width {np.median(hi90[:, i] - lo90[:, i]):.3f}")
 res["coverage50"] = dict(zip(T, map(float, cov50)))
 res["coverage90"] = dict(zip(T, map(float, cov90)))
-json.dump(res, open("results/posterior_smoke_hhs.json", "w"), indent=1)
+res["prior"], res["snr"], res["test_snr"] = args.prior, list(args.snr), list(args.test_snr)
+json.dump(res, open(f"results/posterior_smoke_hhs{tag}.json", "w"), indent=1)

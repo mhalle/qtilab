@@ -18,6 +18,7 @@ from qtilab.protocol import Protocol  # noqa: E402
 aligned = sys.argv[1] if len(sys.argv) > 1 else "/home/claude/data/hhs_sub01_ses01_aligned.npz"
 classical = sys.argv[2] if len(sys.argv) > 2 else "/home/claude/qtilab/results/hhs_sub01_ses01.npz"
 model = sys.argv[3] if len(sys.argv) > 3 else "results/posterior_smoke_hhs.pt"
+tag = sys.argv[4] if len(sys.argv) > 4 else ""
 torch.set_num_threads(2)
 
 a = np.load(aligned)
@@ -39,7 +40,7 @@ net.eval()
 smp = net.sample(x, n=100)                                  # (n, V, T)
 pm, sd = smp.mean(0).numpy(), smp.std(0).numpy()
 T = posterior.TARGETS
-np.savez_compressed("results/hhs_sub01_ses01_posterior.npz", mask=mask, mean=pm, sd=sd, targets=np.array(T))
+np.savez_compressed(f"results/hhs_sub01_ses01_posterior{tag}.npz", mask=mask, mean=pm, sd=sd, targets=np.array(T))
 
 
 def vol(v):
@@ -64,9 +65,15 @@ for ax, (title, v, (lo, hi)) in zip(axes.ravel(), panels):
     ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cmap, vmin=lo, vmax=hi)
     ax.set_title(title, color="white", fontsize=9)
     ax.axis("off")
-fig.suptitle("Hormone Health sub-01 ses-01: smoke-test posterior network (trained on simulation only, CPU, brain-like prior)",
+fig.suptitle(f"Hormone Health sub-01 ses-01: posterior network {tag or 'v1'} (trained on simulation only, CPU)",
              color="white", fontsize=10)
 plt.tight_layout()
-plt.savefig("results/hhs_sub01_ses01_posterior_maps.png", dpi=110, facecolor="black")
+plt.savefig(f"results/hhs_sub01_ses01_posterior_maps{tag}.png", dpi=110, facecolor="black")
 print("median posterior SD in mask:", dict(zip(T, np.round(np.median(sd, 0), 3))))
 print("median f_fw:", np.median(pm[:, 0]), " fraction of voxels with f_fw > 0.5:", np.mean(pm[:, 0] > 0.5))
+fw, fa_c = pm[:, T.index("f_fw")], c["fa"]
+for name, m in [("WM-like (FA>0.4, f_fw<0.2)", (fa_c > 0.4) & (fw < 0.2)), ("GM-like (FA<0.2, f_fw<0.2)", (fa_c < 0.2) & (fw < 0.2)),
+                ("CSF-ish (f_fw>0.5)", fw > 0.5)]:
+    print(f"{name:28s} n={m.sum():5d}  classical µFA {np.median(c['ufa'][m]):.2f}  net full µFA {np.median(pm[m, T.index('ufa')]):.2f}"
+          f"  net tissue µFA {np.median(pm[m, T.index('ufa_t')]):.2f}  classical - net full {np.median(c['ufa'][m] - pm[m, T.index('ufa')]):+.2f}"
+          f"  tissue MD {np.median(pm[m, T.index('md_t')]):.2f}")
