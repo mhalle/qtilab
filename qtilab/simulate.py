@@ -71,7 +71,18 @@ def sample_dtd(V, M=48, prior=Prior(), g=None, dtype=torch.float64, device="cpu"
     disp = torch.cat([disp, torch.ones((V, 1), dtype=dtype, device=device)], -1)
     mu = torch.cat([mu, torch.tensor([0, 0, 1.0], dtype=dtype, device=device).expand(V, 1, 3)], 1)
 
-    # assign each micro-tensor to a compartment
+    return micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g)
+
+
+def micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g=None):
+    """Draw M micro-tensors per voxel from per-compartment parameters, each (V, K) (mu: (V, K, 3)).
+
+    w: compartment weights (rows sum to 1); d_iso: compartment mean diffusivity; d_del: shape
+    (D_Delta in [-0.5, 1]); spread: sd of log D_iso within the compartment; disp: sd of the
+    Gaussian perturbation of the axis before renormalizing (about 3 is isotropic); mu: mean axis.
+    """
+    V = w.shape[0]
+    dtype, device = d_iso.dtype, d_iso.device
     comp = torch.multinomial(w, M, replacement=True, generator=g)                    # (V, M)
     take = lambda t: torch.gather(t, 1, comp)
     di = take(d_iso) * torch.exp(take(spread) * torch.randn((V, M), generator=g, dtype=dtype, device=device))
@@ -86,6 +97,75 @@ def sample_dtd(V, M=48, prior=Prior(), g=None, dtype=torch.float64, device="cpu"
     eye = torch.eye(3, dtype=dtype, device=device)
     D = d_perp[..., None, None] * eye + (d_par - d_perp)[..., None, None] * nn
     return vec6(D)
+
+
+BRAIN_CLASSES = ("WM", "GM", "WM+CSF", "GM+CSF")
+
+
+def _unit(shape, g, dtype, device):
+    v = torch.randn(shape, generator=g, dtype=dtype, device=device)
+    return v / v.norm(dim=-1, keepdim=True)
+
+
+def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15)):
+    """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)).
+
+    Compartments are Gaussian (no restriction or exchange); values in um^2/ms are typical of the
+    biophysical-modeling literature, not fitted to any dataset.
+
+    * WM: 1-3 fiber bundles (60/30/10%), each an intra-axonal stick (D_iso 0.65-0.85, D_Delta
+      0.9-1.0) plus an extra-axonal zeppelin on the same axis (D_iso 0.8-1.1, D_Delta 0.2-0.5);
+      axonal fraction 0.4-0.7, bundle dispersion 0.05-0.4; 0-10% free water.
+    * GM: highly dispersed neurites (stick, fraction 0.2-0.45, dispersion 0.8-3), an isotropic
+      soma-like compartment (D_iso 0.3-0.7, fraction 0.1-0.3) and a mildly anisotropic
+      extracellular space for the rest; 0-15% free water.
+    * WM+CSF, GM+CSF: the same tissue plus 10-90% free water (D 3.0): partial volume at
+      ventricles and sulci.
+    """
+    kw = dict(dtype=dtype, device=device)
+    u = lambda lo, hi, shape=(V,): lo + (hi - lo) * torch.rand(shape, generator=g, **kw)
+    lu = lambda lo, hi, shape=(V,): torch.exp(torch.log(torch.tensor(lo, **kw)) + torch.rand(shape, generator=g, **kw) * torch.log(torch.tensor(hi / lo, **kw)))
+    cls = torch.multinomial(torch.tensor(class_probs, **kw), V, replacement=True, generator=g)
+    wm = (cls == 0) | (cls == 2)
+    K = 7                                   # 3 bundles x (axon, extra) | free water
+    w = torch.zeros(V, K, **kw); d_iso = torch.zeros(V, K, **kw); d_del = torch.zeros(V, K, **kw)
+    spread = u(0.0, 0.15, (V, K)); disp = torch.ones(V, K, **kw); mu = _unit((V, K, 3), g, dtype, device)
+
+    # --- white matter
+    nb = torch.multinomial(torch.tensor([0.6, 0.3, 0.1], **kw), V, replacement=True, generator=g) + 1
+    bw = torch.distributions.Dirichlet(torch.full((3,), 2.0, **kw)).sample((V,))
+    bw = torch.where(torch.arange(3, device=device) < nb[:, None], bw, torch.zeros_like(bw))
+    bw = bw / bw.sum(-1, keepdim=True)
+    f_ax = u(0.4, 0.7, (V, 3))
+    for k in range(3):
+        a, e = 2 * k, 2 * k + 1
+        w[:, a] = bw[:, k] * f_ax[:, k]; w[:, e] = bw[:, k] * (1 - f_ax[:, k])
+        d_iso[:, a] = u(0.65, 0.85); d_del[:, a] = u(0.9, 1.0)
+        d_iso[:, e] = u(0.8, 1.1); d_del[:, e] = u(0.2, 0.5)
+        dk = lu(0.05, 0.4); disp[:, a] = dk; disp[:, e] = dk
+        mu[:, e] = mu[:, a]
+    fw_wm = u(0.0, 0.10)
+
+    # --- gray matter (slots 0 neurite, 1 soma, 2 extracellular)
+    gw = torch.zeros(V, K, **kw); gd = torch.zeros(V, K, **kw); gdd = torch.zeros(V, K, **kw); gdisp = torch.ones(V, K, **kw)
+    f_n, f_s = u(0.2, 0.45), u(0.1, 0.3)
+    gw[:, 0], gw[:, 1], gw[:, 2] = f_n, f_s, 1 - f_n - f_s
+    gd[:, 0], gdd[:, 0], gdisp[:, 0] = u(0.6, 0.9), u(0.8, 1.0), lu(0.8, 3.0)
+    gd[:, 1], gdd[:, 1] = u(0.3, 0.7), 0.0
+    gd[:, 2], gdd[:, 2], gdisp[:, 2] = u(0.9, 1.3), u(0.0, 0.2), lu(0.5, 3.0)
+    fw_gm = u(0.0, 0.15)
+
+    sel = wm[:, None]
+    w = torch.where(sel, w, gw); d_iso = torch.where(sel, d_iso, gd)
+    d_del = torch.where(sel, d_del, gdd); disp = torch.where(sel, disp, gdisp)
+
+    # --- free water (slot 6), with CSF partial volume for the boundary classes
+    fw = torch.where(wm, fw_wm, fw_gm)
+    fw = torch.where(cls >= 2, u(0.1, 0.9), fw)
+    w[:, :6] = w[:, :6] * (1 - fw)[:, None]
+    w[:, 6] = fw
+    d_iso[:, 6], d_del[:, 6], spread[:, 6] = 3.0, 0.0, 0.0
+    return micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g), cls
 
 
 def dtd_params(d6, s0=None):

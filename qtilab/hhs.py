@@ -46,6 +46,15 @@ def session_runs(sub, ses, root=HHS_ROOT):
     return sorted(runs, key=lambda r: r["run"])
 
 
+def session_protocol(sub="01", ses="01", root=HHS_ROOT):
+    """The session's protocol from its sidecars alone (no images, no motion correction)."""
+    runs = session_runs(sub, ses, root)
+    bvals = np.concatenate([r["bval"] for r in runs])
+    bvecs = np.concatenate([r["bvec"] for r in runs], axis=1)
+    shapes = sum([["LTE" if r["kind"] == "linear" else "STE"] * len(r["bval"]) for r in runs], [])
+    return Protocol.from_table(bvals, bvecs, shapes)
+
+
 def _rigid(static, moving, static_aff, moving_aff):
     """Rigid MI registration of moving -> static. Returns (4x4 map in world coords, transformed image)."""
     from dipy.align import affine_registration

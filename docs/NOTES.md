@@ -67,7 +67,58 @@ Tensor conventions are identical to DIPY's. It currently lives in the session sa
 - Runs 2–4 and 7–8 contain no b = 0 volume, so differences in intensity scaling between runs cannot be checked or corrected. This could bias the fit.
 - No eddy-current or susceptibility correction yet; the latter isn't possible without a reversed pair.
 
+## 2026-11-04 (evening) — cheap checks: stripes, run scaling, brain-like prior
+
+The code is now in **github.com/mhalle/qtilab**, and the repo copy of these notes is `docs/NOTES.md`.
+
+**Stripe texture in DiB (resolved: correlated noise).**
+- The raw images show no stripes: the mean b0, the mean b = 2 spherical image, and their ratio all look clean.
+- The noise, measured as the difference between repeated spherical-encoding volumes, is spatially correlated, and more so along one in-plane axis: lag-1 autocorrelation 0.26 vs 0.13 (0.06 across slices). That is typical of reconstruction filtering or interpolation along the phase-encoding axis.
+- K_bulk and C_MD amplify noise, so the correlated grain shows up as elongated "stripes." It is not biology and not a structured artifact.
+- Two consequences:
+  - Real noise is not independent between voxels, as the simulator assumes.
+  - Any spatial-context model or surprise map has to model correlated noise.
+- The DiB header reports 1 mm voxels, which is not the acquired resolution.
+
+**Hormone Health intensity scaling between runs (reassuring).** Medians across all 66 sessions, with the 5th–95th percentile range:
+
+| comparison | ratio | expected |
+|---|---|---|
+| b0 run 5 / b0 run 1 | 0.998 [0.982–1.002] | 1 |
+| linear / spherical at b = 100 (runs 1 vs 6) | 1.002 [0.997–1.010] | about 1.001 |
+| linear / spherical at b = 500 (runs 1 vs 6) | 1.030 [1.025–1.038] | small positive excess from microscopic anisotropy |
+
+- The b = 500 excess implies an anisotropic variance of about 0.24 µm⁴/ms², a plausible size.
+- The scanner does not rescale between these runs. Runs without b0 cannot be checked directly, but the evidence now argues against a scaling problem.
+
+**Brain-like prior (`simulate.sample_brain`).** Four tissue classes, all compartments Gaussian:
+- **WM:** 1–3 bundles, each an axon stick plus an extra-axonal zeppelin.
+- **GM:** dispersed neurites, a soma-like isotropic compartment and extracellular space.
+- **WM+CSF and GM+CSF:** the same tissue plus 10–90% free water.
+
+Main results (12k voxels, both real protocols):
+1. **Truncation bias is the dominant error, bigger than noise at realistic SNR, and systematic by tissue.** Noise-free fits at b_max = 2:
+   - µFA is overestimated by +0.03 to +0.06 in tissue and by +0.06 to +0.11 at CSF boundaries.
+   - FA is overestimated by about +0.11 at WM/CSF boundaries.
+   - MD is underestimated by 0.04–0.06 in tissue and by 0.13–0.16 at CSF boundaries.
+   - C_MD and K_bulk (MK_I) are underestimated by about half (K_bulk −0.3 to −0.58).
+   - Free water is nearly invisible above b ≈ 1, so the fit misses its share of the variance. QTI values are therefore *apparent* quantities tied to the b-range.
+   - Open question: should a posterior network target the full distribution moments, or tissue moments plus a separate free-water fraction?
+2. **The constraints' push on µFA is real but secondary.** It adds about +0.01 in GM and +0.03 to +0.05 at CSF boundaries, in the same direction as the truncation bias. Both are worst at CSF boundaries, where tractography stopping decisions happen.
+3. **Revision of the "tissue sits on the boundary" reading.**
+   - Under the brain-like prior, the true covariance is nearly singular in WM (median 1 near-zero eigenvalue of 6) and at WM/CSF boundaries (median 3), but not in GM (0).
+   - Even noise-free, WLS gives a non-PSD covariance in about 40% of WM voxels and 58–76% of WM+CSF voxels, but about 0% of GM voxels.
+   - So violations come from three sources: truncation bias (WM, boundaries), noise (GM), and genuinely near-singular covariances (WM, boundaries).
+   - For rank-23 protocols such as Hormone Health, the unconstrained covariance is not unique, so violation rates are not comparable across protocols.
+   - The earlier claim that violations are "mostly tissue at the edge" was too strong.
+
+**Implications**
+- **H2 (bias in mixed tissue)** is now the strongest, most concrete hypothesis. It affects every published QTI value at typical b-ranges, and it is directly testable with the posterior network.
+- **H6 (µFA-based stopping)** needs bias-corrected µFA, since both biases inflate µFA where stopping decisions are made.
+- **The simulator** needs correlated noise to match real data.
+
 **Next**
-- Brain-like prior.
-- Posterior network (set encoder + normalizing flow): a first CPU smoke test here, real training on GPU.
-- Put qtilab in a repository.
+- Posterior network (set encoder + normalizing flow) on the brain-like prior: a small CPU smoke test here, real training on GPU.
+- Decide the target definition: full moments vs tissue moments plus free-water fraction.
+- Correlated-noise option in the simulator.
+- Cohort fits and test-retest (H7): GPU, or CPU batches here.
