@@ -118,7 +118,7 @@ BRAIN_PRIORS = {
 
 
 def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15),
-                 return_free=False, version=2):
+                 return_free=False, version=2, return_comp=False):
     """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)[, free-water mask (V, M)]).
 
     Compartments are Gaussian (no restriction or exchange); values in um^2/ms are typical of the
@@ -180,7 +180,41 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     w[:, 6] = fw
     d_iso[:, 6], d_del[:, 6], spread[:, 6] = 3.0, 0.0, 0.0
     d6, comp = micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g, return_comp=True)
+    if return_comp:
+        return d6, cls, comp
     return (d6, cls, comp == 6) if return_free else (d6, cls)
+
+
+# Time dependence: per-compartment strength tau (U[0, max]); the compartment's diffusivities scale
+# as 1 + tau (sqrt(omega) - 1) at relative encoding frequency omega (omega = 1 is the reference).
+# sqrt(omega) is the low-frequency form for one-dimensional short-range disorder (e.g. beading
+# along axons); it stands in here for any restriction-driven frequency dependence.
+TAU_MAX = {"WM": (0.15, 0.35, 0.15, 0.35, 0.15, 0.35, 0.0),      # axon, extra (x3 bundles), free water
+           "GM": (0.15, 0.40, 0.35, 0.0, 0.0, 0.0, 0.0)}          # neurite, soma, extracellular, free water
+
+
+def sample_tau(cls, comp, g=None):
+    """Per-micro-tensor time-dependence strength (V, M) from tissue class and compartment index."""
+    V = cls.shape[0]
+    dtype = torch.float64
+    wm = ((cls == 0) | (cls == 2)).unsqueeze(-1)
+    tmax = torch.where(wm, torch.tensor(TAU_MAX["WM"], dtype=dtype), torch.tensor(TAU_MAX["GM"], dtype=dtype))
+    tau_c = tmax * torch.rand((V, 7), generator=g, dtype=dtype)
+    return torch.gather(tau_c, 1, comp)
+
+
+def signal_td(d6, B6, omega, tau, chunk=8192):
+    """Noise-free S/S0 with time-dependent compartments.
+
+    omega (N,) relative encoding frequency per measurement; tau (V, M) per micro-tensor strength.
+    """
+    f = torch.sqrt(torch.as_tensor(omega, dtype=d6.dtype)) - 1.0                     # (N,)
+    out = []
+    for i in range(0, d6.shape[0], chunk):
+        base = torch.einsum("vmk,nk->vmn", d6[i:i + chunk], B6)
+        scale = 1.0 + tau[i:i + chunk].unsqueeze(-1) * f
+        out.append(torch.exp(-base * scale).mean(1))
+    return torch.cat(out)
 
 
 def dtd_params(d6, s0=None, weights=None):

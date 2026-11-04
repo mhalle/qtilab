@@ -213,8 +213,48 @@ Percentage of real voxels above the simulated 95th / 99th percentile (5% / 1% ex
 
 **Engineering:** held-out evaluation peaks at about 5.6 GB, close to the sandbox's 7 GB. Training and evaluation in one process ran out of memory once, but the trained model had already been saved. Run evaluation separately here.
 
+## 2026-11-04 (evening, cont.) — does time dependence explain the deep-WM surprise? Not as modeled
+
+**Setup.** The HHS waveforms are not distributed with the data, so each encoding's frequency content is unknown.
+- Time dependence (`simulate.sample_tau`, `simulate.signal_td`): each compartment's diffusivities scale by 1 + τ(√ω − 1). Linear encoding is at ω = 1 and spherical at ω = r, the unknown spectral ratio. τ ranges are per compartment; free water has τ = 0.
+- Control: spherical-encoding b-values off by a factor (1 + ε). A calibration error like this would also act differently on LTE and STE.
+- Stage 1 lets r and ε vary per voxel. A real global effect should make the best-matching value agree across voxels.
+- Stage 2 fixes r (or ε) at the consensus value, so each alternative adds exactly one global parameter.
+- Script: `scripts/surprise_td.py`.
+
+**Results** (percentage of real voxels above the simulated 95th / 99th percentile; expected 5% / 1%):
+
+| model | WM-like | GM-like | CSF-ish |
+|---|---|---|---|
+| v2, time-independent | 33% / 9% | 2% / 0% | 51% / 37% |
+| time dependence, r free per voxel | 29% / 7% | 1% / 0% | 50% / 36% |
+| STE b-scale error, ε free per voxel | 24% / 5% | 1% / 0% | 47% / 31% |
+| time dependence, r fixed at 1.46 | 34% / 5% | 2% / 0% | 51% / 36% |
+| b-scale, ε fixed at +0.076 | 30% / 7% | 2% / 1% | 51% / 35% |
+
+- Best-matching r in WM: median 1.46, IQR 0.78–2.51. This is barely narrower than the prior (IQR 0.5–2), so there is no consensus.
+- Best-matching ε is positive in WM (+0.054) and CSF (+0.076) but near zero in GM (+0.011). A real calibration error would be global, so this is inconsistent with one.
+- **Conclusion:** neither a simple time-dependence model nor an STE calibration error explains the deep-WM surprise or the CSF misfit. H5 is not supported *as modeled*. The simple model (isotropic scaling per compartment, a single unknown spectral ratio) may be too crude, but the residuals point somewhere else first.
+
+**Residual analysis** (classical WLS fit, residuals in noise units, by run):
+
+| | run 1 | run 2 | run 3 | run 4 | run 5 | run 6 | run 7 | run 8 |
+|---|---|---|---|---|---|---|---|---|
+| WM | 1.80 | **2.01** | 1.46 | 0.90 | 2.20 | 1.65 | 1.24 | 1.01 |
+| GM | 2.09 | 1.64 | 1.39 | 0.78 | **3.56** | 2.02 | 1.30 | 1.02 |
+
+- **Low-b volumes misfit in every tissue (runs 1, 5, 6).** The noise sd comes from the b = 1500 spherical repeats, which see mostly thermal noise. Physiological and pulsation noise scales with signal and is largest at low b. So the noise model is incomplete, and that most likely explains much of the CSF and low-b misfit.
+- **WM has a specific excess in run 2 (LTE, b = 1000)**: 4 of its worst 8 volumes are there. Run 2 also needed the largest rotation in run-to-run alignment (0.61°). An error that depends on gradient direction, such as within-run motion, uncorrected eddy currents or b-vector rotation, would hit anisotropic WM hardest and spare nearly isotropic GM.
+- **Reading:** the WM surprise is, at least in part, an acquisition / preprocessing signature rather than tissue microstructure. The surprise statistic did its job. It flagged that the data deviate, and the residual structure says why. It cannot yet distinguish biology from artifact without better preprocessing.
+
+**Implications**
+- Before testing H5 again, the pipeline needs:
+  - per-volume motion and eddy-current correction. tractline's GPU eddy model is the obvious tool, extended to b-tensors.
+  - a noise model with a signal-proportional (physiological) term, fit from the b = 0 and low-b repeats.
+- Then rerun the surprise test. If WM surprise survives, revisit time dependence with real waveform spectra, which would need a dataset that ships its waveforms (e.g. the BWH DiB data) or the HHS authors' waveform files.
+
 **Next**
-- Restriction / time-dependence in the simulator (frequency content of the actual waveforms). Test whether deep-WM surprise drops: a direct H5 test.
+- Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise (H5).
 - Free water in WM: is the ~9% real? Spatial pattern and test-retest.
 - Real training on GPU: longer runs, several protocols, protocol-subset training for embedding invariance.
 - Cohort fits and test-retest (H7).
