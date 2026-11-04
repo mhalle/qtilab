@@ -163,9 +163,58 @@ Main results (12k voxels, both real protocols):
 - A larger chunk (4096) ran the 7 GB sandbox out of memory and restarted the VM. Training had already finished and the model was saved.
 - Whole-brain sampling belongs on GPU.
 
+## 2026-11-04 (late) — the quick fixes: widened prior, real SNR, surprise check
+
+**Widened prior (`BRAIN_PRIORS[2]`, now the default; v1 kept for comparison).**
+- Changes: axonal fraction up to 0.85; extra-axonal D_Δ up to 0.8; wider tissue diffusivities in WM and GM.
+- Simulated WM full-distribution µFA: median 0.80 (was 0.74), 95th percentile 0.94.
+
+**Real SNR is high.** Estimated from the 15 repeated spherical-encoding b = 1500 volumes (identical expected signal), b = 0 SNR in sub-01 ses-01 has a median of about 67 (10–90%: 28–139). The smoke test trained on 15–60, so the v2 network trains on 20–150, log-uniform.
+
+**Correlated noise: not applied to the voxelwise network, on purpose.** The correlation is between neighboring voxels, and the network sees one voxel at a time. It matters for spatial models and for cluster-level inference on surprise maps.
+
+**Calibrated surprise check (`scripts/surprise_check.py`).** For each voxel: the RMS distance from its normalized signal to the nearest of 100k noise-free simulated signals, in units of that voxel's noise sd (taken from the spherical-encoding repeats).
+- It is calibrated against simulated noisy voxels processed identically, *within SNR bins*. The reference distribution rises steeply with SNR, so unconditional calibration made high-SNR (posterior, coil-near) regions look surprising.
+- Real-data noise from repeats also absorbs residual motion, which makes the check conservative.
+
+Percentage of real voxels above the simulated 95th / 99th percentile (5% / 1% expected if the prior explains the data):
+
+| region | prior v1 | prior v2 |
+|---|---|---|
+| WM-like | 60% / 25% | 32% / 7% |
+| GM-like | 4% / 1% | 1% / 0% |
+| CSF-ish | 63% / 47% | 51% / 36% |
+| whole slice | 29% / 15% | 17% / 8% |
+
+- Gray matter is explained.
+- The widened prior halves WM misfit, but about a third of WM voxels remain unexplained, concentrated in deep, coherent WM. This is consistent with diffusion-time (restriction) effects that Gaussian compartments cannot represent, which the literature predicts are largest in coherent WM. It is a first data-driven pointer for H5; one session is not evidence.
+- CSF-edge misfit most likely reflects residual motion between runs and CSF pulsation (artifact, not biology).
+
+**v2 network** (3,000 steps, about 12 min CPU)
+- Held-out, in-distribution: similar to v1.
+  - Tissue µFA error 0.024 (WM) to 0.083 (GM+CSF).
+  - Tissue MD error 0.04–0.09; C_MD error 0.01–0.04.
+  - QTI's tissue-MD error at CSF boundaries is about 0.9.
+  - Coverage: 90% intervals contain 82–90% of true values.
+- Real slice, v1 → v2:
+
+  | region | classical µFA | network tissue µFA | network full µFA |
+  |---|---|---|---|
+  | WM-like | 0.87 | 0.84 → **0.87** | 0.69 → 0.68 |
+  | GM-like | 0.54 | 0.60 → 0.62 | 0.47 → 0.47 |
+  | CSF-ish | 0.31 | 0.62 → 0.73 | 0.14 → 0.15 |
+
+- **Correction: the WM gap was not a prior-width problem.**
+  - Network tissue µFA now matches classical µFA in WM (0.87). The gap is between classical µFA and the network's *full-distribution* µFA.
+  - In simulated WM, full µFA ≈ tissue µFA − 1.93 × f_fw. Each 1% of free water lowers full µFA by about 0.02, and the classical fit at b ≤ 2 barely sees free water.
+  - The network infers f_fw of about 0.09 in real WM (low-b decay matches simulated WM closely). That alone accounts for most of the 0.19 gap.
+  - So full-distribution µFA is a fragile quantity, dominated by a small, poorly identifiable free-water fraction. This strongly supports reporting **tissue µFA plus f_fw** rather than full moments.
+- **Open question:** is about 9% free water in WM real (partial volume, interstitial fluid) or overestimated? It sits near the top of the WM prior (0–10%). Test it with spatial pattern (proximity to ventricles) and test-retest across sessions.
+
+**Engineering:** held-out evaluation peaks at about 5.6 GB, close to the sandbox's 7 GB. Training and evaluation in one process ran out of memory once, but the trained model had already been saved. Run evaluation separately here.
+
 **Next**
-- Widen the WM prior (more stick-like, higher axonal fraction) and retrain. Check whether the WM gap closes.
-- Posterior-predictive check: simulate from posterior samples and compare with the observed signal per voxel.
-- Correlated-noise option in the simulator.
+- Restriction / time-dependence in the simulator (frequency content of the actual waveforms). Test whether deep-WM surprise drops: a direct H5 test.
+- Free water in WM: is the ~9% real? Spatial pattern and test-retest.
 - Real training on GPU: longer runs, several protocols, protocol-subset training for embedding invariance.
 - Cohort fits and test-retest (H7).
