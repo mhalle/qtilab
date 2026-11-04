@@ -22,9 +22,11 @@ prot = session_protocol("01", "01")
 g = torch.Generator().manual_seed(11)
 net = posterior.PosteriorNet()
 opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-5)
-sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=steps, pct_start=0.05)
+sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=max(steps, 1), pct_start=0.05)
 
 t0 = time.perf_counter()
+if steps == 0:                                   # evaluation only, from the saved model
+    net.load_state_dict(torch.load("results/posterior_smoke_hhs.pt"))
 for step in range(1, steps + 1):
     b = posterior.simulate_batch(prot, 512, g=g)
     loss = -net.log_prob(b.x, b.y).mean()
@@ -33,13 +35,14 @@ for step in range(1, steps + 1):
     opt.step(); sched.step()
     if step % 250 == 0:
         print(f"step {step}: NLL {loss.item():.3f}  ({time.perf_counter() - t0:.0f} s)", flush=True)
-torch.save(net.state_dict(), "results/posterior_smoke_hhs.pt")
+if steps:
+    torch.save(net.state_dict(), "results/posterior_smoke_hhs.pt")
 
 # ---- held-out evaluation
 net.eval()
 gt = torch.Generator().manual_seed(12345)
-test = posterior.simulate_batch(prot, 8000, g=gt, snr=(20.0, 35.0))
-smp = net.sample(test.x, n=200)                         # (n, V, T)
+test = posterior.simulate_batch(prot, 4000, g=gt, snr=(20.0, 35.0))
+smp = net.sample(test.x, n=100)                         # (n, V, T)
 pm = smp.mean(0).numpy()
 y = test.y.numpy()
 lo50, hi50 = np.quantile(smp.numpy(), [0.25, 0.75], axis=0)
@@ -51,7 +54,7 @@ cc = scalars.scalars(fit.constrained(X, S64)[0])
 T = posterior.TARGETS
 cls = test.cls.numpy()
 names = simulate.BRAIN_CLASSES
-res = {"steps": steps, "train_seconds": time.perf_counter() - t0, "by_class": {}}
+res = {"steps": steps or 3000, "by_class": {}}
 
 
 def stat(est, tru, m):

@@ -101,7 +101,7 @@ class PosteriorNet(nn.Module):
         return self.flow(self.embed(x, mask)).log_prob(to_unconstrained(y))
 
     @torch.no_grad()
-    def sample(self, x, n=100, mask=None, chunk=4096):
+    def sample(self, x, n=100, mask=None, chunk=256):
         """-> (n, V, len(TARGETS)) posterior samples in natural units."""
         outs = []
         for i in range(0, x.shape[0], chunk):

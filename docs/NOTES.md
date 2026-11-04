@@ -117,8 +117,55 @@ Main results (12k voxels, both real protocols):
 - **H6 (µFA-based stopping)** needs bias-corrected µFA, since both biases inflate µFA where stopping decisions are made.
 - **The simulator** needs correlated noise to match real data.
 
+## 2026-11-04 (night) — posterior network smoke test
+
+**Design decision.** The network's main targets are *tissue* moments (free water removed) plus a free-water fraction. It also reports the full-distribution moments that QTI's cumulant fit targets, so the two can be compared directly. Targets: f_fw, md_t, fa_t, ufa_t, c_md_t, md, ufa, c_md.
+
+**Model** (`qtilab/posterior.py`):
+- A set encoder reads (b-tensor, normalized signal) pairs and pools them (mean + max) into a 64-dimensional embedding.
+- A zuko NSF flow, conditioned on the embedding, gives the posterior. Bounded targets use logit space; diffusivities use log space.
+- Training: 3,000 steps × 512 voxels, simulated on the fly from the brain-like prior through sub-01 ses-01's actual protocol. SNR 15–60. About 11 minutes on 2 CPU cores.
+
+**Held-out simulation**, 4,000 voxels from the same prior, SNR 20–35. Median bias / median |error|:
+
+| class | µFA tissue: net | µFA tissue: QTI | µFA full: net | µFA full: QTI |
+|---|---|---|---|---|
+| WM | −0.005 / 0.025 | −0.029 / 0.037 | −0.036 / 0.059 | +0.070 / 0.072 |
+| GM | +0.014 / 0.052 | −0.062 / 0.076 | −0.020 / 0.063 | +0.063 / 0.073 |
+| WM+CSF | −0.038 / 0.047 | −0.356 / 0.356 | 0.000 / 0.026 | +0.176 / 0.176 |
+| GM+CSF | +0.022 / 0.075 | −0.260 / 0.260 | +0.027 / 0.036 | +0.142 / 0.142 |
+
+- **MD.** QTI's MD misses tissue MD by about 0.9 µm²/ms at CSF boundaries, because it reports the mixture. The network's tissue-MD error is 0.03–0.06.
+- **C_MD.** The network's full C_MD is unbiased at CSF boundaries, where QTI underestimates it by 0.06–0.07. In WM and GM the network's error is about 0.05–0.06 versus QTI's 0.11–0.13.
+- **Coverage.** The network is slightly overconfident: 90% intervals cover 81–90% of the truth, and 50% intervals cover 44–51%. That is acceptable for a short CPU run.
+- **Caveat.** This test is in-distribution: same prior, Gaussian compartments, independent Rician noise. It shows the method works, not that it is right on real tissue.
+
+**Real data: sub-01 ses-01, slice 20** (`results/hhs_sub01_ses01_posterior_maps.png`)
+- The free-water map is anatomically sensible: ventricles and sulci. Median f_fw is 0.08; 15% of voxels have f_fw > 0.5.
+- Tissue µFA is higher in WM than GM, and its uncertainty is largest where tissue is scarce (CSF), as it should be.
+- Tissue MD is nearly flat. It is probably prior-dominated, since the prior on tissue diffusivity is narrow.
+- Classical vs network µFA:
+
+  | region | classical µFA | network full µFA | network tissue µFA |
+  |---|---|---|---|
+  | WM-like (FA > 0.4, f_fw < 0.2) | 0.87 | 0.69 | 0.84 |
+  | GM-like (FA < 0.2, f_fw < 0.2) | 0.54 | 0.47 | 0.61 |
+  | CSF-ish (f_fw > 0.5) | 0.32 | 0.13 | 0.63 |
+
+- **The sim-to-real gap.**
+  - The gap between classical and network full µFA matches simulation in GM (+0.07 observed vs +0.06 predicted) and at CSF boundaries (+0.20 vs +0.14 to +0.18).
+  - In WM it is much larger than simulation predicts (+0.18 vs +0.07).
+  - Most likely, the brain-like prior's WM is less anisotropic than real WM: true median µFA 0.74 in the prior, while the classical fit gives about 0.87. The network then shrinks toward the prior.
+  - This is the first concrete sim-to-real mismatch. Fixes are to widen the WM prior and to add posterior-predictive checks, which would also be the first form of surprise map.
+
+**Engineering notes**
+- zuko NSF sampling on CPU is slow and memory-hungry (about 7 s and 2 GB per 256 voxels × 200 samples), so sampling is now chunked at 256 voxels.
+- A larger chunk (4096) ran the 7 GB sandbox out of memory and restarted the VM. Training had already finished and the model was saved.
+- Whole-brain sampling belongs on GPU.
+
 **Next**
-- Posterior network (set encoder + normalizing flow) on the brain-like prior: a small CPU smoke test here, real training on GPU.
-- Decide the target definition: full moments vs tissue moments plus free-water fraction.
+- Widen the WM prior (more stick-like, higher axonal fraction) and retrain. Check whether the WM gap closes.
+- Posterior-predictive check: simulate from posterior samples and compare with the observed signal per voxel.
 - Correlated-noise option in the simulator.
-- Cohort fits and test-retest (H7): GPU, or CPU batches here.
+- Real training on GPU: longer runs, several protocols, protocol-subset training for embedding invariance.
+- Cohort fits and test-retest (H7).

@@ -22,7 +22,13 @@ torch.set_num_threads(2)
 
 a = np.load(aligned)
 c = np.load(classical)
-mask = c["mask"]
+full_mask = c["mask"]
+z = 20                                   # one slice keeps CPU time to a few minutes
+slab = np.zeros_like(full_mask)
+slab[:, :, z] = True
+mask = full_mask & slab
+sel = slab[full_mask]                    # which classical-fit voxels fall in the slice
+c = {k: c[k][sel] for k in ("ufa", "c_md", "md", "fa")}
 prot = Protocol.from_table(a["bvals"], a["bvecs"], [str(s) for s in a["shapes"]])
 S = torch.as_tensor(np.maximum(a["data"][mask], 1e-4).astype(np.float64))
 x = posterior.features(S, prot.b6, prot.b, prot.b_delta()).float()
@@ -42,7 +48,6 @@ def vol(v):
     return o
 
 
-z = 20
 panels = [
     ("free-water fraction (posterior mean)", pm[:, T.index("f_fw")], (0, 1)),
     ("tissue µFA (posterior mean)", pm[:, T.index("ufa_t")], (0, 1)),
