@@ -124,7 +124,11 @@ def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.floa
 
     SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
     """
-    d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version)
+    if prior_version == 0:                          # the generic, non-anatomical prior (simulate.Prior)
+        d6, free = simulate.sample_dtd(V, M=M, g=g, return_free=True)
+        cls = torch.full((V,), -1, dtype=torch.long)
+    else:
+        d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version)
     clean = simulate.signal(d6, protocol.b6.to(d6.dtype))
     u = torch.rand(V, dtype=d6.dtype, generator=g)
     lo, hi = snr

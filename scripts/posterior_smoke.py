@@ -24,6 +24,7 @@ ap.add_argument("--prior", type=int, default=1, help="brain prior version (1 = s
 ap.add_argument("--snr", type=float, nargs=2, default=(15.0, 60.0), help="training SNR range at b=0 (log-uniform)")
 ap.add_argument("--test-snr", type=float, nargs=2, default=(20.0, 35.0))
 ap.add_argument("--tag", default="")
+ap.add_argument("--no-eval", action="store_true", help="train and save only")
 args = ap.parse_args()
 steps = args.steps
 tag = args.tag
@@ -49,6 +50,8 @@ for step in range(1, steps + 1):
 if steps:
     torch.save(net.state_dict(), model_path)
 
+if args.no_eval:
+    sys.exit(0)
 # ---- held-out evaluation
 net.eval()
 gt = torch.Generator().manual_seed(12345)
