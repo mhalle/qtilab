@@ -52,17 +52,17 @@ def run_both(S):
 
 out = {"sim": {}, "real": {}}
 names = simulate.BRAIN_CLASSES
-for pv in (2, 1, 3):
+for pv in (2, 1, 3, 0):
     g = torch.Generator().manual_seed(500 + pv)
     test = posterior.simulate_batch(prot, 2000, g=g, snr=(30.0, 140.0), prior_version=pv, dtype=torch.float64)
     y = test.y.numpy()
     cls = test.cls.numpy()
     smp = run_both(test.S)
     res = {}
-    print(f"\n=== test data from prior v{pv}{' (training prior)' if pv == 2 else ' (misspecified)'}: "
-          "median |error| / median 90% width / 90% coverage, full -> LTE-only")
-    for c, cname in enumerate(names):
-        m = cls == c
+    label = {2: "brain v2 (training prior)", 1: "brain v1", 3: "brain v3 (wide)", 0: "generic (non-anatomical)"}[pv]
+    print(f"\n=== test data from prior {label}: median |error| / median 90% width / 90% coverage, full -> LTE-only")
+    groups = [("all", cls == -1)] if pv == 0 else [(cname, cls == c) for c, cname in enumerate(names)]
+    for cname, m in groups:
         row = {}
         cells = []
         for k in SHOW:
@@ -79,7 +79,10 @@ for pv in (2, 1, 3):
                              f"{r['lte']['mae']:.3f}/{r['lte']['w90']:.2f}/{r['lte']['cov90']:.2f}")
         res[cname] = row
         print(f"  {cname:7s} " + " | ".join(cells), flush=True)
+        del m
     out["sim"][f"v{pv}"] = res
+    del smp, test
+    import gc; gc.collect()
 
 # ---- real slice
 a = np.load(paths.aligned_session())
