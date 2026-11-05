@@ -18,7 +18,18 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
     - Targets are tissue moments plus free-water fraction, and the full moments.
   - Loaders: `data.py` (DiB open data) and `hhs.py` (OpenNeuro ds005360, with run-to-run alignment).
 - `scripts/` holds validation, experiments, maps and data fetchers. Outputs go to `results/`.
-- `tests/` needs no downloaded data. `uv run pytest` takes about 10 s.
+- `tests/` needs no downloaded data. `uv run pytest` takes about 6 s warm (about 35 s on a cold first run).
+
+## Local setup (macOS, M1 Max)
+
+- The repo lives in Dropbox (classic client, not File Provider). `.venv/`, `data/` and `work/` carry the `com.dropbox.ignored` attribute so they stay local and are not synced.
+  - Recreate the attribute after deleting any of them: `xattr -w com.dropbox.ignored 1 <dir>`.
+  - Make the directory and set the attribute **before** filling it. `uv venv --allow-existing .venv` keeps the attribute on an existing directory.
+- The system `python3` is 3.9 and the project needs ≥ 3.11. Always run through uv: `uv sync`, `uv run pytest`, `uv run python scripts/...`. Every `python` command in this file means `uv run python`.
+- tractline (needed by the motion/eddy scripts) is installed from its git tag, not from `../tractline`:
+  `uv pip install --no-deps "tractline @ git+https://github.com/mhalle/tractline@v0.11.0"`.
+  - The `../tractline` checkout is on its `ismrm2027` branch, which predates v0.11.0 and has no `motion_eddy`.
+  - This install is not part of `uv sync`, so redo it after `uv sync` or after recreating `.venv`.
 
 ## Data
 
@@ -64,11 +75,13 @@ python scripts/consistency.py AB; python scripts/consistency.py C
 
 ## Compute
 
-Development so far has been on a 2-core, 7 GB CPU sandbox.
-- Two heavy jobs at once ran it out of memory.
-- zuko flow sampling is slow and memory-hungry on CPU, so `PosteriorNet.sample` chunks at 256 voxels.
+Development now runs locally on an Apple M1 Max (10 cores, 64 GB, MPS). The results through 2026-11-05 were produced in a 2-core, 7 GB CPU sandbox (Cowork), so the timings in README and NOTES are from that sandbox.
+- In the sandbox, two heavy jobs at once ran out of memory. That limit no longer applies.
+- zuko flow sampling is slow and memory-hungry on CPU, so `PosteriorNet.sample` chunks at 256 voxels. The chunk can probably be larger here.
 
-GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
+GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for CUDA.
+- MPS has **no float64**. DIPY validation and the reference benchmarks stay float64 on CPU; use float32 on MPS.
+- Smoke check, 2026-11-05: simulate plus constrained fit of 20k voxels in float32 gives the same accuracy on MPS and CPU (100% converged). At that size MPS is no faster than CPU (~7.5 s each), so the GPU only helps on larger batches and in network training.
 
 ## Next tasks (handoff, updated 2026-11-05), in priority order
 
@@ -83,7 +96,7 @@ GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
      - a waveform-specific STE eddy model (tractline's field is linear in the gradient vector);
      - ~~check per-direction b errors~~ done: the offsets are a per-volume level shared by WM and GM. In STE it is a period-3 pattern (three waveform rotations, ~1–1.5% peak-to-peak) reproducible across subjects (`scripts/volume_offsets.py`, `volume_offsets_followup.py`, `results/volume_offsets_pattern.png`). To do: a cohort per-volume gain template as a preprocessing step.
    - Held-out scripts take `--series ec` to read the corrected series.
-   - Needs tractline (github.com/mhalle/tractline, v0.11.0): `pip install --no-deps -e path/to/tractline` (scipy ≥ 1.15).
+   - Needs tractline (github.com/mhalle/tractline, v0.11.0): install as in *Local setup* (scipy ≥ 1.15). v0.11.0 also has `motion_eddy_metal.py`, which may be the MPS path for the cohort run.
 2. **Rotation-aware predictor.** Plain k-NN on the simulation bank has an algorithmic error floor of about 2 noise sd in coherent WM at b = 2000. Simulated voxels score the same as real ones, so it is not tissue.
    - Option: coarse match on rotation-invariant features, then re-simulate candidate tissues rotated to the voxel's fiber direction.
    - Or predict from the network posterior.
