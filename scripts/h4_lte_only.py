@@ -25,6 +25,15 @@ from qtilab import paths, posterior, simulate  # noqa: E402
 from qtilab.hhs import session_protocol  # noqa: E402
 from qtilab.protocol import Protocol  # noqa: E402
 
+import argparse  # noqa: E402
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--full-model", default="results/posterior_smoke_hhs_v2.pt")
+ap.add_argument("--lte-model", default="results/posterior_smoke_hhs_v2lte.pt")
+ap.add_argument("--test-priors", default="2,1,3,0", help="comma list; 0 = generic")
+ap.add_argument("--no-real", action="store_true")
+ap.add_argument("--tag", default="")
+args = ap.parse_args()
 torch.set_num_threads(2)
 T = posterior.TARGETS
 SHOW = ["ufa_t", "md_t", "fa_t", "c_md_t", "f_fw", "ufa", "c_md"]
@@ -33,7 +42,7 @@ keep = prot.keep_shapes(["LTE"])
 prot_lte = prot.subset(keep)
 kn = keep.numpy()
 nets = {}
-for name, f in (("full", "results/posterior_smoke_hhs_v2.pt"), ("lte", "results/posterior_smoke_hhs_v2lte.pt")):
+for name, f in (("full", args.full_model), ("lte", args.lte_model)):
     n = posterior.PosteriorNet()
     n.load_state_dict(torch.load(f))
     n.eval()
@@ -52,7 +61,7 @@ def run_both(S):
 
 out = {"sim": {}, "real": {}}
 names = simulate.BRAIN_CLASSES
-for pv in (2, 1, 3, 0):
+for pv in [int(x) for x in args.test_priors.split(",")]:
     g = torch.Generator().manual_seed(500 + pv)
     test = posterior.simulate_batch(prot, 2000, g=g, snr=(30.0, 140.0), prior_version=pv, dtype=torch.float64)
     y = test.y.numpy()
@@ -84,6 +93,9 @@ for pv in (2, 1, 3, 0):
     del smp, test
     import gc; gc.collect()
 
+if args.no_real:
+    json.dump(out, open(f"results/h4_lte_only{args.tag}.json", "w"), indent=1)
+    sys.exit(0)
 # ---- real slice
 a = np.load(paths.aligned_session())
 c = np.load(paths.classical_fit())
@@ -115,7 +127,7 @@ for rname, m in regions.items():
     out["real"][rname] = row
     print(f"  {rname:8s} n={m.sum():5d}  " + " | ".join(
         f"{k} {v['full']:.3f}/{v['lte']:.3f} sd x{v['sd_ratio']:.1f} r={v['r']:.2f}" for k, v in row.items()))
-json.dump(out, open("results/h4_lte_only.json", "w"), indent=1)
+json.dump(out, open(f"results/h4_lte_only{args.tag}.json", "w"), indent=1)
 
 
 def vol(v):
@@ -135,4 +147,4 @@ fig, axes = plt.subplots(2, 4, figsize=(15, 8), facecolor="black")
 for ax, (t, v, cm, (lo, hi)) in zip(axes.ravel(), panels):
     ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cm, vmin=lo, vmax=hi); ax.set_title(t, color="white", fontsize=9); ax.axis("off")
 fig.suptitle("H4: what linear encoding alone recovers (HHS sub-01 ses-01, slice 20)", color="white")
-plt.tight_layout(); plt.savefig("results/h4_lte_only.png", dpi=110, facecolor="black")
+plt.tight_layout(); plt.savefig(f"results/h4_lte_only{args.tag}.png", dpi=110, facecolor="black")
