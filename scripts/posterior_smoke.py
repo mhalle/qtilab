@@ -25,12 +25,16 @@ ap.add_argument("--snr", type=float, nargs=2, default=(15.0, 60.0), help="traini
 ap.add_argument("--test-snr", type=float, nargs=2, default=(20.0, 35.0))
 ap.add_argument("--tag", default="")
 ap.add_argument("--no-eval", action="store_true", help="train and save only")
+ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
 args = ap.parse_args()
 steps = args.steps
 tag = args.tag
 model_path = f"results/posterior_smoke_hhs{tag}.pt"
 torch.set_num_threads(2)
 prot = session_protocol("01", "01")
+if args.shapes:
+    prot = prot.subset(prot.keep_shapes(args.shapes.split(",")))
+    print(f"protocol restricted to {args.shapes} + b0: {prot.n} volumes, rank {prot.rank()}", flush=True)
 g = torch.Generator().manual_seed(11)
 net = posterior.PosteriorNet()
 opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-5)

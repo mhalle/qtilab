@@ -46,6 +46,20 @@ class Protocol:
         B = np.stack([btensor(b, v, s) for b, v, s in zip(bvals, bvecs, shapes)])
         return cls(torch.as_tensor(B, dtype=dtype), list(shapes))
 
+    def subset(self, keep):
+        """Protocol restricted to the volumes where ``keep`` (bool array or index list) is true."""
+        keep = torch.as_tensor(keep)
+        idx = keep.nonzero().flatten() if keep.dtype == torch.bool else keep
+        shapes = None if self.shapes is None else [self.shapes[int(i)] for i in idx]
+        return Protocol(self.B[idx], shapes)
+
+    def keep_shapes(self, shapes, b0_thresh=0.05):
+        """Boolean mask of volumes with an encoding shape in ``shapes``, plus every b ~ 0 volume
+        (a b = 0 image has no encoding shape, whatever its label)."""
+        lab = [s.upper() for s in self.shapes]
+        want = {s.upper() for s in shapes}
+        return torch.tensor([(l in want) or bool(b < b0_thresh) for l, b in zip(lab, self.b.tolist())])
+
     def to(self, device=None, dtype=None):
         return Protocol(self.B.to(device=device, dtype=dtype), self.shapes)
 

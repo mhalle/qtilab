@@ -204,12 +204,15 @@ TAU_MAX = {"WM": (0.15, 0.35, 0.15, 0.35, 0.15, 0.35, 0.0),      # axon, extra (
            "GM": (0.15, 0.40, 0.35, 0.0, 0.0, 0.0, 0.0)}          # neurite, soma, extracellular, free water
 
 
-def sample_tau(cls, comp, g=None):
-    """Per-micro-tensor time-dependence strength (V, M) from tissue class and compartment index."""
+def sample_tau(cls, comp, g=None, wm_scale=1.0, gm_scale=1.0):
+    """Per-micro-tensor time-dependence strength (V, M) from tissue class and compartment index.
+
+    wm_scale / gm_scale multiply the TAU_MAX ranges of white- and gray-matter compartments."""
     V = cls.shape[0]
     dtype = torch.float64
     wm = ((cls == 0) | (cls == 2)).unsqueeze(-1)
-    tmax = torch.where(wm, torch.tensor(TAU_MAX["WM"], dtype=dtype), torch.tensor(TAU_MAX["GM"], dtype=dtype))
+    tmax = torch.where(wm, wm_scale * torch.tensor(TAU_MAX["WM"], dtype=dtype),
+                       gm_scale * torch.tensor(TAU_MAX["GM"], dtype=dtype))
     tau_c = tmax * torch.rand((V, 7), generator=g, dtype=dtype)
     return torch.gather(tau_c, 1, comp)
 
