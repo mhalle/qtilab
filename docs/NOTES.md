@@ -327,6 +327,32 @@ Still open:
 - Prior choice for free water.
 - Biological validity, which needs histology or patients.
 
+## 2026-11-04 (late night) — choosing priors by held-out prediction
+
+Same leave-one-run-out test as above (HHS sub-01 ses-01, slice 20; 20 nearest of 200k simulated tissues). Error is RMS / noise sd (1 = noise-limited). Script: `scripts/heldout_hhs.py --prior N [--td r]`.
+
+| model | run 4, LTE b2000: WM / GM / CSF | run 8, STE b1500: WM / GM / CSF | WM STE bias |
+|---|---|---|---|
+| classical QTI | 5.32 / 3.74 / 9.68 | 1.37 / 1.38 / 1.26 | |
+| generic prior | 2.37 / 1.26 / 1.47 | **3.51** / 1.54 / 1.10 | −3.39 |
+| brain v1 | 2.37 / 1.37 / 1.36 | 1.61 / 1.17 / 1.12 | −1.18 |
+| brain v2 | 2.12 / 1.34 / 1.34 | 1.78 / 1.18 / 1.08 | −1.47 |
+| brain v3 | 2.09 / 1.33 / 1.30 | 1.91 / 1.20 / 1.06 | −1.69 |
+| v2 + time dependence, r = 1.46 | 2.09 / 1.38 / 1.34 | 1.54 / 1.21 / 1.09 | −1.10 |
+| v2 + time dependence, r = 2.5 | 2.12 / 1.43 / 1.34 | **1.24** / 1.34 / 1.09 | −0.46 |
+
+- **The generic, non-anatomical prior is rejected.** It cannot predict WM spherical signal (3.5 noise sd). Its very different GM answers (tissue µFA 0.35) are therefore not credible. Choosing priors by data works.
+- **WM tension under time-independent priors.**
+  - Widening the prior v1 → v3 improves WM extrapolation of linear-encoding images (2.37 → 2.09) but worsens WM spherical prediction (1.61 → 1.91).
+  - No time-independent brain prior fits both encodings in WM.
+- **One global spectral ratio resolves most of it in WM.** Time dependence with STE at a higher effective frequency (r = 2.5) brings WM spherical prediction to 1.24, close to GM levels, and leaves WM linear prediction unchanged. GM gets worse (STE 1.18 → 1.34, LTE 1.34 → 1.43), so the GM time-dependence ranges (soma τ up to 0.4, extracellular up to 0.35) are probably too large.
+- **Reading.** This is the most H5-supportive evidence so far. It is a specific, WM-only, encoding-specific effect, in the direction time dependence predicts. Caveats:
+  - one session, one slice
+  - only two values of r tried
+  - the τ ranges are guesses
+  - the motion/eddy confound in WM (largest inter-run rotation, run-specific residuals) is not excluded
+- Next: fit r and per-tissue τ by held-out accuracy across subjects and sessions, after motion/eddy correction.
+
 **Next**
 - Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise and the held-out STE test in WM (H5).
 - Choose priors by held-out predictive accuracy (v1, v2, v3, generic, time-dependent).

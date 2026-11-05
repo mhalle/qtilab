@@ -23,9 +23,17 @@ sys.path.insert(0, ".")
 from qtilab import fit, simulate  # noqa: E402
 from qtilab.protocol import Protocol  # noqa: E402
 
+import argparse  # noqa: E402
+
+ap = argparse.ArgumentParser()
+ap.add_argument("bank", type=int, nargs="?", default=200_000)
+ap.add_argument("--prior", type=int, default=2, help="0 = generic, 1-3 = brain prior versions")
+ap.add_argument("--td", type=float, default=None, help="add time dependence with this LTE/STE spectral ratio")
+ap.add_argument("--tag", default="")
+args = ap.parse_args()
 torch.set_num_threads(2)
 K = 20
-BANK = int(sys.argv[1]) if len(sys.argv) > 1 else 200_000
+BANK = args.bank
 a = np.load("/home/claude/data/hhs_sub01_ses01_aligned.npz")
 c = np.load("/home/claude/qtilab/results/hhs_sub01_ses01.npz")
 post = np.load("results/hhs_sub01_ses01_posterior_v2.npz")
@@ -46,12 +54,23 @@ S = S / S[:, bvals < 50].mean(1, keepdims=True)
 regions = {"WM-like": (fa > 0.4) & (fw < 0.2), "GM-like": (fa < 0.2) & (fw < 0.2), "CSF-ish": fw > 0.5}
 
 g = torch.Generator().manual_seed(21)
+is_ste = torch.as_tensor((shapes == "STE").astype(np.float64))
 chunks = []
 for i in range(0, BANK, 20000):
-    d6, _ = simulate.sample_brain(min(20000, BANK - i), M=48, g=g, version=2)
-    chunks.append(simulate.signal(d6, prot.b6).float())
+    k = min(20000, BANK - i)
+    if args.prior == 0:
+        d6 = simulate.sample_dtd(k, M=48, g=g)
+        chunks.append(simulate.signal(d6, prot.b6).float())
+    elif args.td is None:
+        d6, _ = simulate.sample_brain(k, M=48, g=g, version=args.prior)
+        chunks.append(simulate.signal(d6, prot.b6).float())
+    else:
+        d6, cls, comp = simulate.sample_brain(k, M=48, g=g, version=args.prior, return_comp=True)
+        tau = simulate.sample_tau(cls, comp, g)
+        omega = 1.0 + (args.td - 1.0) * is_ste
+        chunks.append(simulate.signal_td(d6, prot.b6, omega, tau).float())
 bank = torch.cat(chunks)                                            # (BANK, N), S0 = 1
-out = {"bank": BANK, "k": K}
+out = {"bank": BANK, "k": K, "prior": args.prior, "td": args.td}
 
 for held, noise_ref in ((4, (shapes == "STE") & (np.abs(bvals - 1500) < 1)),
                         (8, (shapes == "STE") & (np.abs(bvals - 1000) < 1))):
@@ -88,4 +107,4 @@ for held, noise_ref in ((4, (shapes == "STE") & (np.abs(bvals - 1500) < 1)),
         print(f"  {name:8s} n={m.sum():5d}  QTI {r['qti']:.2f} (bias {r['qti_bias']:+.2f})   "
               f"simulator {r['sim']:.2f} (bias {r['sim_bias']:+.2f}, 95% interval covers {100*r['sim_95pct_coverage']:.0f}%)")
     out[f"run{held}"] = res
-json.dump(out, open("results/heldout_hhs.json", "w"), indent=1)
+json.dump(out, open(f"results/heldout_hhs{args.tag}.json", "w"), indent=1)
