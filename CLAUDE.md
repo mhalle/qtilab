@@ -70,25 +70,40 @@ Development so far has been on a 2-core, 7 GB CPU sandbox.
 
 GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
 
-## Next tasks (handoff, 2026-11-04), in priority order
+## Next tasks (handoff, updated 2026-11-05), in priority order
 
-1. **Motion and eddy-current correction for b-tensor data.** This gates H5.
-   - Residuals show a run-specific, direction-sensitive excess in white matter and misfit in white-matter spherical encoding (`docs/NOTES.md`, "time dependence" and "validation" sections).
+1. **Motion and eddy-current correction for b-tensor data.** This is the last major confound for H5.
+   - Real WM shows volume-level offsets in the b = 2000 run that simulation does not (`results/heldout_diagnostics*.json`, diagnostic B).
    - Extend tractline's GPU eddy model to b-tensors:
-     - Rotate B → R B Rᵀ per volume.
-     - Predict the reference signal per encoding shape, since STE has no direction.
-     - Model eddy currents specific to each waveform.
-   - Then rerun `scripts/surprise_td.py` and `scripts/heldout_hhs.py`, both the default run and `--td`.
-2. **Cohort run for H7 (reliability).**
+     - rotate B → R B Rᵀ per volume;
+     - predict the reference signal per encoding shape, since STE has no direction;
+     - model eddy currents specific to each waveform.
+   - Then rerun:
+
+     ```
+     scripts/heldout_hhs.py --noise model --regions classical --slice -1 [--td 4 --tau-gm 0]
+     scripts/heldout_diagnostics.py
+     ```
+
+   - H5 is supported by the white-matter STE time-dependence effect:
+     - replicates in five sessions and three subjects;
+     - well-defined optimum near spectral ratio r ≈ 4 with default WM strengths;
+     - WM-specific;
+     - absent in a simulated null.
+2. **Rotation-aware predictor.** Plain k-NN on the simulation bank has an algorithmic error floor of about 2 noise sd in coherent WM at b = 2000. Simulated voxels score the same as real ones, so it is not tissue.
+   - Option: coarse match on rotation-invariant features, then re-simulate candidate tissues rotated to the voxel's fiber direction.
+   - Or predict from the network posterior.
+   - Also calibrate surprise within FA bins, because the floor differs between WM and GM.
+3. **Cohort run for H7 (reliability).**
    - Align, fit (constrained) and run network inference for all 66 sessions on GPU.
    - Report whole-brain regional ICCs, classical vs network.
-   - A 5-subject single-slice pilot showed the network keeps between-subject differences while cutting session-to-session variation about 5× (`results/consistency_*.json`).
-3. **Longer network training on GPU.**
-   - The current models had 3k steps × 512 voxels on CPU.
-   - Train across several protocols with random measurement subsets, so the encoder becomes protocol-invariant. This is the hook for the embedding work: test DiB_70 vs DiB_217 invariance.
-4. **Time dependence, properly.** Held-out STE prediction in WM improves from 1.78 to 1.24 noise sd with one global LTE/STE spectral ratio (r = 2.5), with LTE prediction unchanged. But GM gets worse, so the per-compartment τ ranges are probably wrong for GM.
-   - Fit r and the τ ranges per tissue class by held-out accuracy.
-   - Repeat on other subjects and sessions.
-   - Get the real waveforms: DiB ships its waveforms; for HHS, contact the authors (Erlangen waveforms, Martin et al. 2020).
-5. **Noise model.** Add a signal-proportional (physiological) term. Low-b and CSF residuals exceed the thermal noise estimated from the b = 1500 repeats.
-6. **Cardiff b = 3–10 extrapolation test** with `scripts/heldout_hhs.py`-style code, once the data is downloaded.
+   - The 5-subject pilot: the network keeps between-subject differences while cutting session-to-session variation about 5× (`results/consistency_*.json`).
+4. **Longer network training on GPU**, across several protocols with random measurement subsets, for protocol invariance. This is the hook for the embedding work.
+   - Include time dependence (r ≈ 4, WM only) in the training prior.
+   - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
+5. **H4 follow-ups.**
+   - Brain prior: LTE-only recovers tissue µFA nearly as well as the full protocol.
+   - Generic prior: spherical encoding cuts GM µFA error by about 25–30%, with no gain in WM.
+   - Next: apply LTE-only models to a legacy multi-shell dataset (HCP-style), and quantify prior dependence there.
+6. **Real waveforms.** DiB ships its waveforms. For HHS, ask the authors (Erlangen waveforms, Martin et al. 2020). Replace the single spectral ratio with real encoding spectra.
+7. **Cardiff b = 3–10 extrapolation test** once the data is downloaded by hand.

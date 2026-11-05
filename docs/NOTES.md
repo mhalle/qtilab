@@ -402,7 +402,20 @@ Results (tissue µFA median |error|, full → LTE-only):
   - Under a brain-like prior, linear encoding alone recovers tissue µFA nearly as well as the full protocol. That is promising for legacy multi-shell data (HCP, UK Biobank), and consistent with the spherical-mean literature.
   - But prior misspecification hurt *both* networks about equally. Both learned the prior's compartment-shape assumptions, which is what resolves the anisotropy-versus-size confound that spherical encoding exists to break.
   - So under this prior, the spherical measurements add mainly precision (10–20%) and a check on the prior, not robustness.
-- **Pending:** both networks trained on the generic prior, so the network must use the data rather than shape assumptions to resolve the confound.
+- **Broad (generic) training prior** (`--full-model results/posterior_smoke_hhs_v0.pt --lte-model results/posterior_smoke_hhs_v0lte.pt`): both networks must resolve the anisotropy/size confound from the data.
+
+  Tissue µFA median \|error\|, full → LTE-only:
+
+  | test data | WM | GM |
+  |---|---|---|
+  | generic | all voxels 0.102 → 0.117 (90% width 0.55 → 0.66; coverage about 0.9) | |
+  | brain v2 | 0.035 → 0.030 | **0.197 → 0.261** |
+  | brain v3 | 0.060 → 0.054 | 0.182 → 0.254 |
+
+  - Real slice, both networks: GM tissue µFA 0.35 vs 0.35 (r = 0.63; LTE-only SD 1.3× larger). WM 0.79 vs 0.75.
+  - **Reading:** spherical encoding's value is concentrated in gray matter and other dispersed or heterogeneous tissue (about 25–30% lower µFA error), where anisotropy and size variance are confounded. In coherent WM, LTE's directional pattern suffices.
+  - **The prior's contribution dwarfs it.** GM µFA error is about 0.07 with the brain prior vs about 0.2 with the generic one, and real GM tissue µFA is 0.62 vs 0.35. The generic prior was already rejected by held-out prediction.
+  - **H4 in one sentence:** WM µFA is recoverable from standard multi-shell data under any reasonable prior. GM µFA from such data is mostly a statement about the prior, and spherical encoding is what makes it less so.
 
 ### Time dependence across sessions (`heldout_hhs.py`, `td_summary.py`)
 
@@ -436,11 +449,69 @@ Per session, WM STE error base → r4 g0:
 
 - **The WM-specific improvement replicates in every session and both new subjects.**
 - Time dependence in GM compartments always makes GM worse. Under this model, the effect is white-matter specific.
-- Improvement continues up to the largest ratio tried (r = 4), so the effect may be stronger than modeled. Testing r = 6 and 10, and stronger WM τ.
-- **WM LTE b = 2000 extrapolation stays poor (about 2.2) under every config.** A separate WM misfit at high b on linear encoding, not addressed by this model. Candidates: high-b non-Gaussianity (restriction on LTE itself), motion/eddy currents in the 30-direction b = 2000 run, or a too-narrow axon diffusivity range.
-- **Status for H5:** a specific, replicating, white-matter-only effect in the direction the physics predicts. The competing explanation is still direction-dependent artifact (motion/eddy), which also hits anisotropic WM hardest. Motion/eddy correction for b-tensors decides it.
+- Improvement continues up to r = 4. The extended settings below locate the optimum.
+- **WM LTE b = 2000 extrapolation stays poor (about 2.2) under every config.** The diagnostics below show this is mostly the predictor.
+**Extended settings, all five sessions** (r = 6, 10, and r = 4 with doubled WM strength; all with GM strengths off):
+
+| config | WM STE b1500 error | WM LTE b2000 error |
+|---|---|---|
+| base | 1.66 | 2.16 |
+| r = 1.5 | 1.50 | 2.17 |
+| r = 2.5 | 1.32 | 2.16 |
+| **r = 4** | **1.27** | 2.18 |
+| r = 6 | 1.37 | 2.25 |
+| r = 10 | 1.55 | 2.33 |
+| r = 4, WM strength ×2 | 1.50 | 2.33 |
+
+- **There is a well-defined optimum near r ≈ 4 with the default WM strengths.** Stronger effects overshoot, on both STE and LTE.
+- A model with too much freedom would keep absorbing misfit. A physical effect of a particular size produces an optimum, and that is what we see.
+- GM is unchanged in every WM-only config.
+
+### Is the WM LTE b = 2000 misfit the predictor? (`scripts/heldout_diagnostics.py`)
+
+Method: the same held-out procedure applied to *simulated* voxels from the same prior (v2) through the same protocol, with noise from the fitted noise model (thermal variance and α(b) sampled from the real slice). The tissue model is exactly right for these voxels, so their error is the predictor's resolution plus noise. Two sessions (sub-01 ses-01, sub-06 ses-01).
+
+| | sub-01 ses-01: real / sim | sub-06 ses-01: real / sim |
+|---|---|---|
+| WM, LTE b2000: RMS error | 1.93 / 1.93 | 2.21 / 2.08 |
+| WM, LTE b2000: median bias | +0.48 / +0.11 | +1.07 / +0.10 |
+| WM, STE b1500: RMS error | 1.73 / 1.35 | 1.73 / 1.33 |
+| WM, STE b1500: median bias | **−1.37 / −0.11** | **−1.43 / −0.13** |
+| GM, LTE b2000: RMS error | 1.21 / 1.46 | 1.27 / 1.46 |
+| sd of per-volume WM median residual, run 4 | 0.20 / 0.06 | 0.26 / 0.05 |
+| max \|volume median\| | 0.95 / 0.23 | 1.56 / 0.21 |
+
+Mean residual vs \|cos(gradient, fiber)\|, bins 0–0.3 / 0.3–0.6 / 0.6–0.85 / 0.85–1:
+
+| | real | sim |
+|---|---|---|
+| sub-01 ses-01 | +0.65 / +0.32 / +0.60 / +1.29 | +0.50 / 0.00 / +0.03 / +0.35 |
+| sub-06 ses-01 | +1.70 / +0.97 / +0.92 / +1.54 | +0.74 / +0.07 / +0.04 / +0.35 |
+
+A larger bank (400k, k = 5) lowers simulated WM b2000 error to 1.75–1.86 but not real error (1.96, 2.19).
+
+**Findings**
+1. **The RMS size of the WM LTE b = 2000 misfit (about 2) is almost entirely algorithmic.** Simulated voxels with an exactly right tissue model score the same. The k-nearest-neighbour predictor blurs the sharp angular signal of coherent WM at high b. A bigger bank helps only slowly. So the earlier "WM high-b misfit" was mostly our predictor, as suspected.
+2. **On top of that floor, real WM shows two smaller, real deviations:**
+   - **Volume-level offsets:** some of the 30 b = 2000 volumes are off for all WM voxels together (max \|volume median\| about 1–1.6 vs about 0.2 in simulation). This is an acquisition signature: motion, eddy currents or dropouts within the run.
+   - **Excess signal for gradients near the fiber axis:** about +1.3 to +1.5 vs +0.35 simulated. Signal along axons decays less at b = 2000 than predicted. This could be physics (axial non-Gaussianity, or time-dependent axial diffusivity from beading, which is the one-dimensional disorder our √ω model represents) or direction-dependent eddy currents.
+3. **The STE effect is not algorithmic.** With the tissue model right, simulated WM STE bias is about −0.1. Real WM is about −1.4 in both sessions. That is the time-dependence signal, and it survives the full-size test.
+
+**Implications**
+- **Surprise maps:** nearest-neighbour misfit carries a higher algorithmic floor in coherent WM than in GM. The calibration is SNR-conditional but not anisotropy-conditional, so part of the earlier "a third of WM is surprising" is algorithmic. Fix: calibrate within FA bins, or use a rotation-aware predictor.
+- **Predictor:** replace plain k-NN for anisotropic tissue. Options:
+  - rotation-aware matching: coarse match on rotation-invariant features, then re-simulate candidates rotated to the voxel's fiber direction;
+  - or prediction from the network's posterior.
+- **H5 status:** the STE time-dependence effect is now supported by:
+  - replication in five sessions and three subjects;
+  - a well-defined optimum (r ≈ 4);
+  - WM specificity;
+  - a simulated null that rules out the predictor.
+
+  The remaining confound is acquisition (volume-level offsets are present in WM), which motion/eddy correction for b-tensors resolves.
 
 **Next**
+- Rotation-aware predictor (or network-posterior prediction) for anisotropic tissue; anisotropy-conditional calibration of surprise.
 - Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise and the held-out STE test in WM (H5).
 - Choose priors by held-out predictive accuracy (v1, v2, v3, generic, time-dependent).
 - Cohort run for H7 (proper ICCs), best on GPU.
