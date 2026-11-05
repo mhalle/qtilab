@@ -41,10 +41,11 @@ ap.add_argument("--noise", choices=["repeat", "model"], default="repeat")
 ap.add_argument("--regions", choices=["posterior", "classical"], default="posterior")
 ap.add_argument("--seed", type=int, default=21)
 ap.add_argument("--tag", default="")
+ap.add_argument("--series", default="", help="suffix of the series to read, e.g. ec (motion/eddy corrected); mask and regions stay from the uncorrected fit")
 args = ap.parse_args()
 torch.set_num_threads(2)
 K = 20
-a = np.load(paths.aligned_session(args.sub, args.ses))
+a = np.load(paths.aligned_session(args.sub, args.ses + args.series))
 c = np.load(paths.classical_fit(args.sub, args.ses))
 full = c["mask"]
 z = args.slice if args.slice >= 0 else int(np.argmax(full.sum((0, 1))[10:28])) + 10

@@ -35,11 +35,12 @@ ap.add_argument("--bank", type=int, default=100_000); ap.add_argument("--k", typ
 ap.add_argument("--bank2", type=int, default=400_000); ap.add_argument("--k2", type=int, default=5)
 ap.add_argument("--nsim", type=int, default=4000)
 ap.add_argument("--tag", default="")
+ap.add_argument("--series", default="", help="suffix of the series to read, e.g. ec (motion/eddy corrected); mask and regions stay from the uncorrected fit")
 args = ap.parse_args()
 torch.set_num_threads(2)
 rng = np.random.default_rng(0)
 
-a = np.load(paths.aligned_session(args.sub, args.ses))
+a = np.load(paths.aligned_session(args.sub, args.ses + args.series))
 c = np.load(paths.classical_fit(args.sub, args.ses))
 full = c["mask"]
 z = int(np.argmax(full.sum((0, 1))[10:28])) + 10

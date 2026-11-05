@@ -519,3 +519,49 @@ A larger bank (400k, k = 5) lowers simulated WM b2000 error to 1.75–1.86 but n
 - Free water in WM: is the ~9% real? Spatial pattern and test-retest.
 - Real training on GPU: longer runs, several protocols, protocol-subset training for embedding invariance.
 - Cohort fits and test-retest (H7).
+
+## 2026-11-05: Motion and eddy-current correction (tractline, CPU) does not explain the WM residuals
+
+**What was run.** `scripts/motion_eddy_hhs.py 01 01`: tractline `motion_eddy` (v0.11.0, plain-torch CPU backend, 40 steps, quadratic eddy model, no susceptibility field because HHS has no reversed-PE series). This is the first end-to-end CPU run of tractline's eddy on a real scan: about 15 min for 107 volumes (LTE 582 s, STE 329 s), 1.9 GB peak.
+- Adaptations for b-tensors (tractline groups shells by b-value only):
+  - LTE and STE are corrected in two calls, each with all b0s as the common reference.
+  - STE volumes get one nominal direction, so the leave-one-out predictor is close to the mean of the other repeats.
+  - Each HHS run is roughly a whole shell, so between-run alignment stays with the MI step; tractline corrects within runs.
+- No volumes excluded, no outlier slices replaced (so no imputation in the output).
+
+**Estimates.**
+- Motion is small: rigid edge displacement 0.1–0.2 mm in LTE runs, framewise displacement mean 0.3 mm.
+- LTE eddy displacement grows with b (edge RMS mean 0.45 mm, max 2.0 mm, largest at b = 2000).
+- STE volumes shift along phase encoding by 0.5–0.6 mm SD (up to ~1 mm) within the b = 1000/1500 runs. With one nominal direction, tractline cannot separate eddy from motion, so this is booked as translation.
+
+**Before vs after, sub-01 ses-01.** `scripts/motion_eddy_compare.py`: same voxels, three slices, same k-NN bank. Residuals are in signal units (×1000 of b0) because resampling smooths thermal noise; fitted thermal SNR rises 59→67 WM, 69→91 GM, 87→128 CSF, so noise-normalized scores are not comparable across the two series.
+
+| ×1000 of b0 | raw | corrected |
+|---|---|---|
+| STE b1500 repeat sd (noise floor) | 13.9 | 10.9 |
+| WM b2000 RMS | 34.2 | 33.6 |
+| WM b2000 volume-offset sd | 3.7 | 3.1 |
+| GM b2000 RMS | 17.1 | 16.3 |
+| WM STE b1500 RMS / bias | 28.5 / −22.7 | 28.0 / −22.9 |
+| GM STE b1500 RMS / bias | 15.8 / −2.1 | 13.7 / −2.3 |
+
+- Held-out test with time dependence (`heldout_hhs.py --noise model --regions classical --slice -1`, bank 200k). WM STE error in noise units:
+
+  | | no time dependence | r = 4, WM only |
+  |---|---|---|
+  | raw | 1.72 (bias −1.36) | 1.27 (bias −0.33) |
+  | corrected | 1.89 (bias −1.47) | 1.30 (bias −0.34) |
+
+- The excess signal along the fiber axis at b = 2000 also persists after correction (`heldout_diagnostics_s0101ec.json`, diagnostic C).
+
+**Findings**
+1. **H5 survives motion/eddy correction.** The WM STE deficit is unchanged in signal units (−22.7 vs −22.9), and r ≈ 4 time dependence removes it equally in both series. A spatial misregistration would produce edge-signed errors, not a uniform WM-specific deficit.
+2. **The WM b = 2000 volume-level offsets are only slightly reduced** (sd 3.7 → 3.1). They are not mainly within-run motion or correctable eddy. Remaining candidates: per-volume signal scaling such as gradient-amplitude or b-value error per direction, gradient nonlinearity, and the predictor's angular blur (which the simulated null already shows at about 1/4 of the real offset).
+3. **The along-fiber excess also survives,** which weakens direction-dependent eddy as its cause and favors physics (axial non-Gaussianity or time-dependent axial diffusivity).
+4. **The correction mostly reduces noise-like variance** (STE repeat sd −22%, part real correction of the ~0.5 mm STE shifts, part interpolation smoothing). That improves GM and CSF modestly.
+
+**Caveats**
+- One session.
+- Between-run (whole-shell) offsets are left to the MI alignment.
+- A constant STE-waveform eddy field common to all STE volumes would not be seen by a leave-one-out predictor.
+- tractline's eddy model is FSL-style (field linear in the gradient vector); a waveform-specific model for STE is still open.

@@ -72,24 +72,17 @@ GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
 
 ## Next tasks (handoff, updated 2026-11-05), in priority order
 
-1. **Motion and eddy-current correction for b-tensor data.** This is the last major confound for H5.
-   - Real WM shows volume-level offsets in the b = 2000 run that simulation does not (`results/heldout_diagnostics*.json`, diagnostic B).
-   - Extend tractline's GPU eddy model to b-tensors:
-     - rotate B → R B Rᵀ per volume;
-     - predict the reference signal per encoding shape, since STE has no direction;
-     - model eddy currents specific to each waveform.
-   - Then rerun:
-
-     ```
-     scripts/heldout_hhs.py --noise model --regions classical --slice -1 [--td 4 --tau-gm 0]
-     scripts/heldout_diagnostics.py
-     ```
-
-   - H5 is supported by the white-matter STE time-dependence effect:
-     - replicates in five sessions and three subjects;
-     - well-defined optimum near spectral ratio r ≈ 4 with default WM strengths;
-     - WM-specific;
-     - absent in a simulated null.
+1. **Motion/eddy: done on CPU for one session, and it does not explain the WM residuals** (NOTES 2026-11-05).
+   - `scripts/motion_eddy_hhs.py SUB SES` runs tractline's FSL-style eddy (CPU, about 15 min) as LTE and STE passes, and writes `work/hhs_subXX_sesYYec_aligned.npz`.
+   - `scripts/motion_eddy_compare.py` compares residuals in signal units. Noise-normalized scores are not comparable, because resampling raises fitted SNR.
+   - The WM STE deficit (H5) is unchanged after correction, and r ≈ 4 time dependence removes it equally.
+   - The b = 2000 volume offsets drop only slightly. The along-fiber excess persists.
+   - Open:
+     - run on more sessions (GPU, `--device mps`);
+     - a waveform-specific STE eddy model (tractline's field is linear in the gradient vector);
+     - check per-direction b-value or gradient-amplitude errors as the source of the volume offsets.
+   - Held-out scripts take `--series ec` to read the corrected series.
+   - Needs tractline (github.com/mhalle/tractline, v0.11.0): `pip install --no-deps -e path/to/tractline` (scipy ≥ 1.15).
 2. **Rotation-aware predictor.** Plain k-NN on the simulation bank has an algorithmic error floor of about 2 noise sd in coherent WM at b = 2000. Simulated voxels score the same as real ones, so it is not tissue.
    - Option: coarse match on rotation-invariant features, then re-simulate candidate tissues rotated to the voxel's fiber direction.
    - Or predict from the network posterior.
