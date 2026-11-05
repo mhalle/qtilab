@@ -72,13 +72,14 @@ GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
 
 ## Next tasks (handoff, updated 2026-11-05), in priority order
 
-1. **Motion/eddy: done on CPU for one session, and it does not explain the WM residuals** (NOTES 2026-11-05).
+1. **Motion/eddy: done on CPU for three sessions (sub-01, -02, -06; ses-01), and it does not explain the WM residuals** (NOTES 2026-11-05).
    - `scripts/motion_eddy_hhs.py SUB SES` runs tractline's FSL-style eddy (CPU, about 15 min) as LTE and STE passes, and writes `work/hhs_subXX_sesYYec_aligned.npz`.
    - `scripts/motion_eddy_compare.py` compares residuals in signal units. Noise-normalized scores are not comparable, because resampling raises fitted SNR.
    - The WM STE deficit (H5) is unchanged after correction, and r ≈ 4 time dependence removes it equally.
    - The b = 2000 volume offsets drop only slightly. The along-fiber excess persists.
+   - Within-run STE shifts along PE (up to ~1 mm) vary by subject; b-value and acquisition time are confounded, because STE runs are acquired in b order.
    - Open:
-     - run on more sessions (GPU, `--device mps`);
+     - run on the cohort (GPU, `--device mps`);
      - a waveform-specific STE eddy model (tractline's field is linear in the gradient vector);
      - check per-direction b-value or gradient-amplitude errors as the source of the volume offsets.
    - Held-out scripts take `--series ec` to read the corrected series.

@@ -565,3 +565,31 @@ A larger bank (400k, k = 5) lowers simulated WM b2000 error to 1.75–1.86 but n
 - Between-run (whole-shell) offsets are left to the MI alignment.
 - A constant STE-waveform eddy field common to all STE volumes would not be seen by a leave-one-out predictor.
 - tractline's eddy model is FSL-style (field linear in the gradient vector); a waveform-specific model for STE is still open.
+
+### 2026-11-05 (later): replication in sub-06 ses-01 and sub-02 ses-01
+
+Same pipeline (`/home/claude/chain9.sh` equivalent: `motion_eddy_hhs.py`, `motion_eddy_compare.py`, diagnostics, held-out with `--series`). About 15 min of correction per session; no volumes excluded; 2 outlier slices replaced in total (sub-06 STE).
+
+Signal units (×1000 of b0), raw → corrected:
+
+| | sub-01 | sub-06 | sub-02 |
+|---|---|---|---|
+| WM STE b1500 bias | −22.7 → −22.9 | −23.9 → −24.0 | −18.4 → −18.8 |
+| WM LTE b2000 RMS | 34.2 → 33.6 | 36.1 → 35.6 | 34.8 → 34.7 |
+| WM b2000 volume-offset sd | 3.7 → 3.1 | 3.9 → 3.7 | 3.9 → 3.9 |
+| STE b1500 repeat sd | 13.9 → 10.9 | 14.4 → 11.7 | 11.4 → 10.7 |
+| STE PE-shift sd by run (b 100 / 1000 / 1500), mm | ~0.26 / 0.50 / 0.62 | 0.27 / 0.47 / 0.65 | 0.04 / 0.06 / 0.11 |
+
+WM STE held-out error, noise units (bias), no time dependence → r = 4 WM-only:
+
+| | raw | corrected |
+|---|---|---|
+| sub-01 | 1.72 (−1.36) → 1.27 (−0.33) | 1.89 (−1.47) → 1.30 (−0.34) |
+| sub-06 | 1.78 (−1.41) → 1.25 (−0.34) | 1.83 (−1.51) → 1.24 (−0.39) |
+| sub-02 | 1.38 (−0.88) → 1.19 (+0.14) | 1.38 (−0.91) → 1.20 (+0.12) |
+
+**Findings**
+1. **H5 survives motion/eddy correction in three subjects.** The WM STE deficit is unchanged in signal units, and r ≈ 4 time dependence removes it equally in raw and corrected data. Sub-02's deficit is smaller, and r = 4 slightly overshoots, a hint that the strength varies between subjects.
+2. **The b = 2000 volume offsets are not motion or correctable eddy** in any subject (sd barely changes).
+3. **Within-run STE shifts along PE are subject-dependent.** They are large in sub-01 and sub-06 (up to ~1 mm) and small in sub-02. They grow from run 6 to run 8 in all three, but **b-value and acquisition time are confounded** (STE runs are acquired in b order), so "eddy from STE waveforms" and "drift over time" cannot be separated here.
+4. **The noise drop splits roughly as** about 6% from interpolation smoothing (sub-02, little to correct) plus about 15% from real correction of STE shifts (sub-01, sub-06).
