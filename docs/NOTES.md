@@ -353,6 +353,93 @@ Same leave-one-run-out test as above (HHS sub-01 ses-01, slice 20; 20 nearest of
   - the motion/eddy confound in WM (largest inter-run rotation, run-specific residuals) is not excluded
 - Next: fit r and per-tissue τ by held-out accuracy across subjects and sessions, after motion/eddy correction.
 
+## 2026-11-05 — noise model, H4, time dependence across sessions
+
+### Noise model (`qtilab/noise.py`, `scripts/noise_model.py`)
+
+Model: var(S) = s2 (thermal, per voxel) + α(b)² S².
+- Fitted by profile likelihood on spherical-encoding repeat groups at b = 100, 500, 1000 and 1500.
+- b = 0 is excluded, because the voxel normalization uses those images.
+- s2 per voxel is solved by maximum likelihood.
+
+Whole brain, sub-01 ses-01:
+
+| region | α at b = 100 / 500 / 1000 / 1500 | thermal SNR (b = 0) | observed / modeled variance per b |
+|---|---|---|---|
+| WM | 0.010 / 0.018 / 0.005 / 0.007 | 58 | 0.97 / 0.90 / 0.93 / 0.96 |
+| GM | 0.015 / 0.018 / 0.013 / 0.015 | 79 | 0.72 / 0.90 / 0.96 / 0.99 |
+| CSF | 0.105 / 0.083 / 0.030 / 0.030 | 69 | 0.16 / 0.71 / 1.00 / 0.85 |
+
+- Tissue: about 1–2% signal-proportional fluctuation.
+- CSF: about 10% at b = 100, falling with b. This is pulsatile flow, not uniform physiological noise.
+- CSF pulsation is very heterogeneous. A pooled α over-predicts the typical CSF voxel at b = 100 (ratio 0.16), so CSF tests that use this model are conservative.
+- The earlier "SNR about 67" (from b = 1500 repeats) understated thermal SNR in GM and overstated noise at low b.
+- `heldout_hhs.py --noise model` uses it, with α(b) per region and thermal variance per voxel, both fitted without the held-out volumes.
+- **Not done yet:** surprise maps with the noise model.
+
+### H4: linear encoding only (`scripts/h4_lte_only.py`)
+
+Setup:
+- Two networks with identical prior (brain v2), SNR range and steps.
+- One sees all 107 HHS volumes; the other sees only the 69 LTE volumes plus b = 0 (71 volumes; design rank 22, the DKI information, vs 23).
+- Tested on the same simulated voxels (2,000 per test prior) and on the real slice.
+
+Results (tissue µFA median |error|, full → LTE-only):
+
+| test data | WM | GM |
+|---|---|---|
+| brain v2 (training prior) | 0.022 → 0.023 | 0.073 → 0.078 |
+| brain v1 | 0.026 → 0.029 | 0.049 → 0.057 |
+| brain v3 (wide, misspecified) | 0.036 → 0.044 | 0.088 → 0.099 |
+| generic (non-anatomical) | all voxels 0.175 → 0.196, both badly miscalibrated (90% coverage about 0.4) | |
+
+- Interval widths and coverage are nearly identical between the two networks. Tissue MD, C_MD and f_fw behave similarly.
+- **Real slice:** LTE-only and full agree.
+  - Tissue µFA r = 0.93 (WM), 0.84 (GM); tissue MD r = 0.76 / 0.93.
+  - Median WM µFA 0.852 vs 0.873.
+  - LTE-only posterior SD is 1.1–1.2× larger.
+- **Reading:**
+  - Under a brain-like prior, linear encoding alone recovers tissue µFA nearly as well as the full protocol. That is promising for legacy multi-shell data (HCP, UK Biobank), and consistent with the spherical-mean literature.
+  - But prior misspecification hurt *both* networks about equally. Both learned the prior's compartment-shape assumptions, which is what resolves the anisotropy-versus-size confound that spherical encoding exists to break.
+  - So under this prior, the spherical measurements add mainly precision (10–20%) and a check on the prior, not robustness.
+- **Pending:** both networks trained on the generic prior, so the network must use the data rather than shape assumptions to resolve the confound.
+
+### Time dependence across sessions (`heldout_hhs.py`, `td_summary.py`)
+
+Setup:
+- Five sessions: sub-01 ses-01/02/03, sub-02 ses-01, sub-06 ses-01.
+- Fullest axial slice per session; classical-fit regions; noise model; 100k-tissue bank.
+- Configurations:
+  - prior v2 time-independent (base);
+  - time dependence with LTE/STE spectral ratio r ∈ {1.5, 2.5, 4}, with GM strengths off (g0) or on (g1).
+
+Held-out simulator error (median RMS / noise sd, mean over sessions; 1 = noise-limited):
+
+| config | STE b1500: WM / GM / CSF | LTE b2000: WM / GM / CSF |
+|---|---|---|
+| base | 1.66 / 1.21 / 0.86 | 2.16 / 1.48 / 1.54 |
+| r1.5 g0 | 1.50 / 1.21 / 0.86 | 2.17 / 1.46 / 1.54 |
+| r2.5 g0 | 1.32 / 1.21 / 0.87 | 2.16 / 1.46 / 1.54 |
+| r4 g0 | **1.27** / 1.21 / 0.88 | 2.18 / 1.46 / 1.53 |
+| r2.5 g1 | 1.24 / 1.35 / 0.88 | 2.17 / 1.56 / 1.52 |
+| r4 g1 | 1.21 / **1.51** / 0.90 | 2.19 / 1.63 / 1.52 |
+
+Per session, WM STE error base → r4 g0:
+
+| session | WM STE error | GM change | LTE b2000 WM error |
+|---|---|---|---|
+| sub-01 ses-01 | 1.72 → 1.29 | none | 1.94 → 1.95 |
+| sub-01 ses-02 | 1.59 → 1.24 | none | 2.68 → 2.76 |
+| sub-01 ses-03 | 1.85 → 1.37 | none | 1.95 → 1.93 |
+| sub-02 ses-01 | 1.34 → 1.19 | none | 2.01 → 2.07 |
+| sub-06 ses-01 | 1.81 → 1.26 | none | 2.22 → 2.20 |
+
+- **The WM-specific improvement replicates in every session and both new subjects.**
+- Time dependence in GM compartments always makes GM worse. Under this model, the effect is white-matter specific.
+- Improvement continues up to the largest ratio tried (r = 4), so the effect may be stronger than modeled. Testing r = 6 and 10, and stronger WM τ.
+- **WM LTE b = 2000 extrapolation stays poor (about 2.2) under every config.** A separate WM misfit at high b on linear encoding, not addressed by this model. Candidates: high-b non-Gaussianity (restriction on LTE itself), motion/eddy currents in the 30-direction b = 2000 run, or a too-narrow axon diffusivity range.
+- **Status for H5:** a specific, replicating, white-matter-only effect in the direction the physics predicts. The competing explanation is still direction-dependent artifact (motion/eddy), which also hits anisotropic WM hardest. Motion/eddy correction for b-tensors decides it.
+
 **Next**
 - Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise and the held-out STE test in WM (H5).
 - Choose priors by held-out predictive accuracy (v1, v2, v3, generic, time-dependent).
