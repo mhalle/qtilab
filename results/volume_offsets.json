@@ -9,294 +9,885 @@
  "sessions": {
   "01-01": {
    "LTE b1000": {
-    "eta_permille": 111.33519281548233,
-    "eps_sd": 0.02416613809063391,
-    "eps_mean": 0.25519312322949855,
-    "gain_sd_permille": 17.688411797257995,
+    "eta_permille": 104.98397536273033,
+    "eps_sd": 0.022584423775350727,
+    "eps_mean": 0.24898669307441987,
+    "gain_sd_permille": 1.8302175948419994,
     "rows": {
      "raw": {
-      "WM_sd": 4.84491844317976,
-      "GM_sd": 1.6737952289137348
+      "WM_sd": 5.098492274296511,
+      "GM_sd": 1.7603609529244206
      },
      "minus angle": {
-      "WM_sd": 3.5821751490895424,
-      "GM_sd": 1.6737952289137348
+      "WM_sd": 3.6447082019158223,
+      "GM_sd": 1.7603609529244206
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 2.276342087704756,
-      "GM_sd": 1.4614347859441272
+      "WM_sd": 2.680495117989007,
+      "GM_sd": 1.709651590342706
      },
      "minus angle, gain only": {
-      "WM_sd": 2.261731081876394,
-      "GM_sd": 1.9244044112653913
+      "WM_sd": 2.5211587753648033,
+      "GM_sd": 2.0261272019207692
      },
      "minus angle, b-error only": {
-      "WM_sd": 3.2039523040530327,
-      "GM_sd": 1.6175868153162019
+      "WM_sd": 2.6535701337207453,
+      "GM_sd": 2.9034118997760148
      }
     },
-    "corr_WMoffset_vs_meancos2": 0.6837992604344307
+    "corr_WM_GM_offsets": -0.04619199087409542,
+    "slope_WM_on_GM": -0.13378478329385052,
+    "noise_floor_volume_mean": {
+     "WM": 1.1832654314889588,
+     "GM": 0.3170967597511108
+    },
+    "corr_WMoffset_vs_meancos2": 0.7160373812557902
    },
    "LTE b1500": {
-    "eta_permille": -13.565130655083752,
-    "eps_sd": 0.011324358845440603,
-    "eps_mean": -0.04482085697865597,
-    "gain_sd_permille": 8.499844135312507,
+    "eta_permille": -13.052145686462966,
+    "eps_sd": 0.012414870292227174,
+    "eps_mean": -0.050285395907307934,
+    "gain_sd_permille": 2.961811459311342,
     "rows": {
      "raw": {
-      "WM_sd": 3.3143575627365167,
-      "GM_sd": 2.823269558469492
+      "WM_sd": 3.426774606459821,
+      "GM_sd": 2.6809227387393895
      },
      "minus angle": {
-      "WM_sd": 3.427256021201645,
-      "GM_sd": 2.823269558469492
+      "WM_sd": 3.5062825147051675,
+      "GM_sd": 2.6809227387393895
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 1.7485504841237807,
-      "GM_sd": 1.4566784220093456
+      "WM_sd": 1.6708262640781713,
+      "GM_sd": 1.402224478707734
      },
      "minus angle, gain only": {
-      "WM_sd": 1.5996996160450614,
-      "GM_sd": 1.3213652595865257
+      "WM_sd": 1.3180244726812818,
+      "GM_sd": 1.0902351783507904
      },
      "minus angle, b-error only": {
-      "WM_sd": 2.252480112709047,
-      "GM_sd": 1.3516633621059053
+      "WM_sd": 3.5617087167628516,
+      "GM_sd": 3.080274087303619
      }
     },
-    "corr_WMoffset_vs_meancos2": 0.311316108448055
+    "corr_WM_GM_offsets": 0.738020053942669,
+    "slope_WM_on_GM": 0.943342507922492,
+    "noise_floor_volume_mean": {
+     "WM": 0.8697289699549645,
+     "GM": 0.46267273646574275
+    },
+    "corr_WMoffset_vs_meancos2": 0.16450914948149312
    },
    "LTE b2000": {
-    "eta_permille": 11.768388827158255,
-    "eps_sd": 0.021185148434265808,
-    "eps_mean": -0.07871230616957231,
-    "gain_sd_permille": 17.149732578872655,
+    "eta_permille": 13.453237725290387,
+    "eps_sd": 0.012017367720113107,
+    "eps_mean": -0.07111234997963183,
+    "gain_sd_permille": 3.1911623468035093,
     "rows": {
      "raw": {
-      "WM_sd": 5.707528187184786,
-      "GM_sd": 3.472840124060666
+      "WM_sd": 4.376390146372875,
+      "GM_sd": 3.426200646245938
      },
      "minus angle": {
-      "WM_sd": 5.678975158073693,
-      "GM_sd": 3.472840124060666
+      "WM_sd": 4.326416417659385,
+      "GM_sd": 3.426200646245938
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 4.459003136127219,
-      "GM_sd": 4.411143130199823
+      "WM_sd": 3.208936260925951,
+      "GM_sd": 3.198013677470233
      },
      "minus angle, gain only": {
-      "WM_sd": 3.15080221531662,
-      "GM_sd": 3.1752692570186136
+      "WM_sd": 2.4018460109803668,
+      "GM_sd": 2.222591053506221
      },
      "minus angle, b-error only": {
-      "WM_sd": 4.239151514937987,
-      "GM_sd": 6.381676385453348
+      "WM_sd": 5.1683794027968935,
+      "GM_sd": 3.546339125949192
      }
     },
-    "corr_WMoffset_vs_meancos2": 0.14564081203823792
+    "corr_WM_GM_offsets": 0.31970089799628326,
+    "slope_WM_on_GM": 0.4083636669996304,
+    "noise_floor_volume_mean": {
+     "WM": 2.8171680658077296,
+     "GM": 0.9633955971234451
+    },
+    "corr_WMoffset_vs_meancos2": 0.21410174434445817
    },
    "STE b1000": {
     "eta_permille": 0.0,
-    "eps_sd": 0.022427404530866075,
-    "eps_mean": 0.14281003471200246,
-    "gain_sd_permille": 16.47863372773495,
+    "eps_sd": 0.036993878816653,
+    "eps_mean": 0.15739320264077358,
+    "gain_sd_permille": 5.781234582405342,
     "rows": {
      "raw": {
-      "WM_sd": 8.417528751246145,
-      "GM_sd": 5.152974456818818
+      "WM_sd": 7.121839949387841,
+      "GM_sd": 5.036228275303367
      },
      "minus angle": {
-      "WM_sd": 8.417528751246145,
-      "GM_sd": 5.152974456818818
+      "WM_sd": 7.121839949387841,
+      "GM_sd": 5.036228275303367
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 2.3231731889253333,
-      "GM_sd": 1.411970190302961
+      "WM_sd": 1.5255024138975566,
+      "GM_sd": 0.9070341249132258
      },
      "minus angle, gain only": {
-      "WM_sd": 2.3328520655402434,
-      "GM_sd": 1.4146169823727073
+      "WM_sd": 1.5386614550697912,
+      "GM_sd": 0.9146061951210155
      },
      "minus angle, b-error only": {
-      "WM_sd": 2.3746850251018046,
-      "GM_sd": 1.4159531781178454
+      "WM_sd": 7.02038621579586,
+      "GM_sd": 5.1119203785494625
      }
+    },
+    "corr_WM_GM_offsets": 0.9767388170938535,
+    "slope_WM_on_GM": 1.381227606740644,
+    "noise_floor_volume_mean": {
+     "WM": 1.313296325290793,
+     "GM": 0.19832008055842362
     },
     "corr_WMoffset_vs_meancos2": null
    },
    "STE b1500": {
     "eta_permille": 0.0,
-    "eps_sd": 0.028525100785324813,
-    "eps_mean": -0.004943716051101944,
-    "gain_sd_permille": 31.397039087025,
+    "eps_sd": 0.02251438373656019,
+    "eps_mean": -0.014234295385098236,
+    "gain_sd_permille": 6.650931801220054,
     "rows": {
      "raw": {
-      "WM_sd": 9.787140597696864,
-      "GM_sd": 6.6683493860848895
+      "WM_sd": 8.161841015884885,
+      "GM_sd": 6.605352293517996
      },
      "minus angle": {
-      "WM_sd": 9.787140597696864,
-      "GM_sd": 6.6683493860848895
+      "WM_sd": 8.161841015884885,
+      "GM_sd": 6.605352293517996
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 5.111806949738868,
-      "GM_sd": 2.922244395047209
+      "WM_sd": 4.61286766969067,
+      "GM_sd": 2.5667862234373913
      },
      "minus angle, gain only": {
-      "WM_sd": 4.414358007240577,
-      "GM_sd": 2.5316352726514584
+      "WM_sd": 3.6942667984804944,
+      "GM_sd": 2.0694708226106813
      },
      "minus angle, b-error only": {
-      "WM_sd": 4.974118624631894,
-      "GM_sd": 2.491516095247904
+      "WM_sd": 7.788488004253811,
+      "GM_sd": 7.307067707972518
      }
+    },
+    "corr_WM_GM_offsets": 0.7143721115041097,
+    "slope_WM_on_GM": 0.8827071352424677,
+    "noise_floor_volume_mean": {
+     "WM": 3.0302721116484874,
+     "GM": 0.6209910618918564
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "01-02": {
+   "LTE b1000": {
+    "eta_permille": 38.896921837790295,
+    "eps_sd": 0.015240615652931713,
+    "eps_mean": -3.0165586856642197e-05,
+    "gain_sd_permille": 1.756273665813936,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.582659137569782,
+      "GM_sd": 2.2034739666763037
+     },
+     "minus angle": {
+      "WM_sd": 2.317320554125413,
+      "GM_sd": 2.2034739666763037
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.1236051812346088,
+      "GM_sd": 1.0120668367745187
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.5341204929363759,
+      "GM_sd": 1.3237442835334727
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.13502809381522,
+      "GM_sd": 1.9607135758513603
+     }
+    },
+    "corr_WM_GM_offsets": 0.22238709303885412,
+    "slope_WM_on_GM": 0.2606566116053202,
+    "noise_floor_volume_mean": {
+     "WM": 0.6112795979421688,
+     "GM": 0.5911293228377017
+    },
+    "corr_WMoffset_vs_meancos2": 0.4448274881036329
+   },
+   "LTE b1500": {
+    "eta_permille": 12.051580566780059,
+    "eps_sd": 0.015106134623954628,
+    "eps_mean": 0.00048579390116377293,
+    "gain_sd_permille": 1.8708179310924256,
+    "rows": {
+     "raw": {
+      "WM_sd": 1.7652483575921452,
+      "GM_sd": 2.6296869423985654
+     },
+     "minus angle": {
+      "WM_sd": 1.8315040587532063,
+      "GM_sd": 2.6296869423985654
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.2305325155452616,
+      "GM_sd": 1.3215333664288127
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.233498746476421,
+      "GM_sd": 1.2863960474352127
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.2245721039701145,
+      "GM_sd": 2.278237969967073
+     }
+    },
+    "corr_WM_GM_offsets": 0.41830972251788806,
+    "slope_WM_on_GM": 0.28080169495993595,
+    "noise_floor_volume_mean": {
+     "WM": 0.8139988695353408,
+     "GM": 0.4442188775346169
+    },
+    "corr_WMoffset_vs_meancos2": -0.13358627790803654
+   },
+   "LTE b2000": {
+    "eta_permille": 4.120671565351708,
+    "eps_sd": 0.01011508047412575,
+    "eps_mean": -0.06231211941464036,
+    "gain_sd_permille": 3.475789987106775,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.199722248948709,
+      "GM_sd": 3.6169116813280335
+     },
+     "minus angle": {
+      "WM_sd": 4.184503496235021,
+      "GM_sd": 3.6169116813280335
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.9844739376260003,
+      "GM_sd": 2.6012636795268715
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.6954241572281958,
+      "GM_sd": 2.062312127867457
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.134110120748132,
+      "GM_sd": 4.153358833702086
+     }
+    },
+    "corr_WM_GM_offsets": 0.555556604890861,
+    "slope_WM_on_GM": 0.6450761422114331,
+    "noise_floor_volume_mean": {
+     "WM": 1.3119570798729538,
+     "GM": 0.7535408480661043
+    },
+    "corr_WMoffset_vs_meancos2": 0.12354659868201687
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.03753946836584001,
+    "eps_mean": 0.15726016640580362,
+    "gain_sd_permille": 6.023493303201543,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.694874872983673,
+      "GM_sd": 5.676971087689333
+     },
+     "minus angle": {
+      "WM_sd": 6.694874872983673,
+      "GM_sd": 5.676971087689333
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.3870669275044798,
+      "GM_sd": 1.08311583240353
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.37779303013592,
+      "GM_sd": 1.0798510810745028
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.62740844154747,
+      "GM_sd": 5.742091455433175
+     }
+    },
+    "corr_WM_GM_offsets": 0.9341713771499497,
+    "slope_WM_on_GM": 1.1016720683154566,
+    "noise_floor_volume_mean": {
+     "WM": 0.6717669900616802,
+     "GM": 0.4274552630612352
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.01900888475638902,
+    "eps_mean": -0.062700125961504,
+    "gain_sd_permille": 5.051825827286226,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.670870645190125,
+      "GM_sd": 4.506058345541443
+     },
+     "minus angle": {
+      "WM_sd": 6.670870645190125,
+      "GM_sd": 4.506058345541443
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.6853254666823823,
+      "GM_sd": 2.020223255817496
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.6234758384876384,
+      "GM_sd": 1.9764706998313712
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.725831245957975,
+      "GM_sd": 4.492576145662197
+     }
+    },
+    "corr_WM_GM_offsets": 0.7259966045046976,
+    "slope_WM_on_GM": 1.0747817862345403,
+    "noise_floor_volume_mean": {
+     "WM": 0.6231830076195874,
+     "GM": 0.45336910228461935
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "01-03": {
+   "LTE b1000": {
+    "eta_permille": 48.970383787405886,
+    "eps_sd": 0.014060736096879864,
+    "eps_mean": 0.1098602824500261,
+    "gain_sd_permille": 1.5353510793822591,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.9651570226516415,
+      "GM_sd": 1.7111921413623228
+     },
+     "minus angle": {
+      "WM_sd": 2.731133633382576,
+      "GM_sd": 1.7111921413623228
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.4745022641443022,
+      "GM_sd": 0.9914197125691379
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.8606897031065457,
+      "GM_sd": 1.490982264884481
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 1.798034563385089,
+      "GM_sd": 2.0370130544640466
+     }
+    },
+    "corr_WM_GM_offsets": 0.08381954431199104,
+    "slope_WM_on_GM": 0.14524266705332692,
+    "noise_floor_volume_mean": {
+     "WM": 1.3630132078677255,
+     "GM": 0.2722212534858335
+    },
+    "corr_WMoffset_vs_meancos2": 0.45037231079005924
+   },
+   "LTE b1500": {
+    "eta_permille": 49.10882451476593,
+    "eps_sd": 0.01313693429647029,
+    "eps_mean": 0.03214322689476563,
+    "gain_sd_permille": 2.0945536176437862,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.0165890088299046,
+      "GM_sd": 2.3018563366319404
+     },
+     "minus angle": {
+      "WM_sd": 2.8552534178319506,
+      "GM_sd": 2.3018563366319404
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.8136704623001267,
+      "GM_sd": 1.526260478977254
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.6364206083436563,
+      "GM_sd": 1.4739897167708227
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 3.359533867927725,
+      "GM_sd": 1.899850208124713
+     }
+    },
+    "corr_WM_GM_offsets": 0.3237266142010478,
+    "slope_WM_on_GM": 0.4242446110661636,
+    "noise_floor_volume_mean": {
+     "WM": 1.3769632086719632,
+     "GM": 0.45467216619497725
+    },
+    "corr_WMoffset_vs_meancos2": 0.33243802855436116
+   },
+   "LTE b2000": {
+    "eta_permille": -17.485064282637477,
+    "eps_sd": 0.011692466925533657,
+    "eps_mean": -0.09798397783270228,
+    "gain_sd_permille": 2.472699655414716,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.544358615564037,
+      "GM_sd": 3.178410888945722
+     },
+     "minus angle": {
+      "WM_sd": 3.6646556438590854,
+      "GM_sd": 3.178410888945722
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.7364307537156165,
+      "GM_sd": 2.7084380970144784
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.4315181169066347,
+      "GM_sd": 2.2909537601557
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.026600307954589,
+      "GM_sd": 3.4292046093165935
+     }
+    },
+    "corr_WM_GM_offsets": 0.07231580777190719,
+    "slope_WM_on_GM": 0.08064191990068706,
+    "noise_floor_volume_mean": {
+     "WM": 2.5365711115111145,
+     "GM": 0.849368959301673
+    },
+    "corr_WMoffset_vs_meancos2": 0.11605848715590578
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.030172564677156406,
+    "eps_mean": 0.1811621429139666,
+    "gain_sd_permille": 5.316531669847003,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.783802227592742,
+      "GM_sd": 4.660984179886057
+     },
+     "minus angle": {
+      "WM_sd": 6.783802227592742,
+      "GM_sd": 4.660984179886057
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.0510748510203753,
+      "GM_sd": 1.232827598150677
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.0761068453209823,
+      "GM_sd": 1.2454327000232606
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.753754298823145,
+      "GM_sd": 4.674253086967967
+     }
+    },
+    "corr_WM_GM_offsets": 0.8968182577375017,
+    "slope_WM_on_GM": 1.3052689002549298,
+    "noise_floor_volume_mean": {
+     "WM": 1.3650644682022088,
+     "GM": 0.4259533793448947
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.013871238111369985,
+    "eps_mean": -0.017857477494616674,
+    "gain_sd_permille": 4.725258429315162,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.841669364364875,
+      "GM_sd": 5.082868195447642
+     },
+     "minus angle": {
+      "WM_sd": 4.841669364364875,
+      "GM_sd": 5.082868195447642
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.4256713746870724,
+      "GM_sd": 1.3571978992168956
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.161518204427472,
+      "GM_sd": 1.214952873649124
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.697565462600079,
+      "GM_sd": 5.255483823476414
+     }
+    },
+    "corr_WM_GM_offsets": 0.769557438021591,
+    "slope_WM_on_GM": 0.7330394038400055,
+    "noise_floor_volume_mean": {
+     "WM": 2.474406569527914,
+     "GM": 0.8117943318279447
     },
     "corr_WMoffset_vs_meancos2": null
    }
   },
   "02-01": {
    "LTE b1000": {
-    "eta_permille": 15.511384330837622,
-    "eps_sd": 0.021523026573573883,
-    "eps_mean": 0.052129647797148806,
-    "gain_sd_permille": 13.86698863111486,
+    "eta_permille": 14.31553114005347,
+    "eps_sd": 0.014792563495876715,
+    "eps_mean": 0.059282331139013114,
+    "gain_sd_permille": 2.3624432361245438,
     "rows": {
      "raw": {
-      "WM_sd": 3.5878861664670842,
-      "GM_sd": 2.7566607847551374
+      "WM_sd": 2.6863179920405686,
+      "GM_sd": 2.816177823178843
      },
      "minus angle": {
-      "WM_sd": 3.598528392327468,
-      "GM_sd": 2.7566607847551374
+      "WM_sd": 2.7224992860271113,
+      "GM_sd": 2.816177823178843
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 1.3543550241431281,
-      "GM_sd": 1.008342219084001
+      "WM_sd": 1.160812517826994,
+      "GM_sd": 0.8376074888830333
      },
      "minus angle, gain only": {
-      "WM_sd": 2.286328604868264,
-      "GM_sd": 1.6606737508001383
+      "WM_sd": 2.0216848697160392,
+      "GM_sd": 1.372712353771941
      },
      "minus angle, b-error only": {
-      "WM_sd": 3.086704083619256,
-      "GM_sd": 1.1669973435324528
+      "WM_sd": 2.547360232373315,
+      "GM_sd": 2.5730661239538906
      }
     },
-    "corr_WMoffset_vs_meancos2": 0.07348606290678969
+    "corr_WM_GM_offsets": 0.12443497126623175,
+    "slope_WM_on_GM": 0.11869701529508192,
+    "noise_floor_volume_mean": {
+     "WM": 0.573760971193923,
+     "GM": 0.25422760499621416
+    },
+    "corr_WMoffset_vs_meancos2": 0.020382102523080807
    },
    "LTE b1500": {
-    "eta_permille": 85.47374756150903,
-    "eps_sd": 0.023612469058906873,
-    "eps_mean": 0.08297345198369929,
-    "gain_sd_permille": 18.32895893487546,
+    "eta_permille": 90.62032191478367,
+    "eps_sd": 0.019410154552577125,
+    "eps_mean": 0.09152635752693966,
+    "gain_sd_permille": 2.48448653157098,
     "rows": {
      "raw": {
-      "WM_sd": 6.077282640315752,
-      "GM_sd": 3.456413941527482
+      "WM_sd": 6.080437934203074,
+      "GM_sd": 3.071428857533082
      },
      "minus angle": {
-      "WM_sd": 4.4680572962771645,
-      "GM_sd": 3.456413941527482
+      "WM_sd": 3.9467263359701104,
+      "GM_sd": 3.071428857533082
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 2.941436812532593,
-      "GM_sd": 2.5738000292261045
+      "WM_sd": 2.8712460970238856,
+      "GM_sd": 2.504540259231936
      },
      "minus angle, gain only": {
-      "WM_sd": 3.4123923326705645,
-      "GM_sd": 2.5099576820912297
+      "WM_sd": 3.0684753749132576,
+      "GM_sd": 2.06580583832484
      },
      "minus angle, b-error only": {
-      "WM_sd": 4.170284187327869,
-      "GM_sd": 1.6133785171834105
+      "WM_sd": 4.312945096298206,
+      "GM_sd": 2.951562383003458
      }
     },
-    "corr_WMoffset_vs_meancos2": 0.7264012263602401
+    "corr_WM_GM_offsets": -0.3410150752090737,
+    "slope_WM_on_GM": -0.6750997973958568,
+    "noise_floor_volume_mean": {
+     "WM": 1.3449912127222876,
+     "GM": 0.502673877355288
+    },
+    "corr_WMoffset_vs_meancos2": 0.8069225940577783
    },
    "LTE b2000": {
-    "eta_permille": -27.73951308109513,
-    "eps_sd": 0.012550361301694225,
-    "eps_mean": -0.07355421295557976,
-    "gain_sd_permille": 11.218533258667264,
+    "eta_permille": -31.75037395892795,
+    "eps_sd": 0.008660637275626605,
+    "eps_mean": -0.07184910138524393,
+    "gain_sd_permille": 4.532044701015963,
     "rows": {
      "raw": {
-      "WM_sd": 5.43108879329796,
-      "GM_sd": 5.05021226012634
+      "WM_sd": 5.340583920295983,
+      "GM_sd": 4.68343675932709
      },
      "minus angle": {
-      "WM_sd": 5.340093741082913,
-      "GM_sd": 5.05021226012634
+      "WM_sd": 5.15493801429397,
+      "GM_sd": 4.68343675932709
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 3.439848641207458,
-      "GM_sd": 4.234047072630529
+      "WM_sd": 2.537463398182602,
+      "GM_sd": 3.219254558758224
      },
      "minus angle, gain only": {
-      "WM_sd": 2.831882125861522,
-      "GM_sd": 2.9101490652218103
+      "WM_sd": 2.0607215710181266,
+      "GM_sd": 1.928965671341002
      },
      "minus angle, b-error only": {
-      "WM_sd": 4.082123565966318,
-      "GM_sd": 4.13406153318077
+      "WM_sd": 5.9747765067941785,
+      "GM_sd": 4.794619589048207
      }
     },
-    "corr_WMoffset_vs_meancos2": -0.15836209648984262
+    "corr_WM_GM_offsets": 0.5897125703050096,
+    "slope_WM_on_GM": 0.672456922642391,
+    "noise_floor_volume_mean": {
+     "WM": 1.4133633436734916,
+     "GM": 0.556427981472677
+    },
+    "corr_WMoffset_vs_meancos2": -0.2380811138527819
    },
    "STE b1000": {
     "eta_permille": 0.0,
-    "eps_sd": 0.045485259778181644,
-    "eps_mean": 0.13862112173870372,
-    "gain_sd_permille": 38.59379984905331,
+    "eps_sd": 0.0368262261187968,
+    "eps_mean": 0.12809240997746787,
+    "gain_sd_permille": 2.7799108365007736,
     "rows": {
      "raw": {
-      "WM_sd": 3.181760593339615,
-      "GM_sd": 3.5981173896555947
+      "WM_sd": 2.7770266556630925,
+      "GM_sd": 3.0271268683099146
      },
      "minus angle": {
-      "WM_sd": 3.181760593339615,
-      "GM_sd": 3.5981173896555947
+      "WM_sd": 2.7770266556630925,
+      "GM_sd": 3.0271268683099146
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 1.2483129509436641,
-      "GM_sd": 0.7551587801991572
+      "WM_sd": 1.3771233716420213,
+      "GM_sd": 0.8126029907844742
      },
      "minus angle, gain only": {
-      "WM_sd": 1.0672347740683739,
-      "GM_sd": 0.6477455958823227
+      "WM_sd": 1.2259568523659865,
+      "GM_sd": 0.7251706815835314
      },
      "minus angle, b-error only": {
-      "WM_sd": 0.9869970444492694,
-      "GM_sd": 0.9619039557588135
+      "WM_sd": 2.716053322995105,
+      "GM_sd": 3.118077281452813
      }
+    },
+    "corr_WM_GM_offsets": 0.7772938022626874,
+    "slope_WM_on_GM": 0.713074047461498,
+    "noise_floor_volume_mean": {
+     "WM": 0.6233657980891355,
+     "GM": 0.22070270904464484
     },
     "corr_WMoffset_vs_meancos2": null
    },
    "STE b1500": {
     "eta_permille": 0.0,
-    "eps_sd": 0.034971237661162204,
-    "eps_mean": -0.024631389279306904,
-    "gain_sd_permille": 41.94113329690467,
+    "eps_sd": 0.024260229113165954,
+    "eps_mean": -0.028743215768665863,
+    "gain_sd_permille": 2.8780911953795725,
     "rows": {
      "raw": {
-      "WM_sd": 5.3802599558846245,
-      "GM_sd": 4.664199612482104
+      "WM_sd": 3.56598118133867,
+      "GM_sd": 3.8211364357107422
      },
      "minus angle": {
-      "WM_sd": 5.3802599558846245,
-      "GM_sd": 4.664199612482104
+      "WM_sd": 3.56598118133867,
+      "GM_sd": 3.8211364357107422
      },
      "minus angle, gain, b-error": {
-      "WM_sd": 3.273767052042467,
-      "GM_sd": 1.9836377588185115
+      "WM_sd": 2.2305774624376644,
+      "GM_sd": 1.319719298101946
      },
      "minus angle, gain only": {
-      "WM_sd": 4.02734279672073,
-      "GM_sd": 2.4455778351293276
+      "WM_sd": 3.0788508022427026,
+      "GM_sd": 1.8257343572706093
      },
      "minus angle, b-error only": {
-      "WM_sd": 3.4192458426523484,
-      "GM_sd": 3.3226053604288164
+      "WM_sd": 3.646849798990569,
+      "GM_sd": 3.160851731511907
      }
+    },
+    "corr_WM_GM_offsets": 0.11971441180372773,
+    "slope_WM_on_GM": 0.11172051739307198,
+    "noise_floor_volume_mean": {
+     "WM": 1.2637978097494629,
+     "GM": 0.2031193829438767
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "06-01": {
+   "LTE b1000": {
+    "eta_permille": 52.262533768387605,
+    "eps_sd": 0.012566769243477615,
+    "eps_mean": 0.08907654982877236,
+    "gain_sd_permille": 2.3894188393643847,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.2246403773966428,
+      "GM_sd": 2.5235902312920304
+     },
+     "minus angle": {
+      "WM_sd": 2.9997673474204194,
+      "GM_sd": 2.5235902312920304
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.1560897633467242,
+      "GM_sd": 0.8480436276424235
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.721901101673679,
+      "GM_sd": 1.2271990763258536
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.477838267046167,
+      "GM_sd": 2.6623209925705473
+     }
+    },
+    "corr_WM_GM_offsets": 0.29109076315791743,
+    "slope_WM_on_GM": 0.371955405725931,
+    "noise_floor_volume_mean": {
+     "WM": 0.6500624267571498,
+     "GM": 0.3210281224671882
+    },
+    "corr_WMoffset_vs_meancos2": 0.43602048320229175
+   },
+   "LTE b1500": {
+    "eta_permille": 43.83018868964336,
+    "eps_sd": 0.028962717425230846,
+    "eps_mean": 0.03954244314251571,
+    "gain_sd_permille": 4.225374555409515,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.5440686238677728,
+      "GM_sd": 6.885237709808311
+     },
+     "minus angle": {
+      "WM_sd": 2.3701846036289234,
+      "GM_sd": 6.885237709808311
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.595703195512824,
+      "GM_sd": 2.5424661185941044
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.2961444685831363,
+      "GM_sd": 3.015660261578863
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 5.88182831214721,
+      "GM_sd": 3.7552989119858986
+     }
+    },
+    "corr_WM_GM_offsets": 0.3301636234774152,
+    "slope_WM_on_GM": 0.12199417807097998,
+    "noise_floor_volume_mean": {
+     "WM": 1.4671843748158886,
+     "GM": 0.7399173449476442
+    },
+    "corr_WMoffset_vs_meancos2": 0.4742282969083959
+   },
+   "LTE b2000": {
+    "eta_permille": -12.649799608661453,
+    "eps_sd": 0.012143723379504904,
+    "eps_mean": -0.0829213522096665,
+    "gain_sd_permille": 5.699378782020757,
+    "rows": {
+     "raw": {
+      "WM_sd": 5.139379193714656,
+      "GM_sd": 6.91237788977706
+     },
+     "minus angle": {
+      "WM_sd": 5.163736154843038,
+      "GM_sd": 6.91237788977706
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.629747805178484,
+      "GM_sd": 3.0748510742078956
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.0056613363587896,
+      "GM_sd": 2.0498649528289374
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.981821805124358,
+      "GM_sd": 5.3295533993210285
+     }
+    },
+    "corr_WM_GM_offsets": 0.8257527662890775,
+    "slope_WM_on_GM": 0.6139503154905324,
+    "noise_floor_volume_mean": {
+     "WM": 2.088511542843136,
+     "GM": 0.6126053209816583
+    },
+    "corr_WMoffset_vs_meancos2": -0.026574362620318735
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.08576366251569437,
+    "eps_mean": 0.08583196120006384,
+    "gain_sd_permille": 9.271624481083517,
+    "rows": {
+     "raw": {
+      "WM_sd": 14.022751754780627,
+      "GM_sd": 7.310724709044778
+     },
+     "minus angle": {
+      "WM_sd": 14.022751754780627,
+      "GM_sd": 7.310724709044778
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 5.228858513853386,
+      "GM_sd": 3.023777001772794
+     },
+     "minus angle, gain only": {
+      "WM_sd": 5.868085228512658,
+      "GM_sd": 3.39406816077682
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 13.316393274964792,
+      "GM_sd": 7.62356715814842
+     }
+    },
+    "corr_WM_GM_offsets": 0.8013202675513039,
+    "slope_WM_on_GM": 1.5370179613033905,
+    "noise_floor_volume_mean": {
+     "WM": 0.8662522514806029,
+     "GM": 0.26815576517954065
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.037446166737282995,
+    "eps_mean": -0.042550244750624105,
+    "gain_sd_permille": 6.49636733904087,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.611128654378552,
+      "GM_sd": 9.495524864078844
+     },
+     "minus angle": {
+      "WM_sd": 6.611128654378552,
+      "GM_sd": 9.495524864078844
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 7.734533054877292,
+      "GM_sd": 4.621203584637383
+     },
+     "minus angle, gain only": {
+      "WM_sd": 7.1384779450611635,
+      "GM_sd": 4.280603522608146
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 7.434628910166441,
+      "GM_sd": 9.57805439417349
+     }
+    },
+    "corr_WM_GM_offsets": 0.027778489910834907,
+    "slope_WM_on_GM": 0.0193403917375448,
+    "noise_floor_volume_mean": {
+     "WM": 1.5664204079599466,
+     "GM": 0.6078540638027115
     },
     "corr_WMoffset_vs_meancos2": null
    }
@@ -304,78 +895,78 @@
  },
  "cross_session": {
   "LTE b1000": {
-   "min_abs_bvec_dot": 0.9999142100851918,
+   "min_abs_bvec_dot": 0.99991314954451,
    "eps": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.40984283517497144
+    "same_subject_mean_r": 0.3656113788473008,
+    "different_subject_mean_r": 0.13863644765281266
    },
    "gain": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.4408792344530247
+    "same_subject_mean_r": 0.45661783891782276,
+    "different_subject_mean_r": 0.21345926766030954
    },
    "wm_offset": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.12071802062349374
+    "same_subject_mean_r": 0.6177650808285039,
+    "different_subject_mean_r": -0.08018528424681204
    }
   },
   "LTE b1500": {
    "min_abs_bvec_dot": 0.9993259304670508,
    "eps": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.07969446903072103
+    "same_subject_mean_r": 0.19936793304295586,
+    "different_subject_mean_r": 0.140855499596126
    },
    "gain": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.04803697075960674
+    "same_subject_mean_r": 0.544016727888398,
+    "different_subject_mean_r": 0.24289659985196968
    },
    "wm_offset": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.08507059041129611
+    "same_subject_mean_r": 0.1575463215406627,
+    "different_subject_mean_r": 0.10202089427238771
    }
   },
   "LTE b2000": {
    "min_abs_bvec_dot": 0.9999528006118208,
    "eps": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.0961918524207522
+    "same_subject_mean_r": 0.26003069205234275,
+    "different_subject_mean_r": 0.11355358337893014
    },
    "gain": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.008087877678794831
+    "same_subject_mean_r": 0.519810186740264,
+    "different_subject_mean_r": 0.28165943970632995
    },
    "wm_offset": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.0238526190004757
+    "same_subject_mean_r": 0.25337509105417205,
+    "different_subject_mean_r": 0.058390952462512455
    }
   },
   "STE b1000": {
    "min_abs_bvec_dot": 1.0,
    "eps": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.3723841079872989
+    "same_subject_mean_r": -0.2472061815906449,
+    "different_subject_mean_r": -0.048747217520498834
    },
    "gain": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.06557914649754669
+    "same_subject_mean_r": 0.9473518489081982,
+    "different_subject_mean_r": 0.6729290929720245
    },
    "wm_offset": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.6661854188921604
+    "same_subject_mean_r": 0.9047733982401925,
+    "different_subject_mean_r": 0.43178398692148606
    }
   },
   "STE b1500": {
    "min_abs_bvec_dot": 1.0,
    "eps": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.5433047502884083
+    "same_subject_mean_r": -0.27557232777162216,
+    "different_subject_mean_r": -0.0006965088753603878
    },
    "gain": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": -0.42962972657707327
+    "same_subject_mean_r": 0.9132273814694108,
+    "different_subject_mean_r": 0.8457974423507324
    },
    "wm_offset": {
-    "same_subject_mean_r": null,
-    "different_subject_mean_r": 0.1136299825771271
+    "same_subject_mean_r": 0.8032306775696973,
+    "different_subject_mean_r": 0.1517434604372167
    }
   }
  }

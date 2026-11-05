@@ -37,9 +37,10 @@ from qtilab.tensors import mat3  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("--sessions", nargs="*", default=["01-01", "01-02", "01-03", "02-01", "06-01"])
 ap.add_argument("--max-vox", type=int, default=60000)
+ap.add_argument("--tag", default="")
 args = ap.parse_args()
 torch.set_num_threads(2)
-RUNS = {2: "LTE b1000", 3: "LTE b1500", 4: "LTE b2000", 7: "STE b1000", 8: "STE b1500"}
+RUNS = {1: "LTE b100/500", 2: "LTE b1000", 3: "LTE b1500", 4: "LTE b2000", 6: "STE b100/500", 7: "STE b1000", 8: "STE b1500"}
 run_of = np.concatenate([[i] * n for i, n in enumerate([13, 10, 16, 30, 2, 12, 9, 15], 1)])
 rng = np.random.default_rng(0)
 
@@ -87,7 +88,7 @@ for sess in args.sessions:
     fiber = np.linalg.eigh(mat3(p_all[:, 1:7]).numpy())[1][..., -1]
     res = {}
     for run, label in RUNS.items():
-        vols = np.flatnonzero(run_of == run)
+        vols = np.flatnonzero((run_of == run) & (bvals >= 50))
         R, Dd, C2 = [], [], []
         for v in vols:
             lp, d, _ = loo(S, prot, v)
@@ -143,7 +144,7 @@ for sess in args.sessions:
                       "corr_WM_GM_offsets": float(np.corrcoef(om, og)[0, 1]),
                       "slope_WM_on_GM": float(np.polyfit(og, om, 1)[0]), "noise_floor_volume_mean": floor,
                       "corr_WMoffset_vs_meancos2": float(np.corrcoef(om, cwm)[0, 1]) if label.startswith("LTE") else None}
-        per_volume[(sess, label)] = {"eps": e_v, "gain": a_v, "wm_offset": om, "bvecs": bvecs[:, vols]}
+        per_volume[(sess, label)] = {"eps": e_v, "gain": a_v, "wm_offset": om, "gm_offset": og, "bvecs": bvecs[:, vols], "bvals": bvals[vols], "volumes": vols}
         r4 = res[label]["rows"]
         print(f"{sess} {label}: WM vol-sd {r4['raw']['WM_sd']:.1f} -> angle {r4['minus angle']['WM_sd']:.1f} -> "
               f"+gain&b {r4['minus angle, gain, b-error']['WM_sd']:.1f} (gain only {r4['minus angle, gain only']['WM_sd']:.1f}, "
@@ -172,4 +173,5 @@ for label in RUNS.values():
     print(f"cross-session {label} (min |bvec dot| {same:.3f}): " + "; ".join(
         f"{q} r same-subj {v['same_subject_mean_r'] if v['same_subject_mean_r'] is None else round(v['same_subject_mean_r'], 2)}, "
         f"diff-subj {round(v['different_subject_mean_r'], 2)}" for q, v in cs.items()), flush=True)
-json.dump(out, open("results/volume_offsets.json", "w"), indent=1)
+out["per_volume"] = {f"{k[0]}|{k[1]}": {q: np.asarray(v).tolist() for q, v in d.items() if q != "bvecs"} for k, d in per_volume.items()}
+json.dump(out, open(f"results/volume_offsets{args.tag}.json", "w"), indent=1)
