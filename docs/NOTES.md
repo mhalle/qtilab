@@ -593,3 +593,32 @@ WM STE held-out error, noise units (bias), no time dependence → r = 4 WM-only:
 2. **The b = 2000 volume offsets are not motion or correctable eddy** in any subject (sd barely changes).
 3. **Within-run STE shifts along PE are subject-dependent.** They are large in sub-01 and sub-06 (up to ~1 mm) and small in sub-02. They grow from run 6 to run 8 in all three, but **b-value and acquisition time are confounded** (STE runs are acquired in b order), so "eddy from STE waveforms" and "drift over time" cannot be separated here.
 4. **The noise drop splits roughly as** about 6% from interpolation smoothing (sub-02, little to correct) plus about 15% from real correction of STE shifts (sub-01, sub-06).
+
+## 2026-11-05: What the volume-level offsets are: a reproducible per-volume level, period 3 in STE
+
+`scripts/volume_offsets.py` predicts each diffusion-weighted volume from a leave-one-volume-out WLS QTI fit to all the others (no k-NN, so no angular blur). The log residual per voxel is then explained per run by:
+- a per-volume **gain** (shared by all tissue);
+- a per-volume **b-error** (residual ∝ d ln S / d ln b, centered so it is separable from the gain);
+- a **fiber-angle** term (one slope per run, WM only; real fiber orientations are not uniform, so this can make WM-only volume offsets without any acquisition error).
+
+Five sessions (sub-01 ses-01/02/03, sub-02 ses-01, sub-06 ses-01), 15–30k tissue voxels each. `scripts/volume_offsets_followup.py` tests drift vs systematic, b-scaling, cross-session reproducibility and the effect on α(b). Figure: `results/volume_offsets_pattern.png`.
+
+**Findings**
+1. **The fiber-angle term explains almost nothing at b = 2000** (it matters only in a couple of b1000/b1500 runs). The volume offsets are not anatomy interacting with predictor bias.
+2. **WM and GM offsets move together** (STE r 0.8–0.98, slope ~1; LTE b2000 r up to 0.8). A per-volume level removes most of the structure, down to near the split-half noise floor of a volume mean. A separate b-error term adds nothing (in STE it cannot be separated from a gain, since WM and GM MD are similar).
+3. **STE: a period-3 pattern** (low, high, middle), repeating through every STE run.
+   - Peak-to-peak about 10–15‰ at b ≥ 500.
+   - Lag-1 autocorrelation −0.4 to −0.56, far below the permutation null, so it is not drift.
+   - Each session's pattern correlates r = 0.62–0.97 with the mean of the other sessions, across three subjects.
+   - Most likely the STE waveform is played in three rotations, and each rotation has a slightly different effective trace b (about 1–1.5% at b = 1000) or signal level: gradient-axis calibration, gradient nonlinearity or concomitant fields.
+4. **LTE: weaker and less reproducible.** The gain sd grows with b (1.4‰ at b100 to 4.0‰ at b2000), with leave-one-session-out r 0.2–0.7. This is consistent with a per-direction effective b error plus session-specific effects. These are the b = 2000 "volume-level offsets" of diagnostic B: not motion, not eddy, not anatomy.
+5. **α(b) is not materially inflated** by these offsets. Removing the other sessions' STE gain template changes α only at the grid resolution: 0.5% level offsets are small next to thermal noise (sd ~1.7% of b0) and α ~1–2%.
+6. **H5 is not affected.**
+   - The offsets are shared by WM and GM, and they average out over the balanced rotations in each STE shell.
+   - A common STE b-scale error would hit GM equally, but the deficit is WM-specific (−18 to −24 vs about −2 in GM).
+   - Residual waveform anisotropy, averaged over rotations, would make WM STE signal higher, not lower (Jensen).
+
+**Implications**
+- These are acquisition fingerprints that recur across subjects: a cohort-level per-volume calibration (a gain template per protocol volume) is cheap and removes them.
+- They are a clean example of a non-anatomical, reproducible "anomaly", relevant to the anomaly framework discussion.
+- With real waveforms (handoff item 6) the period-3 pattern could be checked against each rotation's actual b-tensor.

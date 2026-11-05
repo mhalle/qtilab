@@ -81,7 +81,7 @@ GPU runs belong on Modal or the Apple-Silicon GPU (`device="mps"`).
    - Open:
      - run on the cohort (GPU, `--device mps`);
      - a waveform-specific STE eddy model (tractline's field is linear in the gradient vector);
-     - check per-direction b-value or gradient-amplitude errors as the source of the volume offsets.
+     - ~~check per-direction b errors~~ done: the offsets are a per-volume level shared by WM and GM. In STE it is a period-3 pattern (three waveform rotations, ~1–1.5% peak-to-peak) reproducible across subjects (`scripts/volume_offsets.py`, `volume_offsets_followup.py`, `results/volume_offsets_pattern.png`). To do: a cohort per-volume gain template as a preprocessing step.
    - Held-out scripts take `--series ec` to read the corrected series.
    - Needs tractline (github.com/mhalle/tractline, v0.11.0): `pip install --no-deps -e path/to/tractline` (scipy ≥ 1.15).
 2. **Rotation-aware predictor.** Plain k-NN on the simulation bank has an algorithmic error floor of about 2 noise sd in coherent WM at b = 2000. Simulated voxels score the same as real ones, so it is not tissue.

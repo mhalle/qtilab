@@ -1,0 +1,4967 @@
+{
+ "runs": {
+  "1": "LTE b100/500",
+  "2": "LTE b1000",
+  "3": "LTE b1500",
+  "4": "LTE b2000",
+  "6": "STE b100/500",
+  "7": "STE b1000",
+  "8": "STE b1500"
+ },
+ "sessions": {
+  "01-01": {
+   "LTE b100/500": {
+    "eta_permille": -10.106437530504849,
+    "eps_sd": 0.07920286994928509,
+    "eps_mean": -0.0962721321039784,
+    "gain_sd_permille": 4.617828301286664,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.47118459215258,
+      "GM_sd": 8.378329805855497
+     },
+     "minus angle": {
+      "WM_sd": 2.6654540384766396,
+      "GM_sd": 8.378329805855497
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.8112695245244312,
+      "GM_sd": 1.5948897799051014
+     },
+     "minus angle, gain only": {
+      "WM_sd": 6.62971368679616,
+      "GM_sd": 3.8571415637067377
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.6731189604733707,
+      "GM_sd": 6.05013113973329
+     }
+    },
+    "corr_WM_GM_offsets": -0.6818817671420836,
+    "slope_WM_on_GM": -0.20112071924569372,
+    "noise_floor_volume_mean": {
+     "WM": 0.8156802946987659,
+     "GM": 0.17735220050142017
+    },
+    "corr_WMoffset_vs_meancos2": -0.1264035890421257
+   },
+   "LTE b1000": {
+    "eta_permille": 107.54473448900474,
+    "eps_sd": 0.020691605822086002,
+    "eps_mean": 0.2465128726584105,
+    "gain_sd_permille": 1.7227550993549807,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.906084859301743,
+      "GM_sd": 1.5738586645733486
+     },
+     "minus angle": {
+      "WM_sd": 3.5697219033818084,
+      "GM_sd": 1.5738586645733486
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.3937355081947196,
+      "GM_sd": 1.498971556037756
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.4543340690579494,
+      "GM_sd": 2.0119826674965235
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.4854012869554727,
+      "GM_sd": 2.5631941746215112
+     }
+    },
+    "corr_WM_GM_offsets": -0.09162738350345087,
+    "slope_WM_on_GM": -0.28562394389179524,
+    "noise_floor_volume_mean": {
+     "WM": 1.51090363944494,
+     "GM": 0.2751535766473678
+    },
+    "corr_WMoffset_vs_meancos2": 0.6926674798627753
+   },
+   "LTE b1500": {
+    "eta_permille": -13.95160745057462,
+    "eps_sd": 0.011063257553006878,
+    "eps_mean": -0.048929163000004036,
+    "gain_sd_permille": 2.744224155433235,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.9757502042340045,
+      "GM_sd": 2.695732778245677
+     },
+     "minus angle": {
+      "WM_sd": 3.0928192576741758,
+      "GM_sd": 2.695732778245677
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.55212807786936,
+      "GM_sd": 1.2904132791348308
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.3101147849451529,
+      "GM_sd": 1.1727945572881047
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 3.268441223013258,
+      "GM_sd": 2.8699426155673917
+     }
+    },
+    "corr_WM_GM_offsets": 0.6595605921075373,
+    "slope_WM_on_GM": 0.7280720042088071,
+    "noise_floor_volume_mean": {
+     "WM": 1.6003164338154579,
+     "GM": 0.5345720419087966
+    },
+    "corr_WMoffset_vs_meancos2": 0.26549104822117914
+   },
+   "LTE b2000": {
+    "eta_permille": 12.855050809456365,
+    "eps_sd": 0.015571509215648531,
+    "eps_mean": -0.07473597244252761,
+    "gain_sd_permille": 3.280367990058951,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.66811858107152,
+      "GM_sd": 3.3889009637214556
+     },
+     "minus angle": {
+      "WM_sd": 4.644652183292842,
+      "GM_sd": 3.3889009637214556
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 3.568081652943117,
+      "GM_sd": 3.7245415552430523
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.533448326359694,
+      "GM_sd": 2.4787130501401595
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 5.75680904891556,
+      "GM_sd": 3.563104488709283
+     }
+    },
+    "corr_WM_GM_offsets": 0.2701731640063853,
+    "slope_WM_on_GM": 0.37215615932904894,
+    "noise_floor_volume_mean": {
+     "WM": 3.2473694066521857,
+     "GM": 0.840199132453794
+    },
+    "corr_WMoffset_vs_meancos2": 0.1512416480713684
+   },
+   "STE b100/500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.5045234244357573,
+    "eps_mean": 0.43240970258490646,
+    "gain_sd_permille": 4.642942960843778,
+    "rows": {
+     "raw": {
+      "WM_sd": 8.279467086317696,
+      "GM_sd": 4.450949579766347
+     },
+     "minus angle": {
+      "WM_sd": 8.279467086317696,
+      "GM_sd": 4.450949579766347
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 3.402590186979436,
+      "GM_sd": 1.892380937710872
+     },
+     "minus angle, gain only": {
+      "WM_sd": 5.3032273407534785,
+      "GM_sd": 2.9474640008856805
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.261415441894031,
+      "GM_sd": 4.67030802514738
+     }
+    },
+    "corr_WM_GM_offsets": 0.2752504338742327,
+    "slope_WM_on_GM": 0.5120091492647301,
+    "noise_floor_volume_mean": {
+     "WM": 1.0127402775067311,
+     "GM": 0.17556615243878662
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.02701006248243811,
+    "eps_mean": 0.14569366445792886,
+    "gain_sd_permille": 6.375591520310773,
+    "rows": {
+     "raw": {
+      "WM_sd": 8.162532003564767,
+      "GM_sd": 5.371268203734646
+     },
+     "minus angle": {
+      "WM_sd": 8.162532003564767,
+      "GM_sd": 5.371268203734646
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.9749503387846528,
+      "GM_sd": 1.1745973947378818
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.9626900965781484,
+      "GM_sd": 1.1658562494225424
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 8.152275946863298,
+      "GM_sd": 5.382407920428319
+     }
+    },
+    "corr_WM_GM_offsets": 0.9772303946570429,
+    "slope_WM_on_GM": 1.4850635024514611,
+    "noise_floor_volume_mean": {
+     "WM": 0.9806833563950185,
+     "GM": 0.32045761634271636
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.021824584141970155,
+    "eps_mean": -0.013218292516642022,
+    "gain_sd_permille": 7.191224215146997,
+    "rows": {
+     "raw": {
+      "WM_sd": 9.094439198179336,
+      "GM_sd": 6.795590514337707
+     },
+     "minus angle": {
+      "WM_sd": 9.094439198179336,
+      "GM_sd": 6.795590514337707
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 4.133599038790013,
+      "GM_sd": 2.3207553387259847
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.6791118370665203,
+      "GM_sd": 2.078245780939003
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 8.592922168124975,
+      "GM_sd": 7.354880794024128
+     }
+    },
+    "corr_WM_GM_offsets": 0.7745882002122456,
+    "slope_WM_on_GM": 1.0366200370070382,
+    "noise_floor_volume_mean": {
+     "WM": 2.8385770619829844,
+     "GM": 0.9746493509837864
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "01-02": {
+   "LTE b100/500": {
+    "eta_permille": 6.362078688123077,
+    "eps_sd": 0.07097404536729184,
+    "eps_mean": -0.051049132058695684,
+    "gain_sd_permille": 3.512733471218051,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.8292926976647306,
+      "GM_sd": 4.10262022386294
+     },
+     "minus angle": {
+      "WM_sd": 2.998558443350105,
+      "GM_sd": 4.10262022386294
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.4165212194139412,
+      "GM_sd": 0.9905910721206642
+     },
+     "minus angle, gain only": {
+      "WM_sd": 0.8445909535713766,
+      "GM_sd": 0.7250797944833228
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.465745706918985,
+      "GM_sd": 3.131274436031384
+     }
+    },
+    "corr_WM_GM_offsets": 0.9529346834473654,
+    "slope_WM_on_GM": 0.6571729758331035,
+    "noise_floor_volume_mean": {
+     "WM": 0.8615842442217688,
+     "GM": 0.47377360286987746
+    },
+    "corr_WMoffset_vs_meancos2": -0.1179505739795367
+   },
+   "LTE b1000": {
+    "eta_permille": 38.591764518289914,
+    "eps_sd": 0.017276220031211202,
+    "eps_mean": -0.00016833660611387317,
+    "gain_sd_permille": 2.2128715383616817,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.5088075927400446,
+      "GM_sd": 2.1884129973591464
+     },
+     "minus angle": {
+      "WM_sd": 3.127761949041578,
+      "GM_sd": 2.1884129973591464
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.1633370429185161,
+      "GM_sd": 1.0665652832905368
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.6264707159151885,
+      "GM_sd": 1.4268604106820175
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.730618698813688,
+      "GM_sd": 2.1965577945463526
+     }
+    },
+    "corr_WM_GM_offsets": 0.36911164445931954,
+    "slope_WM_on_GM": 0.5918177886032141,
+    "noise_floor_volume_mean": {
+     "WM": 1.065695832199601,
+     "GM": 0.4195701394810863
+    },
+    "corr_WMoffset_vs_meancos2": 0.47684935198875456
+   },
+   "LTE b1500": {
+    "eta_permille": 13.55200255926618,
+    "eps_sd": 0.018270176243214024,
+    "eps_mean": 0.001817085917244693,
+    "gain_sd_permille": 1.7696843923029,
+    "rows": {
+     "raw": {
+      "WM_sd": 1.7807524947323101,
+      "GM_sd": 2.6280261014440733
+     },
+     "minus angle": {
+      "WM_sd": 1.8390513292963093,
+      "GM_sd": 2.6280261014440733
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.5259959904448779,
+      "GM_sd": 1.6742607528868718
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.3567778299967503,
+      "GM_sd": 1.4583491999772769
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.406686450423797,
+      "GM_sd": 2.347293551573275
+     }
+    },
+    "corr_WM_GM_offsets": 0.2461566687642039,
+    "slope_WM_on_GM": 0.16679594687282007,
+    "noise_floor_volume_mean": {
+     "WM": 1.6095406323542079,
+     "GM": 0.6666856042974444
+    },
+    "corr_WMoffset_vs_meancos2": -0.08083199195509372
+   },
+   "LTE b2000": {
+    "eta_permille": 3.9614004119248523,
+    "eps_sd": 0.011937252903855597,
+    "eps_mean": -0.059938037334696985,
+    "gain_sd_permille": 3.9176922743409626,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.874566121222859,
+      "GM_sd": 3.807074156817454
+     },
+     "minus angle": {
+      "WM_sd": 4.861815305355467,
+      "GM_sd": 3.807074156817454
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.3057677315740026,
+      "GM_sd": 3.2213905030012504
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.8666437272954746,
+      "GM_sd": 2.3311899191953236
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.858938761498036,
+      "GM_sd": 4.6205926670106
+     }
+    },
+    "corr_WM_GM_offsets": 0.5649499037148065,
+    "slope_WM_on_GM": 0.7233601310089627,
+    "noise_floor_volume_mean": {
+     "WM": 2.0800001008497784,
+     "GM": 0.7798583390386937
+    },
+    "corr_WMoffset_vs_meancos2": 0.08910912106532155
+   },
+   "STE b100/500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.13788049956978782,
+    "eps_mean": 0.34219004161125083,
+    "gain_sd_permille": 8.010301786714203,
+    "rows": {
+     "raw": {
+      "WM_sd": 7.379350518562686,
+      "GM_sd": 8.632581533758568
+     },
+     "minus angle": {
+      "WM_sd": 7.379350518562686,
+      "GM_sd": 8.632581533758568
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 0.5862667243783211,
+      "GM_sd": 0.5055717131305685
+     },
+     "minus angle, gain only": {
+      "WM_sd": 0.7790685557499896,
+      "GM_sd": 0.7125360996025814
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 7.706982272714854,
+      "GM_sd": 8.363749345708854
+     }
+    },
+    "corr_WM_GM_offsets": 0.994914353962804,
+    "slope_WM_on_GM": 0.8504781246640947,
+    "noise_floor_volume_mean": {
+     "WM": 0.4858254716270322,
+     "GM": 0.32295877838741943
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.03490232359548441,
+    "eps_mean": 0.15140231619916455,
+    "gain_sd_permille": 5.759873309442078,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.569965558315327,
+      "GM_sd": 5.270810588542484
+     },
+     "minus angle": {
+      "WM_sd": 6.569965558315327,
+      "GM_sd": 5.270810588542484
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.3800940880198829,
+      "GM_sd": 1.0853490632281222
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.3366832278205996,
+      "GM_sd": 1.0560548468613722
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.531585897169369,
+      "GM_sd": 5.324590316500864
+     }
+    },
+    "corr_WM_GM_offsets": 0.9417058289231679,
+    "slope_WM_on_GM": 1.173818477852162,
+    "noise_floor_volume_mean": {
+     "WM": 0.9248658334526585,
+     "GM": 0.49379473527258416
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.019754375252407128,
+    "eps_mean": -0.05876031062566024,
+    "gain_sd_permille": 5.194060908803893,
+    "rows": {
+     "raw": {
+      "WM_sd": 7.041681033984479,
+      "GM_sd": 4.5184933488303045
+     },
+     "minus angle": {
+      "WM_sd": 7.041681033984479,
+      "GM_sd": 4.5184933488303045
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.8631212299477435,
+      "GM_sd": 2.1642186207709604
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.8143255690234446,
+      "GM_sd": 2.1296956271407383
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 7.099302774184975,
+      "GM_sd": 4.491330247794818
+     }
+    },
+    "corr_WM_GM_offsets": 0.7159400208036545,
+    "slope_WM_on_GM": 1.1157305935326016,
+    "noise_floor_volume_mean": {
+     "WM": 0.9683149168807074,
+     "GM": 0.4382438552909065
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "01-03": {
+   "LTE b100/500": {
+    "eta_permille": -12.072231274171205,
+    "eps_sd": 0.1619899110722071,
+    "eps_mean": 0.010918993711597533,
+    "gain_sd_permille": 4.520640678038794,
+    "rows": {
+     "raw": {
+      "WM_sd": 1.7081702642316245,
+      "GM_sd": 7.357254225624195
+     },
+     "minus angle": {
+      "WM_sd": 2.0269940305972165,
+      "GM_sd": 7.357254225624195
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.966271895445348,
+      "GM_sd": 1.0669238655364504
+     },
+     "minus angle, gain only": {
+      "WM_sd": 5.192146242045381,
+      "GM_sd": 2.9746861977675305
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 3.6572760399590822,
+      "GM_sd": 5.259439245553173
+     }
+    },
+    "corr_WM_GM_offsets": -0.14507428595891805,
+    "slope_WM_on_GM": -0.033682617696771874,
+    "noise_floor_volume_mean": {
+     "WM": 0.9019719449264916,
+     "GM": 0.5456408261784701
+    },
+    "corr_WMoffset_vs_meancos2": 0.3549865013166379
+   },
+   "LTE b1000": {
+    "eta_permille": 49.43019203117436,
+    "eps_sd": 0.01626618870675067,
+    "eps_mean": 0.12017712097616533,
+    "gain_sd_permille": 1.0836379208120197,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.0268062474732984,
+      "GM_sd": 1.8872108843534445
+     },
+     "minus angle": {
+      "WM_sd": 2.2388972013684794,
+      "GM_sd": 1.8872108843534445
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.6255819538301934,
+      "GM_sd": 1.0569067945630366
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.993291273117777,
+      "GM_sd": 1.4447752856474871
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 1.8791214357570925,
+      "GM_sd": 1.6058841511104491
+     }
+    },
+    "corr_WM_GM_offsets": -0.06293984019598478,
+    "slope_WM_on_GM": -0.10094616510514672,
+    "noise_floor_volume_mean": {
+     "WM": 1.3102764273333771,
+     "GM": 0.39167099914254033
+    },
+    "corr_WMoffset_vs_meancos2": 0.7064130323276706
+   },
+   "LTE b1500": {
+    "eta_permille": 48.27312873653509,
+    "eps_sd": 0.014069337664305365,
+    "eps_mean": 0.03379787844972416,
+    "gain_sd_permille": 2.186541680343414,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.1681215518153936,
+      "GM_sd": 2.356917594149979
+     },
+     "minus angle": {
+      "WM_sd": 2.9233074452616394,
+      "GM_sd": 2.356917594149979
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.6818246319255385,
+      "GM_sd": 1.4157855333668194
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.626232192963283,
+      "GM_sd": 1.4465747677488745
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 3.319795885995442,
+      "GM_sd": 1.9705734852313523
+     }
+    },
+    "corr_WM_GM_offsets": 0.35844713875852885,
+    "slope_WM_on_GM": 0.48181748411828257,
+    "noise_floor_volume_mean": {
+     "WM": 1.7239966610251627,
+     "GM": 0.5818151501306927
+    },
+    "corr_WMoffset_vs_meancos2": 0.40780329109639846
+   },
+   "LTE b2000": {
+    "eta_permille": -17.669892633411838,
+    "eps_sd": 0.013339758470455623,
+    "eps_mean": -0.09931222083617179,
+    "gain_sd_permille": 2.6889923962711415,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.353133666357051,
+      "GM_sd": 3.4108966250384896
+     },
+     "minus angle": {
+      "WM_sd": 4.4609760652206205,
+      "GM_sd": 3.4108966250384896
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 3.189328407662107,
+      "GM_sd": 3.4424365295914874
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.9947411181338346,
+      "GM_sd": 2.8317152665674876
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.96130815293083,
+      "GM_sd": 3.513369514415493
+     }
+    },
+    "corr_WM_GM_offsets": -0.06263268334297857,
+    "slope_WM_on_GM": -0.07993453699920436,
+    "noise_floor_volume_mean": {
+     "WM": 4.320124525472006,
+     "GM": 0.9898014656298639
+    },
+    "corr_WMoffset_vs_meancos2": 0.1111859884748778
+   },
+   "STE b100/500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.45366174156009326,
+    "eps_mean": 0.4246336171584084,
+    "gain_sd_permille": 4.683128240860397,
+    "rows": {
+     "raw": {
+      "WM_sd": 5.917118133608459,
+      "GM_sd": 5.228975374372437
+     },
+     "minus angle": {
+      "WM_sd": 5.917118133608459,
+      "GM_sd": 5.228975374372437
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.654634359387778,
+      "GM_sd": 1.447671259466348
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.8536982330723997,
+      "GM_sd": 2.0960584070226176
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.279601399158586,
+      "GM_sd": 5.463002460006297
+     }
+    },
+    "corr_WM_GM_offsets": 0.435595346231382,
+    "slope_WM_on_GM": 0.4929204935126522,
+    "noise_floor_volume_mean": {
+     "WM": 0.9214440809498713,
+     "GM": 0.2499033408503725
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.030045857605920833,
+    "eps_mean": 0.1840720706375405,
+    "gain_sd_permille": 5.300693317236713,
+    "rows": {
+     "raw": {
+      "WM_sd": 7.110444826528528,
+      "GM_sd": 4.60948956217481
+     },
+     "minus angle": {
+      "WM_sd": 7.110444826528528,
+      "GM_sd": 4.60948956217481
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.6170766936482677,
+      "GM_sd": 1.57052908939422
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.639147744854293,
+      "GM_sd": 1.5810560404573364
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 7.094375676842418,
+      "GM_sd": 4.611006894817427
+     }
+    },
+    "corr_WM_GM_offsets": 0.8237395029495201,
+    "slope_WM_on_GM": 1.27067307738758,
+    "noise_floor_volume_mean": {
+     "WM": 1.3162370708091227,
+     "GM": 0.5397929387267916
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.017564067755793,
+    "eps_mean": -0.01563787842677329,
+    "gain_sd_permille": 4.0949139549540865,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.221209440964433,
+      "GM_sd": 5.046153425679853
+     },
+     "minus angle": {
+      "WM_sd": 4.221209440964433,
+      "GM_sd": 5.046153425679853
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 3.807494656473688,
+      "GM_sd": 2.139147057828447
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.2413217205588074,
+      "GM_sd": 1.8269648538635783
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.041875097714909,
+      "GM_sd": 5.451432831141399
+     }
+    },
+    "corr_WM_GM_offsets": 0.41301472828354857,
+    "slope_WM_on_GM": 0.34549517686394704,
+    "noise_floor_volume_mean": {
+     "WM": 3.46146538080768,
+     "GM": 0.8336015403348044
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "02-01": {
+   "LTE b100/500": {
+    "eta_permille": -18.35313878571924,
+    "eps_sd": 0.14400983538009696,
+    "eps_mean": -0.165460066699467,
+    "gain_sd_permille": 5.090120623682932,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.0014867706012516,
+      "GM_sd": 9.65528807730481
+     },
+     "minus angle": {
+      "WM_sd": 3.2454295593756877,
+      "GM_sd": 9.65528807730481
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 3.105630629224722,
+      "GM_sd": 1.9189068256212973
+     },
+     "minus angle, gain only": {
+      "WM_sd": 7.943905154296521,
+      "GM_sd": 4.646150762729441
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 5.99380495844436,
+      "GM_sd": 5.391585849009732
+     }
+    },
+    "corr_WM_GM_offsets": -0.8561426816215367,
+    "slope_WM_on_GM": -0.2661444083345706,
+    "noise_floor_volume_mean": {
+     "WM": 0.8769557390438046,
+     "GM": 0.48481875094526194
+    },
+    "corr_WMoffset_vs_meancos2": -0.36477461381428977
+   },
+   "LTE b1000": {
+    "eta_permille": 16.32968507068129,
+    "eps_sd": 0.018027298040263713,
+    "eps_mean": 0.0681685050606454,
+    "gain_sd_permille": 2.4455438325490904,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.954420092203318,
+      "GM_sd": 2.9093434783915684
+     },
+     "minus angle": {
+      "WM_sd": 2.967466482591164,
+      "GM_sd": 2.9093434783915684
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.286097505237136,
+      "GM_sd": 0.9463463849854121
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.14637872539975,
+      "GM_sd": 1.5301456154816704
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.650133463803148,
+      "GM_sd": 2.7346263309984002
+     }
+    },
+    "corr_WM_GM_offsets": 0.0842694605729549,
+    "slope_WM_on_GM": 0.08557510975414769,
+    "noise_floor_volume_mean": {
+     "WM": 0.809253265559699,
+     "GM": 0.38381243262933135
+    },
+    "corr_WMoffset_vs_meancos2": 0.035845006826092235
+   },
+   "LTE b1500": {
+    "eta_permille": 91.34009979636559,
+    "eps_sd": 0.020050260676184484,
+    "eps_mean": 0.09488165185936631,
+    "gain_sd_permille": 2.2833484773472223,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.5058130858086365,
+      "GM_sd": 3.1122875148520417
+     },
+     "minus angle": {
+      "WM_sd": 4.018279667602779,
+      "GM_sd": 3.1122875148520417
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.785452573604069,
+      "GM_sd": 2.4879449461381142
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.2884644443664857,
+      "GM_sd": 2.286659960960632
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 3.9104077304223486,
+      "GM_sd": 3.062556954248722
+     }
+    },
+    "corr_WM_GM_offsets": -0.41316427827273977,
+    "slope_WM_on_GM": -0.8636636414046895,
+    "noise_floor_volume_mean": {
+     "WM": 1.5001516055011948,
+     "GM": 0.6407066491536842
+    },
+    "corr_WMoffset_vs_meancos2": 0.8437172958976107
+   },
+   "LTE b2000": {
+    "eta_permille": -30.112079590226976,
+    "eps_sd": 0.009084508910997914,
+    "eps_mean": -0.0719201234829689,
+    "gain_sd_permille": 4.607702541700641,
+    "rows": {
+     "raw": {
+      "WM_sd": 5.900052636374992,
+      "GM_sd": 4.723714391475334
+     },
+     "minus angle": {
+      "WM_sd": 5.6997152557673205,
+      "GM_sd": 4.723714391475334
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.778927822241898,
+      "GM_sd": 3.5198437698226086
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.525251241185571,
+      "GM_sd": 2.5660273168802443
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.220834951219877,
+      "GM_sd": 4.914586810033356
+     }
+    },
+    "corr_WM_GM_offsets": 0.463787207652627,
+    "slope_WM_on_GM": 0.5792833161475793,
+    "noise_floor_volume_mean": {
+     "WM": 2.4125741591117382,
+     "GM": 1.0128948100235897
+    },
+    "corr_WMoffset_vs_meancos2": -0.24989004576468582
+   },
+   "STE b100/500": {
+    "eta_permille": 0.0,
+    "eps_sd": 1.181847688673674,
+    "eps_mean": 1.1840223677774981,
+    "gain_sd_permille": 4.140200412671333,
+    "rows": {
+     "raw": {
+      "WM_sd": 10.075630094673944,
+      "GM_sd": 2.26337560626671
+     },
+     "minus angle": {
+      "WM_sd": 10.075630094673944,
+      "GM_sd": 2.26337560626671
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.82963562733726,
+      "GM_sd": 0.9830973484815699
+     },
+     "minus angle, gain only": {
+      "WM_sd": 6.3478538498372385,
+      "GM_sd": 3.5268205877800156
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.476572848535025,
+      "GM_sd": 5.076052299856816
+     }
+    },
+    "corr_WM_GM_offsets": 0.20022336810316374,
+    "slope_WM_on_GM": 0.8913132171839331,
+    "noise_floor_volume_mean": {
+     "WM": 0.8079338837553247,
+     "GM": 0.20104297912886582
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.04177373638533405,
+    "eps_mean": 0.1458475400900473,
+    "gain_sd_permille": 2.9190219170161558,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.6957856193824146,
+      "GM_sd": 3.289521817255576
+     },
+     "minus angle": {
+      "WM_sd": 2.6957856193824146,
+      "GM_sd": 3.289521817255576
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.386244754964065,
+      "GM_sd": 0.8346041922698115
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.2599592245486881,
+      "GM_sd": 0.7603580654531166
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.6531820108022015,
+      "GM_sd": 3.3575254849253326
+     }
+    },
+    "corr_WM_GM_offsets": 0.7897377652727269,
+    "slope_WM_on_GM": 0.6471954980014696,
+    "noise_floor_volume_mean": {
+     "WM": 1.2084007848165985,
+     "GM": 0.26802743948426316
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.028007509573354808,
+    "eps_mean": -0.023491105707094537,
+    "gain_sd_permille": 3.073821529688582,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.182436797794859,
+      "GM_sd": 4.1777333321513
+     },
+     "minus angle": {
+      "WM_sd": 4.182436797794859,
+      "GM_sd": 4.1777333321513
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.9188166280713252,
+      "GM_sd": 1.7514730441155455
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.6527098410843446,
+      "GM_sd": 2.1968070460935065
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.158385684984174,
+      "GM_sd": 3.5934515526809565
+     }
+    },
+    "corr_WM_GM_offsets": 0.020880141990632383,
+    "slope_WM_on_GM": 0.020903649721422456,
+    "noise_floor_volume_mean": {
+     "WM": 3.1201194325689583,
+     "GM": 0.6748382365642158
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  },
+  "06-01": {
+   "LTE b100/500": {
+    "eta_permille": -13.832872689103972,
+    "eps_sd": 0.2748811346293856,
+    "eps_mean": 0.2049896295334386,
+    "gain_sd_permille": 5.623032572693181,
+    "rows": {
+     "raw": {
+      "WM_sd": 2.156694746308192,
+      "GM_sd": 8.48197107824284
+     },
+     "minus angle": {
+      "WM_sd": 2.198914720462219,
+      "GM_sd": 8.48197107824284
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.9900710916054773,
+      "GM_sd": 1.6683099141741922
+     },
+     "minus angle, gain only": {
+      "WM_sd": 5.092605163131812,
+      "GM_sd": 3.012822917578797
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 5.2324451711309035,
+      "GM_sd": 6.60997333256436
+     }
+    },
+    "corr_WM_GM_offsets": 0.48072768670587424,
+    "slope_WM_on_GM": 0.1222337198228497,
+    "noise_floor_volume_mean": {
+     "WM": 0.9478021921594385,
+     "GM": 0.5638715348641103
+    },
+    "corr_WMoffset_vs_meancos2": 0.07582551370232891
+   },
+   "LTE b1000": {
+    "eta_permille": 55.192053569675956,
+    "eps_sd": 0.020871547316691132,
+    "eps_mean": 0.1011206509585173,
+    "gain_sd_permille": 2.0472747567357,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.316639959388983,
+      "GM_sd": 2.1635010000735533
+     },
+     "minus angle": {
+      "WM_sd": 3.235517104716504,
+      "GM_sd": 2.1635010000735533
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.3049552294601299,
+      "GM_sd": 0.9809295210069396
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.1443444659915643,
+      "GM_sd": 1.6096692648910842
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 2.240933064190278,
+      "GM_sd": 2.397217602576601
+     }
+    },
+    "corr_WM_GM_offsets": -0.03432127868065093,
+    "slope_WM_on_GM": -0.05261440800152292,
+    "noise_floor_volume_mean": {
+     "WM": 1.7092423318740222,
+     "GM": 0.3028771700697198
+    },
+    "corr_WMoffset_vs_meancos2": 0.3831684097131994
+   },
+   "LTE b1500": {
+    "eta_permille": 45.78063580182165,
+    "eps_sd": 0.03236431563385459,
+    "eps_mean": 0.04478118869275368,
+    "gain_sd_permille": 4.0148395670173835,
+    "rows": {
+     "raw": {
+      "WM_sd": 3.073169670905485,
+      "GM_sd": 6.746615679290606
+     },
+     "minus angle": {
+      "WM_sd": 3.2598647088902064,
+      "GM_sd": 6.746615679290606
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.7088303227018056,
+      "GM_sd": 2.7125972865161203
+     },
+     "minus angle, gain only": {
+      "WM_sd": 3.5684516027502133,
+      "GM_sd": 3.6132645031780544
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 5.566896295496821,
+      "GM_sd": 3.967663250048459
+     }
+    },
+    "corr_WM_GM_offsets": 0.07927013065044172,
+    "slope_WM_on_GM": 0.036108557668615524,
+    "noise_floor_volume_mean": {
+     "WM": 1.8443845634009883,
+     "GM": 0.5539448342144904
+    },
+    "corr_WMoffset_vs_meancos2": 0.13535618170178682
+   },
+   "LTE b2000": {
+    "eta_permille": -12.710041863611714,
+    "eps_sd": 0.013212640218288364,
+    "eps_mean": -0.08735057943855458,
+    "gain_sd_permille": 5.373126941895449,
+    "rows": {
+     "raw": {
+      "WM_sd": 4.664288337184149,
+      "GM_sd": 6.867577444214896
+     },
+     "minus angle": {
+      "WM_sd": 4.728664901919117,
+      "GM_sd": 6.867577444214896
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 2.832981577737239,
+      "GM_sd": 3.1851334282498436
+     },
+     "minus angle, gain only": {
+      "WM_sd": 2.1958255698904674,
+      "GM_sd": 2.279894947826892
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 6.578423085184752,
+      "GM_sd": 5.475356444339087
+     }
+    },
+    "corr_WM_GM_offsets": 0.7838309638191269,
+    "slope_WM_on_GM": 0.5323585576665193,
+    "noise_floor_volume_mean": {
+     "WM": 2.887738969368972,
+     "GM": 0.9194135547664849
+    },
+    "corr_WMoffset_vs_meancos2": 0.09453514627780245
+   },
+   "STE b100/500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.6517316839052072,
+    "eps_mean": 0.8818046956072307,
+    "gain_sd_permille": 5.829515105824647,
+    "rows": {
+     "raw": {
+      "WM_sd": 6.539999227839853,
+      "GM_sd": 5.686184508402822
+     },
+     "minus angle": {
+      "WM_sd": 6.539999227839853,
+      "GM_sd": 5.686184508402822
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 1.7280370885054612,
+      "GM_sd": 1.0431618431632825
+     },
+     "minus angle, gain only": {
+      "WM_sd": 1.3522827418371517,
+      "GM_sd": 0.66102350939155
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 4.262760796349435,
+      "GM_sd": 6.824477921589517
+     }
+    },
+    "corr_WM_GM_offsets": 0.955823335096738,
+    "slope_WM_on_GM": 1.0993459435314437,
+    "noise_floor_volume_mean": {
+     "WM": 0.9216554566830213,
+     "GM": 0.2728575377604825
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1000": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.10872173580718511,
+    "eps_mean": 0.08102400449630846,
+    "gain_sd_permille": 10.341590862165305,
+    "rows": {
+     "raw": {
+      "WM_sd": 17.703233356000062,
+      "GM_sd": 6.912156117245466
+     },
+     "minus angle": {
+      "WM_sd": 17.703233356000062,
+      "GM_sd": 6.912156117245466
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 6.81399720417843,
+      "GM_sd": 4.044049052007361
+     },
+     "minus angle, gain only": {
+      "WM_sd": 8.191855528733809,
+      "GM_sd": 4.863159474888116
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 16.285328670317842,
+      "GM_sd": 7.53668334453681
+     }
+    },
+    "corr_WM_GM_offsets": 0.7794142654422843,
+    "slope_WM_on_GM": 1.9962154193384711,
+    "noise_floor_volume_mean": {
+     "WM": 1.3200141936961522,
+     "GM": 0.5355413601883898
+    },
+    "corr_WMoffset_vs_meancos2": null
+   },
+   "STE b1500": {
+    "eta_permille": 0.0,
+    "eps_sd": 0.04149661116702696,
+    "eps_mean": -0.0411406280826431,
+    "gain_sd_permille": 5.6556192224312865,
+    "rows": {
+     "raw": {
+      "WM_sd": 8.788071218644532,
+      "GM_sd": 9.611746209267496
+     },
+     "minus angle": {
+      "WM_sd": 8.788071218644532,
+      "GM_sd": 9.611746209267496
+     },
+     "minus angle, gain, b-error": {
+      "WM_sd": 9.885583056141176,
+      "GM_sd": 6.101051880484383
+     },
+     "minus angle, gain only": {
+      "WM_sd": 9.386253504135665,
+      "GM_sd": 5.810527310322113
+     },
+     "minus angle, b-error only": {
+      "WM_sd": 9.391617585338757,
+      "GM_sd": 9.752396627112478
+     }
+    },
+    "corr_WM_GM_offsets": -0.3628923185853133,
+    "slope_WM_on_GM": -0.3317943972919163,
+    "noise_floor_volume_mean": {
+     "WM": 4.451489295882464,
+     "GM": 0.6038825604637269
+    },
+    "corr_WMoffset_vs_meancos2": null
+   }
+  }
+ },
+ "cross_session": {
+  "LTE b100/500": {
+   "min_abs_bvec_dot": 1.000000208162,
+   "eps": {
+    "same_subject_mean_r": 0.6398912304630883,
+    "different_subject_mean_r": 0.7727294242146213
+   },
+   "gain": {
+    "same_subject_mean_r": 0.926241772315631,
+    "different_subject_mean_r": 0.898717259423808
+   },
+   "wm_offset": {
+    "same_subject_mean_r": -0.215701541173032,
+    "different_subject_mean_r": -0.014392365242030053
+   }
+  },
+  "LTE b1000": {
+   "min_abs_bvec_dot": 0.99991314954451,
+   "eps": {
+    "same_subject_mean_r": 0.40442167153591696,
+    "different_subject_mean_r": 0.21888901643920972
+   },
+   "gain": {
+    "same_subject_mean_r": 0.25544542766089173,
+    "different_subject_mean_r": 0.12485021665653505
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.6635716382305361,
+    "different_subject_mean_r": 0.05244558024346292
+   }
+  },
+  "LTE b1500": {
+   "min_abs_bvec_dot": 0.9993259304670508,
+   "eps": {
+    "same_subject_mean_r": 0.2649934311491375,
+    "different_subject_mean_r": 0.12027590854065694
+   },
+   "gain": {
+    "same_subject_mean_r": 0.5013318926569319,
+    "different_subject_mean_r": 0.21864288973801396
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.10309059608685317,
+    "different_subject_mean_r": 0.10604800335781324
+   }
+  },
+  "LTE b2000": {
+   "min_abs_bvec_dot": 0.9999528006118208,
+   "eps": {
+    "same_subject_mean_r": 0.08349524184681593,
+    "different_subject_mean_r": 0.09144632125966642
+   },
+   "gain": {
+    "same_subject_mean_r": 0.5432584298400943,
+    "different_subject_mean_r": 0.2690004727777647
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.2551818565297116,
+    "different_subject_mean_r": 0.07373170251588901
+   }
+  },
+  "STE b100/500": {
+   "min_abs_bvec_dot": 1.0,
+   "eps": {
+    "same_subject_mean_r": 0.8375352390048559,
+    "different_subject_mean_r": 0.8774464895629019
+   },
+   "gain": {
+    "same_subject_mean_r": 0.8805837097556171,
+    "different_subject_mean_r": 0.8400389996174774
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.9780135199241519,
+    "different_subject_mean_r": 0.9285235618174895
+   }
+  },
+  "STE b1000": {
+   "min_abs_bvec_dot": 1.0,
+   "eps": {
+    "same_subject_mean_r": -0.24072937637995842,
+    "different_subject_mean_r": -0.04010430500284915
+   },
+   "gain": {
+    "same_subject_mean_r": 0.9572063270173267,
+    "different_subject_mean_r": 0.6526961611489003
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.9062178646919143,
+    "different_subject_mean_r": 0.3986466474793268
+   }
+  },
+  "STE b1500": {
+   "min_abs_bvec_dot": 1.0,
+   "eps": {
+    "same_subject_mean_r": -0.15829215394131183,
+    "different_subject_mean_r": -0.10584093877386745
+   },
+   "gain": {
+    "same_subject_mean_r": 0.8874584854507033,
+    "different_subject_mean_r": 0.8114182645375733
+   },
+   "wm_offset": {
+    "same_subject_mean_r": 0.6842562604974222,
+    "different_subject_mean_r": -0.034640836095048914
+   }
+  }
+ },
+ "per_volume": {
+  "01-01|LTE b100/500": {
+   "eps": [
+    -0.03062618185927012,
+    -0.037043109389940466,
+    -0.024262484196532177,
+    -0.027006542828005745,
+    0.03562298204048759,
+    -0.03391206583966036,
+    -0.19625443266656517,
+    -0.15906271700843969,
+    -0.16274650059819223,
+    -0.17627823729066042,
+    -0.17397562555734833,
+    -0.16972067005361377
+   ],
+   "gain": [
+    0.000376364342772901,
+    0.0020335830350187104,
+    -0.0017826719382275224,
+    0.000119571878586057,
+    -0.0015208934751686852,
+    -0.0003229966623500406,
+    0.008274497707652042,
+    0.007753914023108095,
+    0.010611768063448424,
+    0.009455356000668796,
+    0.006704165057159854,
+    0.009372611721718235
+   ],
+   "wm_offset": [
+    2.058121382597933,
+    2.515494098695731,
+    -1.2908945872040143,
+    -0.17665387107614525,
+    -0.7825091934279487,
+    0.7514140327841013,
+    -5.175150814612756,
+    -2.5810329199111264,
+    -1.3193749883025,
+    -3.053688478357269,
+    -5.992619374949306,
+    -1.298785632699663
+   ],
+   "gm_offset": [
+    -0.8851326096660945,
+    1.9491211344129598,
+    -1.799323520467362,
+    0.36329172068431315,
+    -1.8307843912704214,
+    -0.6596367862141036,
+    15.647908380158764,
+    14.33288780222665,
+    18.301243965709325,
+    17.09208087853055,
+    14.591718181061408,
+    16.397076048198446
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "01-01|LTE b1000": {
+   "eps": [
+    0.2767933232100047,
+    0.22329211660676468,
+    0.24056904127053402,
+    0.23757646649497194,
+    0.2774521934918382,
+    0.22256947210737751,
+    0.22295763246200692,
+    0.2639759120892558,
+    0.2621341688842318,
+    0.23780839996711942
+   ],
+   "gain": [
+    0.021446400692540606,
+    0.017388156826044915,
+    0.019243461902442176,
+    0.022460189102164425,
+    0.0210817266096582,
+    0.018053765749068654,
+    0.019239626576966973,
+    0.019723231431819258,
+    0.02290080472463817,
+    0.020816645888290002
+   ],
+   "wm_offset": [
+    52.67588462726162,
+    47.0120932929677,
+    44.78565795359353,
+    45.60560680807209,
+    57.43885583870854,
+    39.78613849210469,
+    44.67166493186982,
+    50.1729435134716,
+    49.23524472772601,
+    42.35891232311539
+   ],
+   "gm_offset": [
+    -4.943979112998687,
+    -8.180071981105193,
+    -8.13580588750479,
+    -6.671901898976024,
+    -6.612378928548708,
+    -4.137399030946635,
+    -8.894749498249878,
+    -9.237902856733422,
+    -6.321978147687622,
+    -6.389613834721398
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "01-01|LTE b1500": {
+   "eps": [
+    -0.06779487828267015,
+    -0.04083918477386267,
+    -0.069749548206322,
+    -0.060476445359125414,
+    -0.05794479360880066,
+    -0.027948656575006513,
+    -0.04686204167151216,
+    -0.040102091487311184,
+    -0.04371647217796046,
+    -0.046652274984992484,
+    -0.05441478564945079,
+    -0.03634959008389458,
+    -0.046123203452851404,
+    -0.040091322773309075,
+    -0.04730981866087118,
+    -0.056491500252123905
+   ],
+   "gain": [
+    0.026135660913673135,
+    0.03064421835279589,
+    0.021029342163737235,
+    0.025877440048749055,
+    0.024668711069079283,
+    0.023687117239814436,
+    0.02249781448956703,
+    0.022336152692635596,
+    0.022693779740890097,
+    0.019787517673672095,
+    0.02115958741008565,
+    0.01905098288277439,
+    0.02129852798228243,
+    0.02255370779465815,
+    0.021094820429904574,
+    0.022868910692004054
+   ],
+   "wm_offset": [
+    14.13717965525106,
+    23.00433652391497,
+    11.835825621141161,
+    14.780391671057266,
+    15.41140690889831,
+    15.711005942316081,
+    13.972831046282304,
+    13.082574974449999,
+    12.20413027454688,
+    10.219402396538067,
+    10.221675018668911,
+    10.977437521176205,
+    13.194584592720128,
+    14.716511563381403,
+    11.85922285351026,
+    15.832708418575095
+   ],
+   "gm_offset": [
+    36.272348957026416,
+    37.72765388505364,
+    31.277380866506952,
+    36.62599899771873,
+    32.45447894535168,
+    31.35306791322085,
+    31.591769682340487,
+    31.21555006387072,
+    33.4779469064744,
+    30.420493655730706,
+    30.00382009114768,
+    27.233273566232004,
+    30.062638623253022,
+    30.27467536686596,
+    30.35858127506347,
+    30.949161208335664
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ]
+  },
+  "01-01|LTE b2000": {
+   "eps": [
+    -0.09071369046470426,
+    -0.08872170223921323,
+    -0.06798721197628341,
+    -0.05900908946630095,
+    -0.11073128581703677,
+    -0.0620948087243859,
+    -0.06276505480702102,
+    -0.0694258350841681,
+    -0.062060880738877985,
+    -0.06811828272524234,
+    -0.07784056699162605,
+    -0.06538541834033557,
+    -0.08196382745636739,
+    -0.05586696517218962,
+    -0.07340827639126894,
+    -0.10093829033878286,
+    -0.06762425497858963,
+    -0.09459447328695378,
+    -0.08262999870665455,
+    -0.06460599540661412,
+    -0.06527882660883576,
+    -0.06297352629323905,
+    -0.05133526244691449,
+    -0.07361957670128655,
+    -0.07114972243913753,
+    -0.06697314326367723,
+    -0.0852290553161876,
+    -0.059566256859610325,
+    -0.11482784151718697,
+    -0.08464005271713639
+   ],
+   "gain": [
+    0.001043464214011368,
+    0.007495371611797856,
+    0.0024245951447135366,
+    0.006234396542965204,
+    0.012483773241956708,
+    0.0037583447305242685,
+    0.0034396641797799195,
+    0.00031145515185323743,
+    0.003189707554360791,
+    0.007516538709151743,
+    -0.0008868025745095502,
+    0.0026074958114308375,
+    0.001729538392784998,
+    0.005307317997769097,
+    0.006905378974100616,
+    0.007459436773798379,
+    0.002344792906720775,
+    0.0018544726403204638,
+    0.0021996557671236303,
+    0.005124867695591092,
+    0.0010889994935974082,
+    0.006302155136952527,
+    0.002411257523447352,
+    0.005766293373734458,
+    0.0032204297080750126,
+    0.004569197208889195,
+    0.003652849111307631,
+    -0.003333351853607128,
+    0.005891897391367818,
+    0.011282241114531268
+   ],
+   "wm_offset": [
+    14.300421635733505,
+    13.08508861477346,
+    7.879521626830928,
+    17.348211300254587,
+    24.484450635124638,
+    9.250446926654725,
+    16.21554093408582,
+    8.728990262789726,
+    8.730379955748166,
+    17.71410276145908,
+    9.555915263428034,
+    14.184101720561845,
+    10.501812650971178,
+    13.225534750331242,
+    20.756118433042694,
+    19.1631663288194,
+    13.063977209078757,
+    15.482684230205003,
+    11.289211134857174,
+    16.623929411600166,
+    10.385708319223198,
+    13.623044183255823,
+    12.646726293159306,
+    16.039708761138233,
+    12.833548174073433,
+    12.363030211259856,
+    12.284446643878779,
+    2.1190387846181005,
+    20.587141507712726,
+    22.052824879487723
+   ],
+   "gm_offset": [
+    -12.482100985355128,
+    0.8881583121419878,
+    -5.41888810054246,
+    -7.127914336472587,
+    -3.4471920064864845,
+    -4.944443259813225,
+    -10.859564193767634,
+    -9.080402268604008,
+    -5.791735353728468,
+    -5.526557269570787,
+    -13.580465951883975,
+    -12.310463926048152,
+    -9.852174305065743,
+    -6.197261031821257,
+    -6.965971096970542,
+    -4.671384505809431,
+    -9.335491007996719,
+    -13.870617742166997,
+    -7.146339644362392,
+    -6.679708016164486,
+    -11.044373838408797,
+    -4.4129661679857755,
+    -10.062236686730804,
+    -6.497395821960453,
+    -8.97733051451629,
+    -6.584888636862025,
+    -5.95372647856694,
+    -10.269626667140841,
+    -10.238975051278741,
+    -1.874200338970822
+   ],
+   "bvals": [
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0
+   ],
+   "volumes": [
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68
+   ]
+  },
+  "01-01|STE b100/500": {
+   "eps": [
+    0.6843421996775131,
+    0.7810906185122145,
+    0.9719444579061354,
+    -0.09839205977951875,
+    -0.025930241641804713,
+    -0.042980391735596576,
+    0.9311886225031816,
+    1.0795414761569655,
+    1.1033434068243757,
+    -0.07066427637265786,
+    -0.07493759472571522,
+    -0.04962978630621582
+   ],
+   "gain": [
+    -0.0002137163255803413,
+    0.006751668050727913,
+    0.00516469163061554,
+    -0.00725864157340691,
+    0.0038920840570145464,
+    -0.0011239834820318331,
+    0.00029695076716598843,
+    0.006528960240214097,
+    0.004692967879340116,
+    -0.006998703371826224,
+    0.003545135363108316,
+    -0.002260443374918386
+   ],
+   "wm_offset": [
+    8.95035391743538,
+    14.094609369132174,
+    12.674626843394712,
+    -7.262738497147892,
+    -0.2637066970096871,
+    -1.2269183731228406,
+    10.232149806404083,
+    15.567684312497528,
+    13.742096421201085,
+    -6.092841548270799,
+    -0.11895180668185938,
+    -4.223711727623445
+   ],
+   "gm_offset": [
+    -5.316004792114187,
+    2.6877823451675886,
+    1.0091345441968396,
+    -7.256332223773933,
+    6.203443817699661,
+    -1.0660000951060637,
+    -5.237349315213898,
+    1.5126288235324292,
+    -0.32811226370674884,
+    -7.510267924035927,
+    5.58847677366362,
+    -1.1606984073062274
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+   ]
+  },
+  "01-01|STE b1000": {
+   "eps": [
+    0.1293068058250188,
+    0.10339401748310781,
+    0.15070133503333968,
+    0.16051652401654495,
+    0.11653645500917736,
+    0.163735149095579,
+    0.15300908288836326,
+    0.1344305833367616,
+    0.1996130274334674
+   ],
+   "gain": [
+    -0.006399928508737545,
+    0.009149362677992127,
+    0.005281236646781375,
+    -0.004606731372799109,
+    0.009078942367623273,
+    0.004221280688725749,
+    -0.0063141805799202975,
+    0.009453786466891406,
+    0.006139088354095552
+   ],
+   "wm_offset": [
+    3.6121544602267237,
+    24.3655246075767,
+    18.157307379625124,
+    8.328556044614269,
+    24.785473611047827,
+    17.092760706833182,
+    4.945504958661045,
+    24.99670231352027,
+    21.74254881964362
+   ],
+   "gm_offset": [
+    -12.191930653755968,
+    0.25791753265184525,
+    -2.210903341789285,
+    -12.126350326272707,
+    -0.09901963300053213,
+    -3.2712408227368264,
+    -12.858015730833104,
+    0.36958298108995463,
+    -2.9669724255289878
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
+   ]
+  },
+  "01-01|STE b1500": {
+   "eps": [
+    0.01563762504082438,
+    -0.06392680480736958,
+    -0.01004512858032608,
+    -0.006972994290714388,
+    -0.03288573423258334,
+    -0.005537451317587562,
+    0.005451279279795589,
+    -0.045066588159365366,
+    0.000620216332483407,
+    0.00425203213235383,
+    -0.006674120626589722,
+    0.017203858642238633,
+    -0.01791582265186645,
+    -0.0316100282436742,
+    -0.020804726267249492
+   ],
+   "gain": [
+    0.010069020259094959,
+    0.025979852607833243,
+    0.021494625315296424,
+    0.008472352045312579,
+    0.024677881959338968,
+    0.01986425797078076,
+    0.00791037749719051,
+    0.02540700057423462,
+    0.02200721841043535,
+    0.011544049949468064,
+    0.029237928688928813,
+    0.021383435898481285,
+    0.010704118347321906,
+    0.028311466900156585,
+    0.020738867098171434
+   ],
+   "wm_offset": [
+    11.930997307296304,
+    29.56310266804179,
+    26.970920106399795,
+    14.172722080717401,
+    30.168158736162418,
+    27.279855489476525,
+    14.318337373308635,
+    33.47940507864589,
+    35.92481625270728,
+    22.352415407719086,
+    41.43315366737954,
+    31.67993291464107,
+    21.849338772442263,
+    43.10388208613954,
+    31.4484408902298
+   ],
+   "gm_offset": [
+    9.05491332890258,
+    24.022241987054116,
+    18.4714822149632,
+    5.332249131266783,
+    21.660225136893985,
+    15.760776383521636,
+    4.386648797007025,
+    20.943756556734765,
+    14.2099403032647,
+    5.493052947286493,
+    22.44389320327557,
+    15.653990819055169,
+    4.497771981983673,
+    19.993448067567183,
+    14.769354175948111
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ]
+  },
+  "01-02|LTE b100/500": {
+   "eps": [
+    0.011523254952669823,
+    -0.21424141664695487,
+    0.05482014503558637,
+    0.03682771639921733,
+    -0.004376573044845615,
+    -0.011009508463589158,
+    -0.08795017473118956,
+    -0.11527883844415114,
+    -0.06944348116208249,
+    -0.061906242081186016,
+    -0.07911515526611279,
+    -0.07243931125171015
+   ],
+   "gain": [
+    -0.0030871592503419593,
+    0.0017006542262865312,
+    -0.002099119909140357,
+    -0.00012925052095593884,
+    -0.0033243128151009107,
+    -0.0018315324924261566,
+    0.005076967960484187,
+    0.004586203164243081,
+    0.0067763118278786755,
+    0.004668605900388956,
+    0.005478765414376022,
+    0.0027329043957829446
+   ],
+   "wm_offset": [
+    -7.28954169485816,
+    -2.7879579789685267,
+    -5.961404664394131,
+    -4.866923009156528,
+    -7.469203712424253,
+    -6.8337360816614865,
+    -0.9895305878687916,
+    -0.7476301654582528,
+    0.44019237622625895,
+    -2.3792798669593944,
+    0.4267492522140189,
+    -2.907732345227287
+   ],
+   "gm_offset": [
+    0.1670831516423012,
+    4.721474898582174,
+    0.4929992984022803,
+    3.1550582372178138,
+    -0.48540703491552495,
+    1.5411395201074924,
+    9.491051043932014,
+    8.372568945691917,
+    11.34647453253958,
+    9.786027929959928,
+    9.061481612317193,
+    6.785927020155009
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "01-02|LTE b1000": {
+   "eps": [
+    -0.014875440607936162,
+    0.002962864555368385,
+    -0.015993401552868453,
+    -0.02166003777249217,
+    0.018534903926589495,
+    -0.015732826774421806,
+    0.018478446433674068,
+    0.03169330334002919,
+    0.0037795484586456447,
+    -0.008870726067726918
+   ],
+   "gain": [
+    0.019927510747454653,
+    0.021785187575381643,
+    0.01534208626707877,
+    0.02142017391699494,
+    0.019596577034107703,
+    0.020498045279338045,
+    0.01745802779723205,
+    0.021456363316046844,
+    0.023154734747013062,
+    0.01819647167215314
+   ],
+   "wm_offset": [
+    15.946577974283652,
+    18.021212040748576,
+    10.064662743160289,
+    16.50179037692053,
+    20.98462761524045,
+    17.230212221384416,
+    14.000205024542042,
+    21.18168021422813,
+    20.328918405309768,
+    12.509554756454936
+   ],
+   "gm_offset": [
+    21.217021939826115,
+    22.682656639686282,
+    15.92402110466459,
+    20.913862563464512,
+    17.03312087606319,
+    20.131619812013124,
+    16.653384796626064,
+    18.313191569752544,
+    21.48459475169029,
+    18.857624396834915
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "01-02|LTE b1500": {
+   "eps": [
+    -0.026466982721993763,
+    -0.013402916709581025,
+    -0.02187453709444842,
+    -0.0016116281135898948,
+    0.010808298882656537,
+    -0.028486936345118872,
+    0.031306497800410435,
+    0.012582233780281497,
+    0.018968337854318198,
+    -0.002340689406909272,
+    -0.006805616845435202,
+    0.00424991679888005,
+    0.033828699524789056,
+    0.01822215437305511,
+    -0.0054090423780954544,
+    0.00550558527669612
+   ],
+   "gain": [
+    0.026156138894130775,
+    0.027502011265869736,
+    0.026159089025316606,
+    0.029360576661687142,
+    0.02578863363395011,
+    0.02669033229832045,
+    0.025925696332289916,
+    0.023857865548071584,
+    0.0260479532185633,
+    0.02597981258680379,
+    0.022154638547951286,
+    0.02211624275074759,
+    0.024652605003083007,
+    0.024286460026098446,
+    0.024797911825476325,
+    0.02585502536845978
+   ],
+   "wm_offset": [
+    24.24202367485154,
+    26.614846520126967,
+    24.942410084665582,
+    28.526408446441106,
+    28.192533911146526,
+    26.26837225086646,
+    27.330862021304096,
+    25.83362579259617,
+    24.821928702005437,
+    24.90023441627046,
+    22.291104587218086,
+    22.475075349600854,
+    26.828207688656402,
+    25.692223549142895,
+    23.726752829044557,
+    26.94668276748248
+   ],
+   "gm_offset": [
+    26.857321338528454,
+    27.093796214955976,
+    25.01671731802049,
+    28.175687317555838,
+    22.4707376226096,
+    25.446389959560562,
+    22.35352335903847,
+    20.015812920661,
+    25.243853299366645,
+    24.837145791111787,
+    21.10341881607872,
+    19.67614000581536,
+    20.18379298236619,
+    21.04349600134343,
+    23.958714184952715,
+    22.30860150475846
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ]
+  },
+  "01-02|LTE b2000": {
+   "eps": [
+    -0.05596523883679606,
+    -0.06227066340509853,
+    -0.06346120741509213,
+    -0.06817779668852632,
+    -0.04701987669004319,
+    -0.07682002918566395,
+    -0.05263845669918812,
+    -0.07981210158600213,
+    -0.04393602921694764,
+    -0.07275793356234521,
+    -0.06427246657207722,
+    -0.07505921604683179,
+    -0.06628306761845003,
+    -0.049425163973860875,
+    -0.048323990809172185,
+    -0.07013030902903024,
+    -0.06882502907373167,
+    -0.07614111311562113,
+    -0.05813456407823087,
+    -0.0488322101265208,
+    -0.056587385172161386,
+    -0.05276247180772206,
+    -0.05815259653832846,
+    -0.06335726654437222,
+    -0.07855776547861712,
+    -0.055216553964037754,
+    -0.06152750418736334,
+    -0.04171375068435058,
+    -0.052135176814851594,
+    -0.029844185119874998
+   ],
+   "gain": [
+    -0.012236065412945083,
+    0.0075430484921737255,
+    -0.0010219402248764784,
+    -0.004095538874567362,
+    -0.002150177203997659,
+    -0.0017777885804177928,
+    -0.004708686440621844,
+    -0.002627445023111617,
+    -0.007320458468158532,
+    0.0005400992469143248,
+    -0.007806057858471052,
+    -0.00528795987051135,
+    -0.0021189637107405105,
+    -0.0037489402248897406,
+    0.0047905164030414525,
+    -0.0007340090049530233,
+    -0.0066895241397193096,
+    -0.0098321990960765,
+    -0.0023069669693400944,
+    -0.00469050612986136,
+    -0.0013240786387081203,
+    0.0008859970625181763,
+    -0.001954739395193027,
+    -0.0009861957899979998,
+    -0.002966360459658151,
+    0.0014821080453771372,
+    -0.006098037944499267,
+    -0.0030748442094786364,
+    -0.003698540693700193,
+    0.0003741377865860502
+   ],
+   "wm_offset": [
+    -8.258525696857873,
+    12.845973916569339,
+    3.943930914042921,
+    0.12067726657618225,
+    5.409607293102932,
+    3.1095042793162304,
+    1.2441466587394376,
+    5.748768376483921,
+    -4.0648068433528906,
+    4.858143756560229,
+    -2.192116960088872,
+    1.9548813219435757,
+    4.893058145817019,
+    -1.1528396495749746,
+    16.30401864783643,
+    6.375025018847447,
+    2.21618922167803,
+    -4.272313341607536,
+    4.117363847532039,
+    3.694965921964828,
+    6.819094580088766,
+    6.8705499493503135,
+    7.705620152907948,
+    6.7919132033463505,
+    3.4631571273183943,
+    8.164469498902918,
+    0.18780996648147108,
+    3.73165248009882,
+    1.8889688320165954,
+    8.443987401729855
+   ],
+   "gm_offset": [
+    -17.22116358197103,
+    0.7216046769614429,
+    -8.412971354093127,
+    -10.18047014621992,
+    -14.068611316600599,
+    -9.98626143590929,
+    -12.418005350574349,
+    -13.124973037560824,
+    -13.13990047274785,
+    -6.1797632772972415,
+    -15.967338227244626,
+    -16.18096921762132,
+    -12.753365995015313,
+    -8.484813264060914,
+    -8.802463394545498,
+    -9.449220359076863,
+    -18.207171760255548,
+    -17.85825284333316,
+    -9.870877731332023,
+    -14.631958751966147,
+    -13.673127929724062,
+    -9.042946211547644,
+    -15.368045163976651,
+    -11.740288853890206,
+    -12.450525995499609,
+    -9.084904385272761,
+    -14.218821993388444,
+    -12.277537313290889,
+    -11.333987083672527,
+    -11.165202868647846
+   ],
+   "bvals": [
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0
+   ],
+   "volumes": [
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68
+   ]
+  },
+  "01-02|STE b100/500": {
+   "eps": [
+    0.2930129158266716,
+    0.2981281341778267,
+    0.32955504362047855,
+    0.2046791544436022,
+    0.23010985525293848,
+    0.22314956769688735,
+    0.5188474464084754,
+    0.5739881188899455,
+    0.6209940616567956,
+    0.2611867677146313,
+    0.27081296358448104,
+    0.2818164700622755
+   ],
+   "gain": [
+    0.0036741660881317883,
+    0.011067763346126,
+    0.008609884021333392,
+    -0.012999036946186454,
+    -0.001938479396171973,
+    -0.006535562581747695,
+    0.003930854058752591,
+    0.009570290076485086,
+    0.007603968919075519,
+    -0.011472163107163747,
+    -0.0028681638624848843,
+    -0.006336575561464921
+   ],
+   "wm_offset": [
+    12.229929273465583,
+    19.405308976292215,
+    17.279377315667958,
+    -2.523948668188803,
+    8.15994013546536,
+    2.5040997770365334,
+    13.61616841690833,
+    18.06346979445233,
+    15.978467487114626,
+    -1.5527549467495467,
+    7.170137103624341,
+    3.8235930983362056
+   ],
+   "gm_offset": [
+    -2.644794027238658,
+    4.90620357797408,
+    2.2048604851636835,
+    -21.073768633755513,
+    -9.713464345104876,
+    -13.477836952231936,
+    -3.251113232951041,
+    3.2952666298458673,
+    1.4146277797973612,
+    -19.108385530685393,
+    -10.604183423890442,
+    -14.156664695587052
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+   ]
+  },
+  "01-02|STE b1000": {
+   "eps": [
+    0.1668879526073574,
+    0.20707461658004167,
+    0.17790487861303705,
+    0.13430391237653705,
+    0.18100074268710817,
+    0.12428305028417679,
+    0.10044714937623195,
+    0.16623717247508288,
+    0.10448137079290812
+   ],
+   "gain": [
+    -0.009124433164745802,
+    0.006159215202523158,
+    -0.0010347276502664178,
+    -0.008909497142223645,
+    0.005261156966753482,
+    -0.0030639104493786545,
+    -0.00846557371897484,
+    0.00398477209122014,
+    -0.00305421379272904
+   ],
+   "wm_offset": [
+    -5.60107388726268,
+    12.483066986650398,
+    2.6552509049024926,
+    -3.1290379061169924,
+    12.620126169660132,
+    1.3635207630545365,
+    -2.1680288893302837,
+    11.127222310993075,
+    1.99751015068939
+   ],
+   "gm_offset": [
+    -11.825860199484966,
+    1.2544081493232961,
+    -3.8666237190764243,
+    -13.375979399229987,
+    -0.47452281397503027,
+    -6.47447216743111,
+    -13.351344884136417,
+    -1.575403449213354,
+    -6.954539801288355
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
+   ]
+  },
+  "01-02|STE b1500": {
+   "eps": [
+    -0.05772124465293951,
+    -0.0238228947820093,
+    -0.07769312598013936,
+    -0.054110272079767735,
+    -0.026368471314868448,
+    -0.051356223752670634,
+    -0.07085502869505987,
+    -0.03523963404950898,
+    -0.08024084855477993,
+    -0.0675441926010683,
+    -0.04762600535009375,
+    -0.0763447415019721,
+    -0.07790848354646367,
+    -0.04532781749249316,
+    -0.08924567503106898
+   ],
+   "gain": [
+    0.011445839496654642,
+    0.023764559581298323,
+    0.018687609446613605,
+    0.011691757372079186,
+    0.023912906923505083,
+    0.01875837908816507,
+    0.007539494723349659,
+    0.019610407023223798,
+    0.01544051528366232,
+    0.007454253828678821,
+    0.017406776905830486,
+    0.01817017142948908,
+    0.010078333132731853,
+    0.020925689521728557,
+    0.018059563673348034
+   ],
+   "wm_offset": [
+    6.376909391099376,
+    24.629808231880098,
+    15.337368231385918,
+    7.593722998667652,
+    24.22721467739123,
+    15.248842887822224,
+    5.324554175770694,
+    22.742425322327627,
+    14.87705490376806,
+    6.138626037405317,
+    21.767985840444886,
+    16.857367883903837,
+    8.003535977214197,
+    25.181440424439657,
+    17.345695533166957
+   ],
+   "gm_offset": [
+    15.219704153161677,
+    23.107214135039346,
+    21.196407190079295,
+    14.749972436446269,
+    23.674739792941914,
+    21.384297417707145,
+    9.204030795382895,
+    17.215039139029038,
+    15.866496509147739,
+    8.446400713963927,
+    14.05765677444666,
+    19.16005127920666,
+    11.6404390930389,
+    17.65796081695331,
+    18.59915876165235
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ]
+  },
+  "01-03|LTE b100/500": {
+   "eps": [
+    0.22980059211851003,
+    0.0461398575018747,
+    0.05635594895818801,
+    0.22393201761712705,
+    0.23751365528922433,
+    0.17441455383173823,
+    -0.0928696986756318,
+    -0.14381910669333905,
+    -0.15509861923261353,
+    -0.17291207724030744,
+    -0.15690078676495636,
+    -0.11552841217064382
+   ],
+   "gain": [
+    0.0024532649853623288,
+    0.0009028006112464583,
+    -0.0006753295066749208,
+    0.004043788670362015,
+    0.0011948027318746455,
+    0.0016362294296125889,
+    0.009727932327262203,
+    0.010358439487892947,
+    0.010982943751757427,
+    0.011342033861569893,
+    0.010295990822210022,
+    0.009383590156372659
+   ],
+   "wm_offset": [
+    6.260696029231006,
+    1.8895722327552171,
+    -0.17241883784395776,
+    5.7770405057746474,
+    4.043126742479033,
+    4.3125194018542485,
+    3.187819377779639,
+    4.493630121246173,
+    2.7311265753588123,
+    3.0533448713539557,
+    1.650646821752458,
+    3.2216519505686882
+   ],
+   "gm_offset": [
+    -0.0832897152417118,
+    0.6170449346201711,
+    -0.7081897663828789,
+    3.2321250310579703,
+    -0.21420150458282283,
+    0.5397330229858088,
+    13.14898252650127,
+    14.3791233248187,
+    16.452852705597298,
+    16.61380527192285,
+    15.84659610287658,
+    13.834615280904835
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "01-03|LTE b1000": {
+   "eps": [
+    0.11955476671753977,
+    0.0982088715674322,
+    0.10806671227208006,
+    0.1141859075243521,
+    0.14725895269146944,
+    0.1380359406354051,
+    0.11556379570330026,
+    0.1372257142096227,
+    0.1272765798861,
+    0.09639396855435149
+   ],
+   "gain": [
+    0.019821318214711694,
+    0.02100233765507326,
+    0.018193461065341417,
+    0.021465395144332138,
+    0.021037665561782284,
+    0.021258024926077233,
+    0.020666801688722973,
+    0.018457950846555986,
+    0.020377552365156704,
+    0.019727892738746776
+   ],
+   "wm_offset": [
+    30.324208944701645,
+    33.52635162865859,
+    29.18149847756745,
+    31.607902266873097,
+    39.013724899486206,
+    31.914527423756557,
+    31.86236888131148,
+    33.360420921382364,
+    31.575455586676,
+    26.78441004131355
+   ],
+   "gm_offset": [
+    11.357312288478564,
+    10.31944463055539,
+    6.282522859558361,
+    8.477472670701978,
+    8.662234221766132,
+    10.887731978883588,
+    8.717044734843826,
+    4.944766626228819,
+    7.833733306944928,
+    9.333510718616392
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "01-03|LTE b1500": {
+   "eps": [
+    0.033748360779263,
+    0.015232543922403854,
+    0.03298805253288516,
+    -0.0056276725578241074,
+    0.022527210392810228,
+    0.04390905586555863,
+    0.03926211412799935,
+    0.044821594071561825,
+    0.05302297987704622,
+    0.03849485096043121,
+    0.04754559571961143,
+    0.039711637339829985,
+    0.03729786381279065,
+    0.03944578464647847,
+    0.038800227487406504,
+    0.019585856217334115
+   ],
+   "gain": [
+    0.01594822832451432,
+    0.017222537947391797,
+    0.014424873826810264,
+    0.01945899911752376,
+    0.013189935064574485,
+    0.013272685061953539,
+    0.014072587913206895,
+    0.0136845902451556,
+    0.01732047906572385,
+    0.01728358736765032,
+    0.013705027571319405,
+    0.013773832599685032,
+    0.014952711079980413,
+    0.01287621427348939,
+    0.015103467541775361,
+    0.010089933584198985
+   ],
+   "wm_offset": [
+    19.355918480641975,
+    18.15927135714011,
+    13.83420269586218,
+    19.894747742930335,
+    15.25866407484618,
+    15.619571792233527,
+    15.217376792868716,
+    18.17127910761567,
+    19.98906287459568,
+    16.889657729612864,
+    20.678485355969745,
+    12.757800132098673,
+    17.695412385265847,
+    14.643474248572153,
+    18.412840107407234,
+    8.01498887460183
+   ],
+   "gm_offset": [
+    10.645747656296281,
+    13.04532506070084,
+    8.034120007065635,
+    13.679225670578274,
+    9.570426169102854,
+    7.103347003367257,
+    7.681037409585094,
+    5.580251346698892,
+    8.9965512661018,
+    10.859236219291585,
+    6.718278181401748,
+    9.516932013423574,
+    7.071747059220223,
+    7.050251994672047,
+    7.089310966618111,
+    5.594349062115236
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ]
+  },
+  "01-03|LTE b2000": {
+   "eps": [
+    -0.0925726507368979,
+    -0.11013460442492032,
+    -0.08230961022134485,
+    -0.07764536678641992,
+    -0.11157207289643188,
+    -0.11340597126835125,
+    -0.08154813751690988,
+    -0.11699058811551573,
+    -0.08966939324977773,
+    -0.09477797070536924,
+    -0.10877877530186374,
+    -0.10214495497169443,
+    -0.08297474473139779,
+    -0.10180027796938092,
+    -0.10752791272306642,
+    -0.11125922408915034,
+    -0.08292544614125563,
+    -0.08185869005351085,
+    -0.11403850655359699,
+    -0.10405049889099684,
+    -0.10130568853045037,
+    -0.0790722977177029,
+    -0.08595325228066442,
+    -0.08744779832176416,
+    -0.11625001242899557,
+    -0.10498819051558429,
+    -0.09263430957427791,
+    -0.11315295375362958,
+    -0.12349765551077731,
+    -0.10707906910345427
+   ],
+   "gain": [
+    -0.0025498544582930097,
+    0.007516074897747419,
+    0.001226956943948253,
+    0.007148100688644899,
+    0.005977254100800059,
+    0.003368698692731256,
+    0.002922511781238728,
+    0.004684025333987515,
+    0.0008709557136881675,
+    0.004161045041309255,
+    -0.0008318761368095039,
+    0.0023261237673762375,
+    -0.0029848447743247683,
+    0.0034487382260253428,
+    0.0057610068054994275,
+    0.0046244846103622025,
+    0.0023609927289551767,
+    -0.0008312754305279864,
+    0.0032412769503744505,
+    0.002458500586366408,
+    0.000946545952627893,
+    0.002154087244482773,
+    -0.0003619780700771045,
+    0.0013814765664775309,
+    0.007208483953182414,
+    0.003571759218858823,
+    0.0031438868312928235,
+    0.002786783306877012,
+    0.0013310998137182795,
+    0.0065243307111724925
+   ],
+   "wm_offset": [
+    1.0326124904732277,
+    9.213033386101722,
+    0.7765500405760976,
+    14.831124861396104,
+    12.069334908077417,
+    7.320921076287606,
+    12.769092015041231,
+    12.414229291977623,
+    4.36386501212371,
+    7.527262676339005,
+    0.9504019276561059,
+    11.050829080753836,
+    -0.9275048557129478,
+    10.32957376218781,
+    12.686217227789182,
+    15.025783976149633,
+    12.20357656220408,
+    7.7519206358572434,
+    10.558538483159639,
+    1.9851388219730683,
+    6.81663577138926,
+    6.597332470335229,
+    4.263454398029834,
+    5.1191823121641855,
+    12.969241849209597,
+    8.582786622627115,
+    9.218040999704952,
+    9.620064513470592,
+    4.058711547529493,
+    8.85183771700699
+   ],
+   "gm_offset": [
+    -4.282542127481815,
+    7.834087045939261,
+    4.274133819225768,
+    1.5999639618713821,
+    2.208341612370284,
+    2.09765865453208,
+    -4.491089357285601,
+    -0.8034653455067072,
+    0.31926962233659817,
+    3.325150762023232,
+    -0.37391927907972744,
+    -4.3203380963616205,
+    -2.30436510206885,
+    -0.9874224534284269,
+    0.9615116895372183,
+    -3.2086196181899314,
+    -4.800505562095738,
+    -6.88513181663685,
+    -1.855522689992666,
+    4.124170930170942,
+    -2.3943799229909004,
+    0.5474251190728459,
+    -2.67658336580505,
+    -0.15509809924465773,
+    3.8598356137314394,
+    1.1441369589554327,
+    -0.7063885963320208,
+    -1.6404140506040306,
+    0.8863283693047492,
+    6.836312705972213
+   ],
+   "bvals": [
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0
+   ],
+   "volumes": [
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68
+   ]
+  },
+  "01-03|STE b100/500": {
+   "eps": [
+    0.6399939290999254,
+    0.9943555543048529,
+    0.9256798258143428,
+    0.016075957465247412,
+    -0.032729784089997674,
+    -0.03768854103553652,
+    0.7091460671054898,
+    0.9388390435413009,
+    0.9942686899739435,
+    -0.03321482212129778,
+    0.016328840652736806,
+    -0.03545135481010632
+   ],
+   "gain": [
+    -0.002173352695360364,
+    0.004843398649935478,
+    0.0005709455418899355,
+    -0.009763792896753547,
+    0.0025517774782632223,
+    -0.001919497691583749,
+    -0.0032987574637977552,
+    0.0036676717842932392,
+    -0.0004226238172761995,
+    -0.010764861545181708,
+    0.0011349417455584839,
+    -0.004637201505143894
+   ],
+   "wm_offset": [
+    2.628058851349937,
+    6.773508878455562,
+    3.6593455040575504,
+    -9.070154880622553,
+    -3.873175785530705,
+    -5.525654575532203,
+    1.3429615275599187,
+    6.769636081734013,
+    4.5602456809164025,
+    -9.489541102458434,
+    -2.958618540672524,
+    -8.65397871608838
+   ],
+   "gm_offset": [
+    -4.778951716767722,
+    3.803854962355662,
+    -1.0949334755762108,
+    -10.147683560611753,
+    6.0415016880635175,
+    0.05743255771003708,
+    -5.817412914697567,
+    1.9934300978708008,
+    -3.12382600446795,
+    -11.47507203968677,
+    3.3721422335559668,
+    -2.435023363995884
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+   ]
+  },
+  "01-03|STE b1000": {
+   "eps": [
+    0.19616022247015064,
+    0.1524158070992548,
+    0.20032028476177238,
+    0.16340255433177844,
+    0.13090976303883867,
+    0.18938775455988605,
+    0.2056762255264845,
+    0.1800121807164455,
+    0.23836384323325327
+   ],
+   "gain": [
+    -0.0035035642810440355,
+    0.008258091292571395,
+    0.004266607347684645,
+    -0.005268759649700011,
+    0.007022106992472708,
+    0.0022417332414918305,
+    -0.006482300802997291,
+    0.006974446449890055,
+    0.003875753917829252
+   ],
+   "wm_offset": [
+    12.77133289388023,
+    27.454236292023506,
+    17.8522772892901,
+    6.165821461380655,
+    24.517659520221617,
+    13.962521515711192,
+    8.969156416244468,
+    25.62087694598037,
+    19.63074007852255
+   ],
+   "gm_offset": [
+    -12.88760197858902,
+    -2.943372270583516,
+    -3.515508182519215,
+    -11.833026744882712,
+    -3.147646555100794,
+    -4.453055988427784,
+    -15.382241099191486,
+    -3.8709104372875944,
+    -5.202202083391866
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
+   ]
+  },
+  "01-03|STE b1500": {
+   "eps": [
+    0.001215746604459033,
+    -0.027078315840501566,
+    -0.016636662340540093,
+    -0.019664370744735725,
+    -0.05469744360157687,
+    -0.009020320181012257,
+    0.011252633477599522,
+    -0.03829388963086665,
+    -0.02661356822418702,
+    0.01065269774388388,
+    -0.010245465105218699,
+    -0.007406527172282548,
+    0.001399709024379449,
+    -0.02111982711611155,
+    -0.02831257329488828
+   ],
+   "gain": [
+    0.014307642024635827,
+    0.023724098799176193,
+    0.0242385225651093,
+    0.013110772465730286,
+    0.022246899813905163,
+    0.021093119913573127,
+    0.012473776320230685,
+    0.02385714302673055,
+    0.01835374313459892,
+    0.015003960272508127,
+    0.02262213602981017,
+    0.022321297047335525,
+    0.014370200489890957,
+    0.02012490869595846,
+    0.0201483510763217
+   ],
+   "wm_offset": [
+    19.679950122405984,
+    27.668657880483597,
+    29.050974054748494,
+    19.822362826888792,
+    28.3899796793114,
+    24.321385969257506,
+    16.034615630096226,
+    27.37484431651455,
+    21.85449351445231,
+    28.399279082418982,
+    32.307115011099775,
+    27.981594232029114,
+    27.990973009779772,
+    25.773835738781106,
+    26.24027453660442
+   ],
+   "gm_offset": [
+    11.336762593111596,
+    21.555109371200583,
+    21.597311247330584,
+    9.389689838068389,
+    18.86879872881288,
+    19.31330861435412,
+    10.512114898089772,
+    21.914857184572792,
+    16.424016428741457,
+    7.526080370602786,
+    17.216605219180604,
+    19.20009167624727,
+    6.717921264982765,
+    17.00609491898361,
+    16.763382756774025
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ]
+  },
+  "02-01|LTE b100/500": {
+   "eps": [
+    -0.1006589697202396,
+    -0.0062631816822837265,
+    0.022677095782054898,
+    -0.0564235212671606,
+    0.06286139292007487,
+    -0.09836739714234824,
+    -0.34409637762254414,
+    -0.30551601130456396,
+    -0.3244734765819879,
+    -0.2926479080690977,
+    -0.2689548159313563,
+    -0.27365762977415165
+   ],
+   "gain": [
+    -0.0015268794112152965,
+    -0.001616242977032686,
+    -0.001249583829038554,
+    0.0005525633377609174,
+    -0.005012054562471453,
+    -0.0020559459988290355,
+    0.008989167112397113,
+    0.010287798798452475,
+    0.009233744142738464,
+    0.007988364389525424,
+    0.004446204075694486,
+    0.00391516145788597
+   ],
+   "wm_offset": [
+    -2.2580765843535677,
+    -2.867040128152931,
+    -1.1181198210654313,
+    -1.4863407504584338,
+    -1.3677649176518676,
+    -0.6556722934989108,
+    -10.406878336934758,
+    -3.447997885993292,
+    -8.37410643177045,
+    -6.70419685286288,
+    -5.2105044439503585,
+    -5.387867931537766
+   ],
+   "gm_offset": [
+    -1.7952186806285446,
+    -0.6062843419808417,
+    -1.4932920233678861,
+    1.5960405291566624,
+    -6.294190794074077,
+    -2.11887163075325,
+    19.819497605277288,
+    19.24602817214489,
+    19.82373799213605,
+    17.175336584468866,
+    11.933049492047733,
+    11.156249987867923
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "02-01|LTE b1000": {
+   "eps": [
+    0.10399027593105795,
+    0.06527182023473889,
+    0.07662019998785986,
+    0.04873063378032958,
+    0.06307438904649963,
+    0.06905606335278125,
+    0.08890265431901084,
+    0.07195643675122362,
+    0.05556399379776794,
+    0.03851858340518444
+   ],
+   "gain": [
+    0.017150542758013382,
+    0.017609674066393542,
+    0.01719606928478212,
+    0.015841731472197317,
+    0.012530625936633195,
+    0.014068722905723887,
+    0.015480883065363394,
+    0.016786090335976153,
+    0.021193295566240243,
+    0.020150300365801725
+   ],
+   "wm_offset": [
+    24.555017077307273,
+    23.41208420321842,
+    25.239597750159017,
+    19.49106673581415,
+    18.050963853226744,
+    18.479509352766456,
+    25.311845915761797,
+    25.87162125397048,
+    25.65962554790184,
+    21.454108508461694
+   ],
+   "gm_offset": [
+    11.205846313284425,
+    12.602902483340825,
+    9.395489770287549,
+    11.685171063886083,
+    7.969504736278834,
+    9.600704019347932,
+    7.819866299502735,
+    9.454494673731926,
+    15.353276300634624,
+    17.07110217900136
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "02-01|LTE b1500": {
+   "eps": [
+    0.07222045209564282,
+    0.0742831855824989,
+    0.12978150149879425,
+    0.07639255806342285,
+    0.10858625272798236,
+    0.09729230303374056,
+    0.10906499705476194,
+    0.09549313455552673,
+    0.05953933594912665,
+    0.09893567704190968,
+    0.11486640755664143,
+    0.1162152235564195,
+    0.10015760419539721,
+    0.0989003730179426,
+    0.059716342887263844,
+    0.10666108093278977
+   ],
+   "gain": [
+    0.02682090201731053,
+    0.022132713354664334,
+    0.026188244021048614,
+    0.022492192069100494,
+    0.022480381732433677,
+    0.023293887862745805,
+    0.021272407461473734,
+    0.018693430484307477,
+    0.022956654362212746,
+    0.023317864543665672,
+    0.024751491048530125,
+    0.01892957532423544,
+    0.020742155427736917,
+    0.01963503361604243,
+    0.023476860139262874,
+    0.024395240516733942
+   ],
+   "wm_offset": [
+    41.84013534810315,
+    35.797729785918094,
+    39.506137988164774,
+    26.234105795438026,
+    37.05590153994178,
+    31.189206896032193,
+    38.46071235716689,
+    33.399049137589735,
+    23.029131452134386,
+    25.083996212695155,
+    44.76893491142489,
+    28.24953336720828,
+    35.090391216479254,
+    31.43751036740678,
+    22.5594326120091,
+    28.972702680638594
+   ],
+   "gm_offset": [
+    7.651472758218821,
+    2.9886021836984713,
+    3.008578075474344,
+    6.753212748781801,
+    3.1552764542065797,
+    6.017896694735705,
+    0.014063194962638678,
+    -1.5096880536726647,
+    6.801876575168479,
+    6.311377446424927,
+    3.1750605052310243,
+    0.4484757290694023,
+    1.2031989217737384,
+    0.6793362121042072,
+    9.751978051573166,
+    5.682015218739787
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ]
+  },
+  "02-01|LTE b2000": {
+   "eps": [
+    -0.08004415775461256,
+    -0.07162170242058272,
+    -0.06885112190787421,
+    -0.07700019410353089,
+    -0.05957547571350382,
+    -0.07911111880657873,
+    -0.07940304911288809,
+    -0.08782522232713137,
+    -0.06824572174941589,
+    -0.07106782644367601,
+    -0.0614300139311717,
+    -0.06630765570214421,
+    -0.07816171219545531,
+    -0.0598634576086315,
+    -0.08867549003991446,
+    -0.07411406306775989,
+    -0.06824250068230311,
+    -0.07217204916390514,
+    -0.07415606770335276,
+    -0.08161783661310572,
+    -0.06814279093452004,
+    -0.06825430863332725,
+    -0.061035709534396757,
+    -0.06049476287120731,
+    -0.07382996809495425,
+    -0.09636349413238027,
+    -0.06377356135004511,
+    -0.06589585677286984,
+    -0.07234434756280544,
+    -0.05998246755502261
+   ],
+   "gain": [
+    -0.0008986730334459871,
+    0.015996651296516555,
+    0.0026859450111093954,
+    0.00687049600211416,
+    -0.0014907654161157927,
+    0.0018501714831264233,
+    0.004942838868486264,
+    0.004984867564720765,
+    0.0018492301737771633,
+    0.0044809667216651776,
+    -0.0012154655271949064,
+    -0.0035865906775074414,
+    0.0035258892821100935,
+    -0.00031077445003207605,
+    0.00021392347042534503,
+    -0.00034563178979944286,
+    -0.005628817869957213,
+    -0.00997118169349856,
+    0.00213613306235957,
+    0.0032057154605698423,
+    0.0025245541410800674,
+    0.009204906364642525,
+    0.0014661336747874443,
+    0.0038834133596454086,
+    0.0013257623887946528,
+    0.006506082714262245,
+    -0.0007971915579245608,
+    0.006098291890069897,
+    0.005153455484927618,
+    0.003582567308453824
+   ],
+   "wm_offset": [
+    -4.913331742076302,
+    14.535473172698765,
+    -3.439837974670469,
+    2.2367371428589324,
+    2.3437416201405408,
+    4.126817935710688,
+    0.6350926525287983,
+    -0.9208814082672966,
+    -3.9531060470858432,
+    2.7009851134461518,
+    -0.496141836123389,
+    -3.604454287087941,
+    6.533888483589844,
+    -1.0019836593174751,
+    -3.249058757149277,
+    -6.444175302898111,
+    -9.55000230817039,
+    -16.32221450225886,
+    -7.580385950314842,
+    0.8709347363660132,
+    -0.7651500634850801,
+    8.895683070551677,
+    -2.191038043738194,
+    -0.8185780381795809,
+    -3.442619702414725,
+    2.570433584097232,
+    -4.519665977342392,
+    5.402254419193367,
+    7.535840945813339,
+    3.808619432033289
+   ],
+   "gm_offset": [
+    7.333673071323434,
+    22.114040718073458,
+    12.25893547373059,
+    15.095312252635644,
+    0.6785835014713629,
+    5.919039332996147,
+    11.304972814499669,
+    13.46668043209108,
+    12.677776162339592,
+    11.20949979762626,
+    3.324596074602848,
+    2.2251528871327464,
+    6.47781422887918,
+    6.821732392663675,
+    6.947643160466293,
+    9.459558955846985,
+    3.0555479503693226,
+    1.0526475072953962,
+    13.126855922185205,
+    7.393437492053994,
+    10.974372439822192,
+    14.0637288206238,
+    9.366838111775849,
+    13.58818699629971,
+    12.387217634453195,
+    15.833235276220574,
+    8.083128582160779,
+    11.906985684144876,
+    7.828480277893593,
+    8.55343313513019
+   ],
+   "bvals": [
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0
+   ],
+   "volumes": [
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68
+   ]
+  },
+  "02-01|STE b100/500": {
+   "eps": [
+    2.367620140710159,
+    2.3536379470828135,
+    2.3505309219112474,
+    0.021832581460740845,
+    -0.034482214584679184,
+    0.021202308321344773,
+    2.404909709982319,
+    2.3963391618613343,
+    2.3200067884563267,
+    -0.021201904662782274,
+    -0.020891684248757144,
+    0.04876465703990807
+   ],
+   "gain": [
+    0.0045570962903145,
+    0.005593937198898592,
+    0.007520231582029605,
+    -0.003765589498357193,
+    -0.0004135390390688561,
+    0.0016718749193450528,
+    0.004876092685916391,
+    0.006839882768259095,
+    0.005107176719515954,
+    -0.005007649925769166,
+    -0.0027763868203235557,
+    0.00017459291865918046
+   ],
+   "wm_offset": [
+    13.857076900040617,
+    14.898282512625993,
+    15.249902185037598,
+    -5.917173933756434,
+    -4.926732624524028,
+    -2.320150848667807,
+    14.791271504423982,
+    16.111652371345574,
+    13.744306176659771,
+    -6.572991070034827,
+    -7.392109149111601,
+    -4.09269935919328
+   ],
+   "gm_offset": [
+    -0.5575148218980479,
+    0.47224081422845204,
+    3.2866718593873516,
+    -2.533044627653892,
+    2.1549643868202137,
+    3.9453315425639577,
+    -0.5850882775434917,
+    1.743285970357418,
+    0.3635997306472788,
+    -4.108747365581624,
+    -0.14845425245851251,
+    2.600438334237035
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+   ]
+  },
+  "02-01|STE b1000": {
+   "eps": [
+    0.10946182200403921,
+    0.19648276193325184,
+    0.12357519052414695,
+    0.09629287546364178,
+    0.21259427614314091,
+    0.186322890035218,
+    0.0936276816880841,
+    0.14254026193127264,
+    0.1517301010876302
+   ],
+   "gain": [
+    -0.002712803925311157,
+    0.001920921154696248,
+    0.0016255163978583416,
+    -0.00433196475591638,
+    0.0013120307517935097,
+    0.004020977794799692,
+    -0.0025228251247936388,
+    0.001937519927579257,
+    0.0044535516712686804
+   ],
+   "wm_offset": [
+    1.5301140540688074,
+    3.45626600609403,
+    4.090281955980511,
+    -0.35285236559235467,
+    2.724136085310142,
+    8.130217596524119,
+    1.359581567775922,
+    2.749299235128308,
+    7.875463991648262
+   ],
+   "gm_offset": [
+    -5.265777359289954,
+    1.0079302303974542,
+    0.1444428728727718,
+    -6.724715696078799,
+    0.4723131999875946,
+    1.555156306094254,
+    -4.856920484039259,
+    1.4539884103187584,
+    2.399562508392752
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
+   ]
+  },
+  "02-01|STE b1500": {
+   "eps": [
+    -0.0243993869817608,
+    0.011840866689255325,
+    -0.015715886548602547,
+    -0.020329640720663122,
+    -0.00747132101385248,
+    0.021812201131580368,
+    -0.05291290975271514,
+    -0.01718743198532878,
+    -0.043575349730696475,
+    -0.06803991529175919,
+    -0.009266322905191055,
+    -0.04807112832421354,
+    -0.07160654311449921,
+    0.01796970154857941,
+    -0.025413518606550813
+   ],
+   "gain": [
+    0.006426493327037886,
+    0.01117280858557575,
+    0.01222369154352951,
+    0.007272265973494628,
+    0.012283124204948159,
+    0.007705656705690703,
+    0.004107624417658838,
+    0.009888652638975818,
+    0.010514216859576823,
+    0.005059956951815238,
+    0.01060118723434766,
+    0.01406635354081364,
+    0.005303868045906844,
+    0.01153828052124856,
+    0.013028519615152143
+   ],
+   "wm_offset": [
+    12.136544702536893,
+    8.813326969105647,
+    16.279500188281034,
+    16.869253447162052,
+    14.28665421631507,
+    8.45393220198313,
+    10.170516878929005,
+    8.677764369497794,
+    17.19669034914996,
+    10.646013688620103,
+    8.418626949201242,
+    20.584732699204018,
+    12.025598715817463,
+    14.551191920760573,
+    21.135737338186075
+   ],
+   "gm_offset": [
+    2.9882122935957134,
+    12.56631436474731,
+    9.790471513192239,
+    1.4861701095486264,
+    11.089797526131653,
+    7.25856139153525,
+    0.44362511770766666,
+    10.605685302063659,
+    6.48431109058724,
+    1.6995885771372155,
+    11.886545402312315,
+    10.129053868911862,
+    1.2573893876375917,
+    9.740030175200635,
+    8.122160999814778
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ]
+  },
+  "06-01|LTE b100/500": {
+   "eps": [
+    0.3253520017732801,
+    0.39869439204397555,
+    0.597719760039877,
+    0.5899755363279554,
+    0.4139090195283207,
+    0.493278556292143,
+    -0.03389460676193607,
+    -0.07430372128891471,
+    -0.02068978552598762,
+    -0.056833718132704436,
+    -0.06642932166949243,
+    -0.10690255822525321
+   ],
+   "gain": [
+    0.00037008708841016293,
+    -0.0008494962684205454,
+    -0.00026957006314471223,
+    0.0026244023019428952,
+    0.0005928033826524862,
+    0.000702274858865677,
+    0.013668228341839768,
+    0.008561867707122648,
+    0.012105266510732978,
+    0.008785636655503599,
+    0.010548763115808346,
+    0.013864741070373495
+   ],
+   "wm_offset": [
+    -0.6477633056801214,
+    -5.654023786351846,
+    -3.7246942166317156,
+    -0.8725362068384874,
+    -2.1450178616931077,
+    -2.507522649477462,
+    1.1759649278826247,
+    -1.024477563992176,
+    -1.638608251447156,
+    -4.981315579322649,
+    -0.8062886326371742,
+    1.9282104641284847
+   ],
+   "gm_offset": [
+    0.4013624695229449,
+    1.7833401322159388,
+    1.4373658278607473,
+    4.542559435275904,
+    2.4799445648190077,
+    2.927735590680931,
+    20.3404029202841,
+    14.54651643218488,
+    20.1473686417805,
+    17.210955282858823,
+    18.292287008323846,
+    22.077874575682202
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "06-01|LTE b1000": {
+   "eps": [
+    0.061444023432765615,
+    0.11384375009217665,
+    0.08176645841891775,
+    0.09391269436651598,
+    0.12223781107987461,
+    0.11129861432636338,
+    0.11645806546179946,
+    0.12693203499889041,
+    0.10844097096040808,
+    0.07487208644746106
+   ],
+   "gain": [
+    0.017749539814364383,
+    0.02327022334034173,
+    0.01910638252671688,
+    0.022796030989373765,
+    0.02134507261152188,
+    0.021931272781005356,
+    0.0207770554038715,
+    0.020232345216589512,
+    0.021158496433329888,
+    0.0253738941914835
+   ],
+   "wm_offset": [
+    21.89045879531821,
+    32.86387196487821,
+    24.401717484102335,
+    27.80703641587462,
+    31.146490813197076,
+    26.566421818578714,
+    31.57731149593144,
+    30.128418303445958,
+    25.434570088188643,
+    27.542634317283355
+   ],
+   "gm_offset": [
+    12.85157040372586,
+    13.414461727829794,
+    10.108579809333138,
+    14.384323551858138,
+    12.731782462984793,
+    15.32337942074288,
+    10.766133475019554,
+    10.06506941554542,
+    11.136738214749261,
+    16.79205008783133
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "06-01|LTE b1500": {
+   "eps": [
+    0.03221825685220439,
+    0.0013523263013858324,
+    0.02195204180734867,
+    0.03837893988406944,
+    0.021733326616990404,
+    0.054418763968743816,
+    0.04156862215073136,
+    0.0281699360078138,
+    0.020567503205470305,
+    0.14731127069465458,
+    0.0710468955403949,
+    0.06004161977034089,
+    0.06565206936855324,
+    0.052822602317359,
+    0.04107953994808668,
+    0.018185304649911634
+   ],
+   "gain": [
+    0.018625178228727536,
+    0.019725649918041353,
+    0.018071832530466986,
+    0.023815494926786748,
+    0.023193933999485133,
+    0.02051093778068234,
+    0.018089387007598285,
+    0.02346567088999085,
+    0.022175162627871822,
+    0.013443876528244957,
+    0.007779578176223102,
+    0.014508314063101999,
+    0.019589475529191682,
+    0.018576169035555253,
+    0.020786007647191854,
+    0.020378331279581687
+   ],
+   "wm_offset": [
+    20.98946604350521,
+    16.15280848394089,
+    17.56185642108674,
+    23.13461635146599,
+    23.064748772200332,
+    21.614088364061878,
+    18.82377464010019,
+    25.64010838961029,
+    18.46193245863617,
+    22.419875627542563,
+    16.928331132512305,
+    16.009530021067885,
+    23.80912910422912,
+    18.63786879389738,
+    20.18181692585606,
+    15.046818631508701
+   ],
+   "gm_offset": [
+    13.505152378098293,
+    18.747812222009866,
+    12.838176417793136,
+    18.677725120447384,
+    20.157074664716294,
+    15.366456064890942,
+    13.862040556595208,
+    17.153937721462498,
+    18.25210439038344,
+    -4.036408321221098,
+    -1.9083774245363991,
+    9.034067999959014,
+    11.963882743847913,
+    13.556962633145185,
+    14.506197112793597,
+    18.355881895904485
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ]
+  },
+  "06-01|LTE b2000": {
+   "eps": [
+    -0.09136629647133668,
+    -0.08861004324548757,
+    -0.08614038415654941,
+    -0.07087935058587672,
+    -0.09689485865455306,
+    -0.12129268660539344,
+    -0.08670498270762284,
+    -0.0705161749993156,
+    -0.08026998612473206,
+    -0.082960032817083,
+    -0.07892442458894053,
+    -0.10788743205017826,
+    -0.08444743349422941,
+    -0.0945006896412421,
+    -0.0982429068602127,
+    -0.09078225940498226,
+    -0.10158807246964317,
+    -0.09573495467351666,
+    -0.0972037254544857,
+    -0.09376890764041507,
+    -0.0781054270332961,
+    -0.0740687786376314,
+    -0.07942261285869304,
+    -0.06268604603930532,
+    -0.05768079817949403,
+    -0.09443076505820297,
+    -0.1054151837520185,
+    -0.08674379644432056,
+    -0.08215219799784026,
+    -0.08109617451003932
+   ],
+   "gain": [
+    0.0019070986880724,
+    0.0034087136394868297,
+    0.006127865517352453,
+    -0.0010678308950282994,
+    0.010445882210301655,
+    0.014960094055429175,
+    0.0012149727548767023,
+    -0.0036560309423169517,
+    -0.0011930427216567336,
+    0.004368013425987964,
+    -0.0036629061311428865,
+    0.006533281415617744,
+    -0.005190890264023404,
+    0.010097757677976812,
+    0.011280471683082447,
+    0.00036483872070944577,
+    0.004770580661659433,
+    0.00010270616325934811,
+    0.014901763213439664,
+    0.006413669638331687,
+    0.007577686325158992,
+    0.00022084724014266507,
+    -0.0033730949961729892,
+    0.006305503319203209,
+    -0.0009038537354591214,
+    0.005796533839545471,
+    0.0027230110298827864,
+    0.007951606764135548,
+    -0.003419300062592151,
+    0.004262916358370812
+   ],
+   "wm_offset": [
+    9.950875561336014,
+    6.470735085880825,
+    12.879385529226921,
+    4.5817005416675585,
+    14.044505126143896,
+    17.01902397888497,
+    8.381926783174288,
+    4.7005127513875475,
+    2.5635925415164857,
+    9.814127903572436,
+    1.6594058757087933,
+    11.604426439039313,
+    1.1689613197568878,
+    13.024491352845144,
+    16.668518054540705,
+    8.08940528097321,
+    14.165666127852976,
+    9.621087413759943,
+    19.21934371068127,
+    11.680188348031994,
+    13.071957096630223,
+    7.161732991423951,
+    6.234875675419848,
+    12.596723429866097,
+    6.517391093109391,
+    10.791791346107562,
+    13.251125193888818,
+    13.709577912764013,
+    1.9686959638684114,
+    10.016510677334686
+   ],
+   "gm_offset": [
+    -4.685996378441391,
+    2.022973635848351,
+    0.325556195832075,
+    -5.666218173165215,
+    8.647608165883335,
+    15.290097988152201,
+    -4.769208688157988,
+    -11.021914790128111,
+    -3.510384941324575,
+    0.1584304311319072,
+    -7.708369350453137,
+    2.7020060421174716,
+    -10.50775589303228,
+    9.21464764896313,
+    7.199074792299292,
+    -6.113912812444176,
+    -3.109703048040378,
+    -7.873413129253182,
+    11.672445547308932,
+    2.2789516049603855,
+    3.3755912760894584,
+    -5.606458971701756,
+    -12.146932829065737,
+    0.9523493164698689,
+    -7.576915761312882,
+    2.22373395522098,
+    -6.9142227508647665,
+    3.535022461711974,
+    -7.327459382864718,
+    0.08908296656104199
+   ],
+   "bvals": [
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0,
+    2000.0
+   ],
+   "volumes": [
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68
+   ]
+  },
+  "06-01|STE b100/500": {
+   "eps": [
+    1.6499509462293858,
+    1.53450830745074,
+    1.7839603915253677,
+    0.2080901951865468,
+    0.27970221366844567,
+    0.2123293180523228,
+    1.2430869517983227,
+    1.5200481554305287,
+    1.3937844805573953,
+    0.22011929436274172,
+    0.34296910350284376,
+    0.19310698952212746
+   ],
+   "gain": [
+    0.004744143712128758,
+    0.00629562839086658,
+    0.0074040761913951115,
+    -0.009399018112680579,
+    -0.0005042555713806662,
+    -0.004079670928215759,
+    0.002656629362369301,
+    0.006649620832789852,
+    0.0031335452165175306,
+    -0.010126829137615433,
+    0.001152691741873944,
+    -0.0046392022688472746
+   ],
+   "wm_offset": [
+    18.637755541478874,
+    18.334316850864717,
+    21.297633465654503,
+    2.7556171131958984,
+    9.620269099722634,
+    5.81095779347531,
+    16.333316681223426,
+    19.73624807666528,
+    15.8245804662725,
+    2.786441813318086,
+    13.021324106250827,
+    5.910215652438003
+   ],
+   "gm_offset": [
+    -2.8350363033146704,
+    -0.240390639495937,
+    -0.16382868012145346,
+    -16.386903373250494,
+    -6.285500960817339,
+    -9.72822768208402,
+    -4.819810226654288,
+    -0.48870345646533464,
+    -3.7788192042921422,
+    -17.570205503771337,
+    -5.652026716201513,
+    -10.67282707982248
+   ],
+   "bvals": [
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0,
+    100.0,
+    100.0,
+    100.0,
+    500.0,
+    500.0,
+    500.0
+   ],
+   "volumes": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+   ]
+  },
+  "06-01|STE b1000": {
+   "eps": [
+    -0.0011573008545849438,
+    0.3806230027065956,
+    0.062417948581825825,
+    0.03403490985826499,
+    0.09276194844806124,
+    0.05908821975934102,
+    0.032720769358944815,
+    0.032167027472935227,
+    0.03655951513539239
+   ],
+   "gain": [
+    -0.001487035607574088,
+    0.03188586839179717,
+    -0.0033398474682576735,
+    -0.0011456046994539192,
+    0.009114978584844193,
+    0.0034798398227823863,
+    -0.0015140410019510084,
+    0.00934745217003733,
+    0.0017214449462684992
+   ],
+   "wm_offset": [
+    -0.09865801224291677,
+    59.91945306447931,
+    5.854787314797324,
+    1.7643605384868337,
+    13.054872499198646,
+    7.9349134571515565,
+    1.7112709691688386,
+    10.634804149983607,
+    1.3245763926206502
+   ],
+   "gm_offset": [
+    -2.2820047595918846,
+    15.272061835329668,
+    -8.741889538355771,
+    -2.81826736049491,
+    6.845323906875589,
+    0.9046803570997246,
+    -3.366999548781588,
+    8.612403752733364,
+    1.947579186711686
+   ],
+   "bvals": [
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0,
+    1000.0
+   ],
+   "volumes": [
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
+   ]
+  },
+  "06-01|STE b1500": {
+   "eps": [
+    -0.12910256215380894,
+    -0.06242729256126508,
+    -0.05578681090857568,
+    -0.07172027389265577,
+    -0.000618486312611463,
+    -0.052812003890511425,
+    0.04763086595276965,
+    0.01481986003271845,
+    -0.008386601711229515,
+    -0.07929997407345583,
+    -0.025205866316837067,
+    -0.04457637068089975,
+    -0.05715419462405353,
+    -0.028968661698691302,
+    -0.06350104840053913
+   ],
+   "gain": [
+    0.014019882474693325,
+    0.028760142197484417,
+    0.01940382776111637,
+    0.014100714282398761,
+    0.026470797321033718,
+    0.017843878788273662,
+    0.010272956431585423,
+    0.019299455155310008,
+    0.019490614630556798,
+    0.011254010505181562,
+    0.027183113547345886,
+    0.017646389456435728,
+    0.014634271008115929,
+    0.026313649834662372,
+    0.018240674511931534
+   ],
+   "wm_offset": [
+    14.789361873741585,
+    29.312063833958728,
+    19.692770122789163,
+    19.162529463951806,
+    30.334341941341012,
+    17.945217889586395,
+    48.97965516202024,
+    21.92105630388439,
+    29.57797915070463,
+    15.585093354951951,
+    32.872078612424964,
+    20.00690774383899,
+    15.95779913324363,
+    26.419048288161463,
+    18.404829740233787
+   ],
+   "gm_offset": [
+    13.582943303447937,
+    28.44882655378028,
+    19.239838886730276,
+    11.19553252440916,
+    24.26693192456986,
+    17.78643802725567,
+    -13.693518091111802,
+    17.802993253362448,
+    13.623354486690227,
+    8.769135190857837,
+    23.915433601613685,
+    16.300396329821336,
+    13.883157438511105,
+    26.253955247947705,
+    18.147812681784465
+   ],
+   "bvals": [
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0,
+    1500.0
+   ],
+   "volumes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ]
+  }
+ }
+}
