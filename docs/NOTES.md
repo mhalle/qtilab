@@ -253,8 +253,85 @@ Percentage of real voxels above the simulated 95th / 99th percentile (5% / 1% ex
   - a noise model with a signal-proportional (physiological) term, fit from the b = 0 and low-b repeats.
 - Then rerun the surprise test. If WM surprise survives, revisit time dependence with real waveform spectra, which would need a dataset that ships its waveforms (e.g. the BWH DiB data) or the HHS authors' waveform files.
 
+## 2026-11-04 (night) — validation against real data
+
+Goal: move from "works in simulation" to "survives contact with real data", using public data only. Scripts: `heldout_hhs.py`, `phantoms_dib.py`, `consistency.py`. Prior variants: v3 and the generic prior.
+
+**1. Held-out prediction** (HHS sub-01 ses-01, slice 20).
+- Method: leave one run out and predict it from the rest. Two predictors: the classical WLS cumulant fit extrapolated, and the mean of the 20 nearest simulated tissues (brain prior v2, matched on the remaining volumes).
+- Error is RMS / noise sd, where 1 means as good as the noise allows.
+
+| held out | WM-like | GM-like | CSF-ish |
+|---|---|---|---|
+| run 4, LTE b = 2000 (extrapolation): QTI → simulator | 5.32 → 2.12 | 3.74 → 1.34 | 9.68 → 1.34 |
+| run 8, STE b = 1500: QTI → simulator | 1.37 → **1.78** | 1.38 → 1.18 | 1.26 → 1.08 |
+
+- The simulator predicts unseen real images 2–7× better than classical extrapolation, near the noise floor in GM and CSF.
+- **WM spherical signal decays faster than the simulator predicts from the other data** (bias −1.5 noise sd). This is the signature time dependence would produce (spherical waveforms probe shorter effective diffusion times). It agrees with the positive best-match STE b-scale in WM (+0.05) but not GM. H5 therefore stays open, pending motion/eddy correction.
+- The simulator's 95% intervals are too wide (coverage 93–100%). The nearest-neighbour spread is conservative.
+
+**2. Phantoms (DiB water, oil, hexagonal liquid crystal)**, using b-tensors from the md-dmri xps files.
+- **Water:** MD 1.98 µm²/ms (expected about 2.0 near room temperature), FA 0.05, C_MD 0.00. But µFA is **0.26** (WLS 0.21), against a true value of 0.
+  - The simulator reproduces this almost exactly for pure water at matched SNR (about 71): constrained 0.254, WLS 0.170.
+  - This is a real-data confirmation of both the noise model and the upward µFA bias from noise plus positivity in near-isotropic material.
+- **Liquid crystal:** µFA 0.98 (expected about 1), FA 0.61, C_c 0.39, C_MD 0.02. All as expected for anisotropic domains in dispersed orientations.
+- **Oil:** MD 0.012 µm²/ms, so b·MD ≤ 0.024 and the signal changes about 2%. Its fits are meaningless (µFA 1.1, K_bulk 34). This is a useful reminder that the outputs are uninterpretable outside the protocol's sensitivity range.
+
+**3. Prior sensitivity.** Four networks with identical training and the HHS protocol, evaluated on the same real slice. Region medians:
+
+| | v1 | v2 | v3 (very wide) | generic | classical |
+|---|---|---|---|---|---|
+| WM tissue µFA | 0.84 | 0.87 | 0.90 | 0.78 | 0.87 |
+| GM tissue µFA | 0.60 | 0.62 | 0.60 | 0.35 | 0.55 |
+| WM tissue MD | 0.80 | 0.79 | 0.79 | 0.71 | — |
+| GM tissue MD | 0.85 | 0.85 | 0.82 | 0.78 | — |
+| median f_fw | 0.08 | 0.095 | 0.13 | 0.21 | — |
+
+- **Robust across brain-like priors:** tissue µFA (WM, GM) and tissue MD. The earlier worry that tissue MD was prior-driven was overstated.
+- **Prior-driven:** f_fw, which tracks the allowed range, and therefore full-distribution µFA. Do not report these as findings yet.
+- **The generic, non-anatomical prior disagrees strongly in GM.** Next: choose between priors by held-out predictive accuracy. The machinery now exists.
+
+**4. Consistency**
+- **DiB 70 vs 217 volumes, same voxels, constrained fit.** Correlations: MD 0.97, µFA 0.94, K_μ 0.96, C_MD 0.78, C_c 0.73. The shorter protocol reads µFA +0.03 and FA +0.06 higher, the same noise-driven upward bias as the water phantom. Anisotropy values are protocol-dependent, which matters for cross-study comparisons.
+- **Within-subject (sub-01, 3 sessions) vs between-subject (5 other subjects, 1 session each).** Regional medians on a mid-brain slice; standard deviations:
+
+| measure | within SD | between SD | between / within |
+|---|---|---|---|
+| classical WM µFA | 0.013 | 0.010 | **0.8** |
+| classical GM µFA | 0.033 | 0.040 | 1.2 |
+| classical WM MD | 0.008 | 0.019 | 2.3 |
+| network WM tissue µFA | 0.0026 | 0.010 | **3.9** |
+| network WM tissue MD | 0.0033 | 0.012 | 3.5 |
+| network WM tissue C_MD | 0.0006 | 0.0019 | 3.3 |
+| network GM tissue µFA | 0.0022 | 0.006 | 2.7 |
+| network GM tissue MD | 0.0094 | 0.010 | 1.1 |
+| network f_fw (WM / GM) | 0.002 / 0.003 | 0.004 / 0.004 | 2.2 / 1.7 |
+
+- **The network's session-to-session stability is not just prior shrinkage.** It keeps between-subject differences at the same size as the classical fit (WM µFA SD about 0.010 for both) while cutting within-subject variation about 5×. The classical WM µFA cannot tell these subjects apart from repeat scans (ratio 0.8); the network can (3.9).
+- Weak spots are GM tissue MD (1.1) and free water (1.7–2.2).
+- Caveats:
+  - The within-subject estimate comes from one subject and three sessions.
+  - Those sessions span menstrual-cycle phases, so they include possible real change.
+  - Each measure is a single-slice regional median, and slice placement differs between sessions.
+  - Proper ICCs need the full cohort (H7).
+
+**5. Cardiff high-b data: blocked.** Cardiff's repository is behind a Cloudflare browser check that the sandbox cannot pass. It needs to be downloaded by hand (under 1 GB) or fetched from Claude Code.
+
+**Overall assessment:** the approach survives its first real-data tests.
+- The simulator predicts unseen real images near the noise floor except in WM.
+- It reproduces a phantom bias quantitatively.
+- The network's tissue estimates are robust across plausible priors and more reliable than classical QTI.
+
+Still open:
+- WM spherical misfit: time dependence or preprocessing.
+- Prior choice for free water.
+- Biological validity, which needs histology or patients.
+
 **Next**
-- Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise (H5).
+- Preprocessing: per-volume motion/eddy correction for b-tensor data (tractline), and a noise model with a physiological term; then rerun surprise and the held-out STE test in WM (H5).
+- Choose priors by held-out predictive accuracy (v1, v2, v3, generic, time-dependent).
+- Cohort run for H7 (proper ICCs), best on GPU.
+- Cardiff b = 3–10 extrapolation test once the data can be fetched.
 - Free water in WM: is the ~9% real? Spatial pattern and test-retest.
 - Real training on GPU: longer runs, several protocols, protocol-subset training for embedding invariance.
 - Cohort fits and test-retest (H7).
