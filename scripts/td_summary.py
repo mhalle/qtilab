@@ -13,7 +13,7 @@ import numpy as np
 
 rows = defaultdict(dict)
 for f in glob.glob("results/heldout_hhs_td_s*_*.json"):
-    m = re.search(r"_td_s(\d{4})_(\w+?)\.json$", f)
+    m = re.search(r"_td_s(\d{4})_([\w.]+?)\.json$", f)
     if not m:
         continue
     rows[m.group(2)][m.group(1)] = json.load(open(f))
