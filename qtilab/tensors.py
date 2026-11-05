@@ -71,7 +71,28 @@ def projection_tensors(dtype=torch.float64, device="cpu"):
     return E_iso, E_bulk, E_iso - E_bulk
 
 
+LINALG_CHUNK = 16_384
+
+
+def batched(fn, *xs, chunk=LINALG_CHUNK):
+    """Apply ``fn`` to slices of at most ``chunk`` rows of each x (along dim 0) and concatenate the results.
+
+    PyTorch's batched CUDA eigensolvers (eigh, eigvalsh, pinv) allocate workspace far beyond the matrices:
+    eigvalsh on 200k 3x3 matrices asked for 51 GB (about 270 kB per matrix), so large batches must be split.
+    The results are per-matrix, so splitting does not change them; batches up to ``chunk`` run as one call.
+    """
+    n = xs[0].shape[0] if xs[0].dim() else 0
+    if n <= chunk:
+        return fn(*xs)
+    parts = [fn(*(x[i:i + chunk] for x in xs)) for i in range(0, n, chunk)]
+    if isinstance(parts[0], tuple):
+        return tuple(torch.cat(p) for p in zip(*parts))
+    return torch.cat(parts)
+
+
 def psd_project(M: torch.Tensor) -> torch.Tensor:
     """Frobenius projection of symmetric matrices onto the PSD cone (eigenvalue clip)."""
-    w, V = torch.linalg.eigh(M)
+    lead = M.shape[:-2]
+    w, V = batched(torch.linalg.eigh, M.reshape(-1, *M.shape[-2:]))
+    w, V = w.reshape(*lead, -1), V.reshape(M.shape)
     return (V * w.clamp_min(0).unsqueeze(-2)) @ V.transpose(-1, -2)

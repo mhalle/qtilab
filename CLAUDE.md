@@ -77,11 +77,21 @@ python scripts/consistency.py AB; python scripts/consistency.py C
 
 Development now runs locally on an Apple M1 Max (10 cores, 64 GB, MPS). The results through 2026-11-05 were produced in a 2-core, 7 GB CPU sandbox (Cowork), so the timings in README and NOTES are from that sandbox.
 - In the sandbox, two heavy jobs at once ran out of memory. That limit no longer applies.
-- zuko flow sampling is slow and memory-hungry on CPU, so `PosteriorNet.sample` chunks at 256 voxels. The chunk can probably be larger here.
+- zuko flow sampling is memory-hungry (about 90 kB per voxel-sample), so `PosteriorNet.sample` chunks at 64 voxels by default. That was sized for the sandbox; chunk 1024 with n = 100 peaks at 9 GB, fine here.
 
 GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for CUDA.
 - MPS has **no float64**. DIPY validation and the reference benchmarks stay float64 on CPU; use float32 on MPS.
-- Smoke check, 2026-11-05: simulate plus constrained fit of 20k voxels in float32 gives the same accuracy on MPS and CPU (100% converged). At that size MPS is no faster than CPU (~7.5 s each), so the GPU only helps on larger batches and in network training.
+- Device benchmark, 2026-11-05 (NOTES; `scripts/bench_devices.py cpu mps`): MPS is 3–4× faster than CPU for simulate and WLS and 1.4× for the network step, and with the default `chunk=20000` slower for `fit.constrained` (139 vs 100 s at 200k voxels). That is per-chunk overhead, not compute:
+  - Fixed: `chunk=None` (the default) is 20k on CPU; on a GPU it is sized from free memory (40% of it at a conservative 88 kB per voxel, between 8k and 250k; `fit._chunk`). This Mac gets one 250k chunk (200k voxels: 26–32 s on MPS vs 100 s on CPU). A 24 GB A10 gets about 100k chunks: 10.1 s (7.4 s as one chunk, 37 s at the old fixed 20k). A 16 GB M2 (simulated) gets 52k chunks: 56 s, 6.1 GB peak. Each chunk pays a ~1000-iteration ADMM tail of small, sync-bound steps.
+  - On CPU the cost is the batched `eigh` in `fit._project` (57 of ~65 ms per iteration at 17k voxels).
+
+### Modal
+
+- The `modal` CLI is a uv tool (`~/.local/bin/modal`, profile `mhalle`), not in the project venv. Run from the repo root: `modal run scripts/modal_smoke.py` (tests plus `bench_devices.run("cuda")`, a few minutes, under $1).
+- **Modal can stall silently.** An L4 job sat in "waiting to be scheduled on a GPU_L4 worker" with no local output. After launching, check `modal app list` (Tasks 0 = no container) and `perl -e 'alarm 25; exec @ARGV' modal app logs <app-id>` (macOS has no `timeout`). Use a GPU fallback list (`gpu=["L4", "A10G", "L40S"]`). Stop stuck apps with `modal app stop -y <app-id>`.
+- Return plain JSON from remote functions: the local CLI has no torch, so torch objects (even `torch.__version__`) fail to unpickle.
+- Train on GPU with `scripts/posterior_smoke.py ... --device cuda` (or `mps`): batches are then simulated on the device in float32 (`posterior.simulate_batch(device=...)`). A10: 66 ms per step at batch 4096, vs 257 ms with CPU simulation. Without `--device` the original float64 CPU path runs unchanged.
+- **CUDA batched eigensolvers need huge workspace** (`pinv` at 200k asked for 66 GB, `eigvalsh` on 3×3 for 51 GB). Route any new batched `eigh`/`eigvalsh`/`pinv`/`svd` through `tensors.batched` (16k per call). Peak memory per stage is in NOTES (2026-11-05 evening).
 
 ## Next tasks (handoff, updated 2026-11-05), in priority order
 

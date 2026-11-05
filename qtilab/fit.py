@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 import torch
 
-from .tensors import mat3, mat6, psd_project, vec6, vec21
+from .tensors import batched, mat3, mat6, psd_project, vec6, vec21
 
 MIN_SIGNAL = 1e-4  # DIPY's MIN_POSITIVE_SIGNAL
 
@@ -41,7 +41,9 @@ def _solve_normal(H, g, full_rank: bool):
         L, info = torch.linalg.cholesky_ex(H)
         if bool((info == 0).all()):
             return torch.cholesky_solve(g.unsqueeze(-1), L).squeeze(-1)
-    return (torch.linalg.pinv(H, hermitian=True) @ g.unsqueeze(-1)).squeeze(-1)
+    # Rank-deficient (or numerically singular) H: pseudo-inverse, in sub-batches (``tensors.batched``;
+    # a 200k batch asked for 66 GB of CUDA workspace).
+    return batched(lambda h, b: (torch.linalg.pinv(h, hermitian=True) @ b.unsqueeze(-1)).squeeze(-1), H, g)
 
 
 def ols(X: torch.Tensor, S: torch.Tensor) -> torch.Tensor:
@@ -57,6 +59,53 @@ def _weights(X, S, weights):
     return torch.exp(ols(X, S) @ X.T)
 
 
+CPU_CHUNK = 20_000
+GPU_CHUNK_MAX = 250_000
+GPU_CHUNK_MIN = 8_192
+GPU_MEMORY_FRACTION = 0.4
+
+
+def _gpu_free_bytes(device: torch.device) -> int | None:
+    """Memory a new allocation can use on ``device``, or None if unknown."""
+    if device.type == "cuda":
+        free, _ = torch.cuda.mem_get_info(device)
+        cached = torch.cuda.memory_reserved(device) - torch.cuda.memory_allocated(device)
+        return free + cached
+    if device.type == "mps":
+        return torch.mps.recommended_max_memory() - torch.mps.current_allocated_memory()   # cache is reusable
+    return None
+
+
+def _bytes_per_voxel(S) -> int:
+    """Conservative peak per voxel of a fit chunk.
+
+    WLS's normal equations materialize the weighted design (V, N, 28) a few times; ADMM keeps H, its scaled
+    copy and the Cholesky factor (V, 28, 28). Measured at N = 186, float32: about 60 kB per voxel (WLS 12 GB,
+    constrained 11 GB for 200k voxels on MPS); this estimate gives 88 kB.
+    """
+    return S.element_size() * (3 * S.shape[1] * 28 + 8 * 28 * 28)
+
+
+def _chunk(S, chunk):
+    """Voxels per chunk: ``chunk`` if given; else 20k on CPU, and on a GPU as many as fit in
+    ``GPU_MEMORY_FRACTION`` of its free memory, between 8k and 250k.
+
+    On a GPU each chunk ends in a long ADMM tail of tiny, sync-bound steps (a few hundred voxels left
+    after a few hundred iterations), so fewer chunks is much faster: 200k voxels on MPS take 27 s as one
+    chunk vs 102 s as ten. Sizing from free memory keeps one chunk on large GPUs (64 GB M1 Max, 24 GB cards)
+    while a 16 GB Mac gets roughly 50k-voxel chunks instead of running out of memory.
+    """
+    if chunk is not None:
+        return int(chunk)
+    if S.device.type == "cpu":
+        return CPU_CHUNK
+    free = _gpu_free_bytes(S.device)
+    if free is None:
+        return GPU_CHUNK_MAX
+    n = int(GPU_MEMORY_FRACTION * free) // _bytes_per_voxel(S)
+    return max(GPU_CHUNK_MIN, min(GPU_CHUNK_MAX, n))
+
+
 def _normal_equations(X, y, w):
     w2 = w * w
     H = torch.einsum("vn,ni,nj->vij", w2, X, X)
@@ -64,8 +113,9 @@ def _normal_equations(X, y, w):
     return H, g
 
 
-def wls(X, S, weights=None, chunk=20000):
-    """DIPY-equivalent WLS: sqrt-weights = OLS-predicted signal unless given."""
+def wls(X, S, weights=None, chunk=None):
+    """DIPY-equivalent WLS: sqrt-weights = OLS-predicted signal unless given. ``chunk``: see ``_chunk``."""
+    chunk = _chunk(S, chunk)
     full_rank = int(torch.linalg.matrix_rank(X)) == X.shape[1]
     out = []
     for i in range(0, S.shape[0], chunk):
@@ -78,8 +128,8 @@ def wls(X, S, weights=None, chunk=20000):
 
 def violates(params, tol=0.0):
     """Boolean (V,): mean tensor or covariance has a negative eigenvalue."""
-    ed = torch.linalg.eigvalsh(mat3(params[..., 1:7]))[..., 0]
-    ec = torch.linalg.eigvalsh(mat6(params[..., 7:]))[..., 0]
+    ed = batched(torch.linalg.eigvalsh, mat3(params[..., 1:7]))[..., 0]
+    ec = batched(torch.linalg.eigvalsh, mat6(params[..., 7:]))[..., 0]
     return (ed < -tol) | (ec < -tol)
 
 
@@ -142,14 +192,17 @@ def _admm(H, g, x0, rho=1.0, max_iter=1000, eps_abs=1e-6, eps_rel=1e-4,
     return z * s, it, 1.0 - act.numel() / V
 
 
-def constrained(X, S, weights=None, chunk=20000, ridge=1e-6, **admm_kw):
+def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
     """QTI+ (dc): WLS with <D> >= 0 and C >= 0. Returns (params, FitInfo).
 
     For a rank-deficient protocol (e.g. LTE + STE only, rank 23) the objective is flat along the
     unobserved directions of C, so the constrained solution is not unique and ADMM crawls. A tiny
     ridge (``ridge`` x the mean diagonal of H) picks the minimum-norm solution among the optima;
     the standard scalars do not depend on the unobserved directions.
+
+    ``chunk``: voxels per batch, default 20k on CPU and 250k on GPUs (see ``_chunk``).
     """
+    chunk = _chunk(S, chunk)
     full_rank = int(torch.linalg.matrix_rank(X)) == X.shape[1]
     out, n_bad, iters, conv = [], 0, 0, []
     for i in range(0, S.shape[0], chunk):

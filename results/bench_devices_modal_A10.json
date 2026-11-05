@@ -1,0 +1,87 @@
+[
+ {
+  "device": "cuda",
+  "torch": "2.15.0+cu132",
+  "python": "3.12.10",
+  "host": "modal",
+  "machine": "x86_64",
+  "cpu_threads": 4,
+  "protocol_volumes": 186,
+  "gpu": "NVIDIA A10",
+  "simfit": [
+   {
+    "V": 20000,
+    "t_simulate": 0.016385099000000736,
+    "t_wls": 0.030590693000000613,
+    "t_constrained": 3.1763738879999988,
+    "n_violating": 17590,
+    "admm_iterations": 1000,
+    "converged_fraction": 0.9965321205230244,
+    "median_abs_err_wls": 0.07795817404985428,
+    "median_abs_err_constrained": 0.06905324757099152,
+    "any_nan": false
+   },
+   {
+    "V": 200000,
+    "t_simulate": 0.15698979400000113,
+    "t_wls": 0.30628721400000103,
+    "t_constrained": 10.075644871000002,
+    "n_violating": 175891,
+    "admm_iterations": 1000,
+    "converged_fraction": 0.9962533614568113,
+    "median_abs_err_wls": 0.07814596593379974,
+    "median_abs_err_constrained": 0.06921708583831787,
+    "any_nan": false
+   }
+  ],
+  "net": [
+   {
+    "batch": 512,
+    "steps": 20,
+    "s_per_step": 0.018066588449999976,
+    "final_nll": 11.589611053466797
+   },
+   {
+    "batch": 4096,
+    "steps": 20,
+    "s_per_step": 0.05660367544999989,
+    "final_nll": 11.259798049926758
+   }
+  ],
+  "train_step": [
+   {
+    "batch": 512,
+    "steps": 10,
+    "s_per_step": 0.0543917289999996,
+    "s_per_step_simulation": 0.032851295500000786
+   },
+   {
+    "batch": 4096,
+    "steps": 10,
+    "s_per_step": 0.25896798799999987,
+    "s_per_step_simulation": 0.20419090729999922
+   }
+  ],
+  "train_step_device": [
+   {
+    "batch": 512,
+    "steps": 10,
+    "s_per_step": 0.027708961399999767,
+    "s_per_step_simulation": 0.008511303299999894
+   },
+   {
+    "batch": 4096,
+    "steps": 10,
+    "s_per_step": 0.06617714799999988,
+    "s_per_step_simulation": 0.011236319500000747
+   }
+  ],
+  "pytest": {
+   "returncode": 0,
+   "tail": [
+    ".....                                                                    [100%]",
+    "5 passed in 7.09s"
+   ]
+  }
+ }
+]

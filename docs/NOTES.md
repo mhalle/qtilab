@@ -622,3 +622,60 @@ Five sessions (sub-01 ses-01/02/03, sub-02 ses-01, sub-06 ses-01), 15–30k tiss
 - These are acquisition fingerprints that recur across subjects: a cohort-level per-volume calibration (a gain template per protocol volume) is cheap and removes them.
 - They are a clean example of a non-anatomical, reproducible "anomaly", relevant to the anomaly framework discussion.
 - With real waveforms (handoff item 6) the period-3 pattern could be checked against each rotation's actual b-tensor.
+
+## 2026-11-05: Device benchmark — M1 Max CPU vs MPS vs Modal A10G (no data needed)
+
+`scripts/bench_devices.py` runs one float32 workload per device on a synthetic HHS-like protocol (186 volumes, LTE + STE, rank 23). `scripts/modal_smoke.py` runs the same code plus the test suite on Modal; L4 had no capacity (one job sat in "waiting to be scheduled" with no local output), so the GPU fallback list gave an A10G. Raw numbers: `results/bench_devices_m1max.json`, `results/bench_devices_modal_A10G.json`.
+
+| 200k voxels / batch 4096 | CPU (M1 Max, 8 threads) | MPS | A10G |
+|---|---|---|---|
+| simulate | 2.5 s | 0.61 s | 0.15 s |
+| WLS | 5.5 s | 1.5 s | 0.27 s |
+| constrained (ADMM) | 100 s | 139 s | 37 s |
+| network step, batch on device | 381 ms | 277 ms | 51 ms |
+| training step as written (`simulate_batch` on CPU) | 490 ms | 301 ms | 279 ms, of which 250 ms CPU simulation |
+
+Accuracy is the same everywhere (median |param error| 0.069 constrained), tests pass on CUDA (5/5).
+
+**Findings**
+1. **GPU training is simulation-bound.** The A10G does the network step 7.5× faster than the M1 CPU, but `posterior.simulate_batch` simulates on CPU (no `device` argument), and on Modal's 4 CPUs that is 90% of the step. Moving simulation onto the device (`simulate.sample_brain` already takes `device`) should give ~5× on training. Prerequisite for handoff task 4.
+2. **MPS looked slower than CPU for the constrained fit** (139 vs 100 s), but that is the default `chunk=20000`. With one chunk (`chunk=200000`) MPS takes 26.7 s vs 102 s chunked (same session), 3.7× faster than CPU. Each chunk runs a ~1000-iteration ADMM tail of tiny, sync-bound GPU steps, so ten chunks pay it ten times.
+3. **ADMM stragglers (correction below: they do not set the cost).** ~0.35% of violating voxels (55 of 17.6k) do not converge in 1000 iterations on this rank-23 protocol, in float64 as well as float32, so it is not precision. `FitInfo.converged_fraction` prints as "100%" (0.9965). Every chunk runs the full 1000 iterations for those few voxels. This is the rank-deficient case `fit.constrained`'s docstring warns about; the DiB protocol (full rank) converged 100%. Worth a look before the 66-session cohort fit: a lower `max_iter` with a fallback for the stragglers, or a larger ridge.
+
+**Follow-up profiling (20k voxels, CPU float32)**
+- Where the work goes: the working set is 17.6k at iteration 50, 7.3k at 100, 2.4k at 200, 710 at 400 and 59 at 1000. Iterations past 200 are only 18% of voxel-iterations; capping at 100 iterations still costs 5.9 of 9.9 s. The stragglers matter only through the per-chunk tail on GPU (finding 2).
+- Per iteration on CPU, `fit._project` (batched `eigh` of 3×3 and 6×6 matrices) takes 57 ms of ~65 ms at 17k voxels (cholesky_solve 6 ms). On MPS the same projection is 7.7 ms. A closed-form 3×3 and a vectorized Jacobi 6×6 eigensolver are the candidate fix on CPU.
+- Truncating ADMM: against the 1000-iteration result, `max_iter=400` changes µFA by at most 1.5e-3 (99.9th percentile 6e-4) and FA by at most 9e-4, but saves only ~10% on CPU. Not worth it there.
+
+## 2026-11-05 (evening): GPU speed-ups implemented — device-aware fit chunks, simulation on device
+
+**Changes** (CPU default path bit-identical to before: simulate_batch for priors 0–3, WLS and constrained fits compared tensor-for-tensor against the previous commit)
+- `fit.wls` / `fit.constrained`: `chunk=None` now means 20k voxels on CPU (as before); on a GPU it is sized from free memory (`fit._chunk`: 40% of free memory at a conservative 88 kB per voxel, between 8k and 250k). A fixed 250k would not fit a 16 GB Mac (WLS peaks at 12 GB for 200k voxels). Simulating a 16 GB M2 by capping Metal's limit at 10.7 GB: 52k chunks, constrained fit of 200k voxels 56 s (vs 26 s as one chunk on this Mac, 100 s on CPU), 6.1 GB peak. On a 24 GB A10 the sizing gives about 100k chunks: 10.1 s for 200k voxels (7.4 s as one chunk). The estimate is deliberately conservative (88 kB vs ~60 kB measured); raise `GPU_MEMORY_FRACTION` if a known-large GPU should take bigger chunks.
+- `tensors.batched`: every batched eigensolver call (`psd_project`'s `eigh`, `violates`' `eigvalsh`, `_solve_normal`'s `pinv`) runs in sub-batches of 16k matrices. PyTorch's CUDA eigensolvers need workspace far beyond the matrices: at 200k, `pinv` asked for 66 GB on an A10G and `eigvalsh` on 3×3 matrices for 51 GB (about 270 kB per matrix) on an L40S. MPS did not have this problem.
+- `posterior.simulate_batch(..., device=, sim_dtype=)`: simulates on the device, float32 by default. `device=None` keeps the float64 CPU path every saved result used. Target distributions on MPS match CPU float64 to within sampling noise (≤ 0.02 sd for all priors).
+- `scripts/posterior_smoke.py --device mps|cuda`: trains on the device, evaluates on CPU as before. Checked for 100 steps on MPS and CPU with the synthetic protocol (HHS data not downloaded here).
+
+**Speed, before → after** (`results/bench_devices_m1max.json`, `bench_devices_modal_A10.json`; the "before" CUDA run was an A10G, the "after" an A10: same class)
+
+| | M1 MPS | Modal A10(G) |
+|---|---|---|
+| constrained fit, 200k voxels | 139 → 32 s | 37 → 7.4 s as one chunk; 10.1 s with the memory-sized default (the saved JSON) |
+| training step, batch 4096 | — (network-bound: ~290 ms) | 257 → 66 ms |
+| training step, batch 512 | — | 54 → 29 ms |
+
+On MPS the network step itself dominates (290 ms at batch 4096), so simulating on device gains little there; `simulate_batch` alone is 25 ms on MPS vs 105 ms on CPU.
+
+**Peak memory** (float32, measured on the M1: MPS driver allocation, CPU peak RSS)
+
+| stage | peak |
+|---|---|
+| simulate 200k voxels (generic prior, 186 volumes) | 4.1 GB |
+| WLS, 200k voxels, one chunk (MPS) | 12.0 GB |
+| constrained, 200k voxels, one chunk (MPS) | 11.0 GB |
+| constrained, 200k voxels, 20k chunks (CPU) | 4.8 GB |
+| training, batch 4096 / 16384 (MPS) | 4.2 / 12.4 GB |
+| posterior sampling, 20k voxels × 100 samples, chunk 64 / 1024 (MPS) | 2.2 / 9.1 GB |
+
+- Fits on a GPU cost roughly 55–60 kB per voxel per chunk; the peak is WLS's normal equations (`einsum` materializes the weighted design, V × N × 28). The 250k cap is about 14 GB: fine on 24 GB cards (L4, A10, A10G) and MPS, tight on a 16 GB card.
+- Training costs about 0.75 MB per batch element (M = 64 micro-tensors × 186 volumes, plus flow activations).
+- Posterior sampling costs about 90 kB per voxel-sample; the default chunk of 64 voxels was sized for the 7 GB sandbox and can be raised 10–20× here.

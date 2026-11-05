@@ -1,0 +1,73 @@
+[
+ {
+  "device": "cuda",
+  "torch": "2.15.0+cu132",
+  "python": "3.12.10",
+  "host": "modal",
+  "machine": "x86_64",
+  "cpu_threads": 4,
+  "protocol_volumes": 186,
+  "gpu": "NVIDIA A10G",
+  "simfit": [
+   {
+    "V": 20000,
+    "t_simulate": 0.0164383629999989,
+    "t_wls": 0.027561126000001934,
+    "t_constrained": 3.7433833399999976,
+    "n_violating": 17522,
+    "admm_iterations": 1000,
+    "converged_fraction": 0.9962903778107522,
+    "median_abs_err_wls": 0.0773477703332901,
+    "median_abs_err_constrained": 0.06864058971405029,
+    "any_nan": false
+   },
+   {
+    "V": 200000,
+    "t_simulate": 0.15384256600000157,
+    "t_wls": 0.2650346550000009,
+    "t_constrained": 37.280683550999996,
+    "n_violating": 175889,
+    "admm_iterations": 1000,
+    "converged_fraction": 0.9964466225858354,
+    "median_abs_err_wls": 0.07818304002285004,
+    "median_abs_err_constrained": 0.06924313306808472,
+    "any_nan": false
+   }
+  ],
+  "net": [
+   {
+    "batch": 512,
+    "steps": 20,
+    "s_per_step": 0.022544455300000266,
+    "final_nll": 11.453763961791992
+   },
+   {
+    "batch": 4096,
+    "steps": 20,
+    "s_per_step": 0.05049405079999971,
+    "final_nll": 11.459951400756836
+   }
+  ],
+  "train_step": [
+   {
+    "batch": 512,
+    "steps": 10,
+    "s_per_step": 0.06439283769999946,
+    "s_per_step_cpu_simulation": 0.04041402640000058
+   },
+   {
+    "batch": 4096,
+    "steps": 10,
+    "s_per_step": 0.27870997389999985,
+    "s_per_step_cpu_simulation": 0.24948478270000152
+   }
+  ],
+  "pytest": {
+   "returncode": 0,
+   "tail": [
+    ".....                                                                    [100%]",
+    "5 passed in 10.20s"
+   ]
+  }
+ }
+]

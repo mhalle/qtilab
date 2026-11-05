@@ -25,6 +25,8 @@ ap.add_argument("--snr", type=float, nargs=2, default=(15.0, 60.0), help="traini
 ap.add_argument("--test-snr", type=float, nargs=2, default=(20.0, 35.0))
 ap.add_argument("--tag", default="")
 ap.add_argument("--no-eval", action="store_true", help="train and save only")
+ap.add_argument("--device", default="cpu",
+                help="train on this device (mps, cuda); batches are then simulated there in float32. Evaluation stays on CPU")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
 args = ap.parse_args()
 steps = args.steps
@@ -35,8 +37,10 @@ prot = session_protocol("01", "01")
 if args.shapes:
     prot = prot.subset(prot.keep_shapes(args.shapes.split(",")))
     print(f"protocol restricted to {args.shapes} + b0: {prot.n} volumes, rank {prot.rank()}", flush=True)
-g = torch.Generator().manual_seed(11)
-net = posterior.PosteriorNet()
+dev = args.device
+sim_kw = {} if dev == "cpu" else {"device": dev}   # cpu: the original float64 CPU simulation, unchanged
+g = torch.Generator(device=dev).manual_seed(11)
+net = posterior.PosteriorNet().to(dev)
 opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-5)
 sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=max(steps, 1), pct_start=0.05)
 
@@ -44,13 +48,14 @@ t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
     net.load_state_dict(torch.load(model_path))
 for step in range(1, steps + 1):
-    b = posterior.simulate_batch(prot, 512, g=g, snr=tuple(args.snr), prior_version=args.prior)
+    b = posterior.simulate_batch(prot, 512, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
     loss = -net.log_prob(b.x, b.y).mean()
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
     opt.step(); sched.step()
     if step % 250 == 0:
         print(f"step {step}: NLL {loss.item():.3f}  ({time.perf_counter() - t0:.0f} s)", flush=True)
+net = net.cpu()                                   # evaluation below runs on CPU
 if steps:
     torch.save(net.state_dict(), model_path)
 

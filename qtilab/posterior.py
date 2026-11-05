@@ -119,20 +119,32 @@ class SimBatch:
 
 
 def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32, prior_version=2,
-                   log_snr=True):
+                   log_snr=True, device=None, sim_dtype=None):
     """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal).
 
     SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
+
+    ``device``: None (default) simulates on CPU in float64, the path every saved result used.
+    Given a device, the whole simulation runs there (``g`` must be a generator on that device) in
+    ``sim_dtype``, default float32: MPS has no float64 and consumer GPUs run it slowly. On a GPU this
+    removes the CPU simulation that otherwise dominates a training step. ``dtype`` is the output dtype
+    of features and targets.
     """
-    if prior_version == 0:                          # the generic, non-anatomical prior (simulate.Prior)
-        d6, free = simulate.sample_dtd(V, M=M, g=g, return_free=True)
-        cls = torch.full((V,), -1, dtype=torch.long)
+    if device is None:
+        kw = {}
     else:
-        d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version)
-    clean = simulate.signal(d6, protocol.b6.to(d6.dtype))
-    u = torch.rand(V, dtype=d6.dtype, generator=g)
+        kw = dict(device=device, dtype=torch.float32 if sim_dtype is None else sim_dtype)
+    if prior_version == 0:                          # the generic, non-anatomical prior (simulate.Prior)
+        d6, free = simulate.sample_dtd(V, M=M, g=g, return_free=True, **kw)
+        cls = torch.full((V,), -1, dtype=torch.long, device=d6.device)
+    else:
+        d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, **kw)
+    dev = d6.device
+    b6 = protocol.b6.to(dtype=d6.dtype, device=dev)
+    clean = simulate.signal(d6, b6)
+    u = torch.rand(V, dtype=d6.dtype, generator=g, device=dev)
     lo, hi = snr
     s = torch.exp(torch.log(torch.tensor(lo)) + u * torch.log(torch.tensor(hi / lo))) if log_snr else lo + (hi - lo) * u
     S = simulate.rician(clean, 1.0 / s, g)
-    x = features(S, protocol.b6.to(d6.dtype), protocol.b.to(d6.dtype), protocol.b_delta().to(d6.dtype))
+    x = features(S, b6, protocol.b.to(dtype=d6.dtype, device=dev), protocol.b_delta().to(dtype=d6.dtype, device=dev))
     return SimBatch(x.to(dtype), targets(d6, free).to(dtype), cls, S)
