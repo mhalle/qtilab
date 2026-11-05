@@ -34,9 +34,11 @@ args = ap.parse_args()
 torch.set_num_threads(2)
 K = 20
 BANK = args.bank
-a = np.load("/home/claude/data/hhs_sub01_ses01_aligned.npz")
-c = np.load("/home/claude/qtilab/results/hhs_sub01_ses01.npz")
-post = np.load("results/hhs_sub01_ses01_posterior_v2.npz")
+from qtilab import paths  # noqa: E402
+
+a = np.load(paths.aligned_session())
+c = np.load(paths.classical_fit())
+post = np.load(paths.posterior_slice("_v2"))
 full = c["mask"]
 z = 20
 slab = np.zeros_like(full); slab[:, :, z] = True

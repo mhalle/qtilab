@@ -29,15 +29,17 @@ from qtilab.protocol import Protocol  # noqa: E402
 
 torch.set_num_threads(2)
 BANK = int(sys.argv[1]) if len(sys.argv) > 1 else 100_000
-a = np.load("/home/claude/data/hhs_sub01_ses01_aligned.npz")
-c = np.load("/home/claude/qtilab/results/hhs_sub01_ses01.npz")
+from qtilab import paths  # noqa: E402
+
+a = np.load(paths.aligned_session())
+c = np.load(paths.classical_fit())
 full = c["mask"]
 z = 20
 slab = np.zeros_like(full); slab[:, :, z] = True
 mask = full & slab
 sel = slab[full]
 fa = c["fa"][sel]
-post = np.load("results/hhs_sub01_ses01_posterior_v2.npz")
+post = np.load(paths.posterior_slice("_v2"))
 fw = post["mean"][:, list(post["targets"]).index("f_fw")]
 shapes = np.array([str(s) for s in a["shapes"]])
 prot = Protocol.from_table(a["bvals"], a["bvecs"], list(shapes))

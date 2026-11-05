@@ -15,9 +15,11 @@ sys.path.insert(0, ".")
 from qtilab import posterior  # noqa: E402
 from qtilab.protocol import Protocol  # noqa: E402
 
-aligned = sys.argv[1] if len(sys.argv) > 1 else "/home/claude/data/hhs_sub01_ses01_aligned.npz"
-classical = sys.argv[2] if len(sys.argv) > 2 else "/home/claude/qtilab/results/hhs_sub01_ses01.npz"
-model = sys.argv[3] if len(sys.argv) > 3 else "results/posterior_smoke_hhs.pt"
+from qtilab import paths  # noqa: E402
+
+aligned = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else str(paths.aligned_session())
+classical = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else str(paths.classical_fit())
+model = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else "results/posterior_smoke_hhs_v2.pt"
 tag = sys.argv[4] if len(sys.argv) > 4 else ""
 torch.set_num_threads(2)
 
@@ -40,7 +42,8 @@ net.eval()
 smp = net.sample(x, n=100)                                  # (n, V, T)
 pm, sd = smp.mean(0).numpy(), smp.std(0).numpy()
 T = posterior.TARGETS
-np.savez_compressed(f"results/hhs_sub01_ses01_posterior{tag}.npz", mask=mask, mean=pm, sd=sd, targets=np.array(T))
+paths.WORK.mkdir(parents=True, exist_ok=True)
+np.savez_compressed(paths.posterior_slice(tag or "_v1"), mask=mask, mean=pm, sd=sd, targets=np.array(T))
 
 
 def vol(v):

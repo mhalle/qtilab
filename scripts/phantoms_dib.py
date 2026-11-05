@@ -22,7 +22,7 @@ from qtilab import fit, scalars  # noqa: E402
 from qtilab.protocol import Protocol  # noqa: E402
 from qtilab.tensors import mat3  # noqa: E402
 
-ROOT = os.environ.get("QTILAB_DIB_DATA", "/home/claude/dib/DATA")
+ROOT = os.environ.get("QTILAB_DIB_DATA", "data/dib/DATA")
 out = {}
 for name, folder in (("water", "water"), ("oil", "oil"), ("liquid crystal", "hex")):
     d = os.path.join(ROOT, folder, "MD-dMRI")

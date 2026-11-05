@@ -28,6 +28,32 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   - Several scripts read an aligned session saved by `hhs.load_session` (`hhs_sub01_ses01_aligned.npz`) and a classical fit of it (`results/hhs_sub01_ses01.npz`). Regenerate both on a new machine; paths are at the top of each script.
 - **Cardiff b-tensor data** (Afzali 2021, CC BY, DOI 10.17035/d.2021.0135083057, under 1 GB): not fetched yet. The repository sits behind a browser check, so download it by hand.
 
+## Reproducing the results (in order)
+
+Data roots: `QTILAB_DIB_ROOT`, `QTILAB_DIB_DATA` and `QTILAB_HHS_ROOT`. Intermediate artifacts go to `QTILAB_WORK`, default `./work` (see `qtilab/paths.py`). Run from the repo root.
+
+```
+scripts/fetch_dib.sh data/dib --phantoms        # prints the two DiB exports
+python scripts/fetch_hhs.py data/hhs            # 8.8 GB
+export QTILAB_HHS_ROOT=data/hhs
+
+# DiB validation (no prerequisites)
+python scripts/validate_dipy.py; python scripts/bench_constrained.py; python scripts/maps.py
+python scripts/phantoms_dib.py; python scripts/check_simulator.py; python scripts/brain_prior_checks.py
+
+# HHS: prepare one session, then the network and the real-data tests
+python scripts/hhs_run_scaling.py                               # all 66 sessions, b0 only
+python scripts/prepare_session.py 01 01                         # -> work/hhs_sub01_ses01_{aligned,qti}.npz
+python scripts/posterior_smoke.py 3000 --prior 2 --snr 20 150 --test-snr 30 140 --tag _v2   # train + evaluate
+python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v2.pt _v2            # -> work/..._posterior_v2.npz
+python scripts/surprise_check.py; python scripts/surprise_td.py  # need the _v2 posterior file
+python scripts/heldout_hhs.py --prior 2 --tag _v2                # also --prior 0/1/3, --td 2.5
+python scripts/consistency.py AB; python scripts/consistency.py C
+```
+
+- Trained models are committed in `results/*.pt`. `posterior_smoke.py 0 ...` evaluates a saved model without training.
+- `posterior_maps_hhs.py` takes positional arguments: aligned, classical, model, tag. Empty strings use the defaults.
+
 ## Conventions
 
 - b in ms/µm², diffusivities in µm²/ms.
