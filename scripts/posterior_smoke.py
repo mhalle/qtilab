@@ -31,6 +31,8 @@ ap.add_argument("--compile", action="store_true",
                 help="torch.compile the training loss (fused kernels; the spline cumsum dominates eager CUDA steps)")
 ap.add_argument("--batch", type=int, default=512, help="simulated voxels per training step")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
+ap.add_argument("--seed", type=int, default=None, help="seed for weight init and training batches (default: batches from seed 11, init unseeded, as before)")
+ap.add_argument("--exact-fw", action="store_true", help="free water as an exactly weighted compartment (simulate.sample_brain exact_fw), in training and test")
 ap.add_argument("--model", default="", help="with steps = 0: evaluate this saved model instead of the tag's (output still named by --tag)")
 args = ap.parse_args()
 steps = args.steps
@@ -43,7 +45,9 @@ if args.shapes:
     print(f"protocol restricted to {args.shapes} + b0: {prot.n} volumes, rank {prot.rank()}", flush=True)
 dev = args.device
 sim_kw = {} if dev == "cpu" else {"device": dev}   # cpu: the original float64 CPU simulation, unchanged
-g = torch.Generator(device=dev).manual_seed(11)
+if args.seed is not None:
+    torch.manual_seed(args.seed)
+g = torch.Generator(device=dev).manual_seed(11 if args.seed is None else 1000 + args.seed)
 net = posterior.PosteriorNet().to(dev)
 opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-5)
 sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=max(steps, 1), pct_start=0.05)
@@ -55,7 +59,8 @@ t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
     net.load_state_dict(torch.load(args.model or model_path, map_location="cpu"))
 for step in range(1, steps + 1):
-    b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
+    b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior,
+                                 exact_fw=args.exact_fw, **sim_kw)
     loss = loss_fn(b.x, b.y)
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
@@ -71,7 +76,8 @@ if args.no_eval:
 # ---- held-out evaluation
 net.eval()
 gt = torch.Generator().manual_seed(12345)
-test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=args.prior)
+test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=args.prior,
+                                exact_fw=args.exact_fw)
 smp = net.sample(test.x, n=100)                         # (n, V, T)
 pm = smp.mean(0).numpy()
 y = test.y.numpy()
@@ -122,4 +128,5 @@ for i, k in enumerate(T):
 res["coverage50"] = dict(zip(T, map(float, cov50)))
 res["coverage90"] = dict(zip(T, map(float, cov90)))
 res["prior"], res["snr"], res["test_snr"] = args.prior, list(args.snr), list(args.test_snr)
+res["exact_fw"] = args.exact_fw
 json.dump(res, open(f"results/posterior_smoke_hhs{tag}.json", "w"), indent=1)

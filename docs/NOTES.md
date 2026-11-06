@@ -995,3 +995,25 @@ Three results in the Westin summary still came from v2 networks. Rerun with v4. 
 - Real data: WM tissue µFA 0.906 (full) vs 0.886 (LTE-only), posterior SD 1.9× larger without STE, voxel r 0.80 (v2: 0.93).
 - **H4 revised:** "WM µFA is recoverable from standard multi-shell data under any reasonable prior" held only for v2's over-coherent WM. Under the prior that matches real WM, LTE-only WM µFA is ~75% worse and ~2× less certain; usable, but STE earns its place in WM too. The GM conclusion (STE matters, the prior matters more) stands.
 - Not rerun: the generic-prior pair (`_v0`, `_v0lte`), which does not depend on the brain prior.
+
+## 2026-11-06: calibration — the overconfidence was the simulator's free water; training runs agree once trained long
+
+**Calibration** (`scripts/calibration.py`, 8,000 simulated v4 voxels at the training SNR 20–150, 200 posterior samples each; `results/calibration_*.json`). 90% coverage of the long v4 network, split by whether the voxel's *true* f_fw is exactly 0:
+
+| voxels | f_fw | MD_t | FA_t | µFA_t | C_MD,t | MD | µFA | C_MD |
+|---|---|---|---|---|---|---|---|---|
+| all | 0.78 | 0.87 | 0.89 | 0.88 | 0.87 | 0.83 | 0.83 | 0.78 |
+| true f_fw = 0 (14%; WM 29%) | 0.00 | 0.70 | 0.89 | 0.88 | 0.86 | 0.42 | 0.39 | 0.03 |
+| true f_fw > 0 | 0.91 | 0.89 | 0.89 | 0.89 | 0.87 | 0.89 | 0.90 | 0.90 |
+
+- **Cause:** `sample_brain` drew free water as one of the M = 64 sampled micro-tensors, so true f_fw was a random count out of 64, and at a few percent of free water (WM: 0–5% in v4) often exactly 0 (clamped to the logit edge). The full-distribution moments then lose their free-water term. The signal cannot tell 0 from 1 free-water tensor in 64, so no posterior can cover that "truth". With free water present, coverage is 0.87–0.91 and the PIT histograms are flat: the network was not broadly overconfident, and longer training could not have fixed this (2026-11-06 v4 entry).
+- **Fix:** `sample_brain(exact_fw=True)` (and `simulate_batch(exact_fw=)`, `posterior_smoke.py --exact-fw`, `calibration.py --exact-fw`): free water is one extra micro-tensor (3 I) carrying exactly the voxel's free-water fraction as a weight; `simulate.signal` and `posterior.targets` take the weights. True f_fw is continuous, never 0. Test in `tests/test_core.py`.
+- **Long v4 with exact free water** (`_v4longfw`, 12,000 × 2048, MPS): 90% coverage f_fw 0.83, tissue targets 0.87–0.89, full-distribution 0.84–0.87 (all voxels; was 0.77–0.89). Remaining shortfall: WM f_fw 0.79 and the WM full moments that depend on it (0.81–0.85); the first f_fw PIT bin is 1.58, i.e. voxels with near-zero free water fall below the interval. That is the free water this protocol does not identify in WM.
+- **Real data barely moves:** regional medians of `_v4longfw` vs `_v4long` agree within about 0.01 (seed-spread level) except brainstem (FA_t 0.498 → 0.473, C_c,t 0.31 → 0.28). The fix changes what the intervals mean, not the maps. Use `--exact-fw` for new training.
+
+**Training-run spread** (`scripts/seed_spread.py`, three long v4 runs differing only in seed: `_v4long`, `_v4long_s1`, `_v4long_s2`; whole brain, sub-01 ses-01; `results/seed_spread_s0101.json`):
+- Voxelwise, tissue voxels: the between-run SD of the posterior mean is 11–20% of the median posterior SD (e.g. µFA_t 0.0065 vs 0.058, FA_t 0.0061 vs 0.031).
+- Regional medians (voxels ≥ 80% one FastSurfer region): range across runs ≤ 0.01 for nearly every target and region; largest 0.018 (pallidum FA_t) and 0.019 (brainstem full µFA).
+- So the v4 → v4long shifts (cortex µFA_t 0.583 → 0.611, C_MD,t 0.076 → 0.058) were under-training, not seed noise: long runs converge to the same answer. From one long run, regional differences above about 0.01–0.02 are interpretable; short (3000 × 512) runs are not converged on real data.
+
+**MPS:** two trainings at once on the M1 Max killed one of them at step 9,000 with "MPS command buffer execution failed: Impacting Interactivity" (macOS's GPU watchdog). Run one MPS training at a time.

@@ -45,11 +45,12 @@ def from_unconstrained(z: torch.Tensor) -> torch.Tensor:
     return torch.stack(out, -1)
 
 
-def targets(d6: torch.Tensor, free: torch.Tensor) -> torch.Tensor:
-    """(V, M, 6) micro-tensors and (V, M) free-water mask -> (V, len(TARGETS))."""
-    full = scalars.scalars(simulate.dtd_params(d6))
-    tissue = scalars.scalars(simulate.dtd_params(d6, weights=(~free).to(d6.dtype)))
-    f_fw = free.to(d6.dtype).mean(1)
+def targets(d6: torch.Tensor, free: torch.Tensor, weights: torch.Tensor | None = None) -> torch.Tensor:
+    """(V, M, 6) micro-tensors and (V, M) free-water mask [and (V, M) weights] -> (V, len(TARGETS))."""
+    w = torch.ones(free.shape, dtype=d6.dtype, device=d6.device) if weights is None else weights
+    full = scalars.scalars(simulate.dtd_params(d6, weights=w))
+    tissue = scalars.scalars(simulate.dtd_params(d6, weights=w * (~free).to(d6.dtype)))
+    f_fw = (w * free.to(d6.dtype)).sum(1) / w.sum(1)
     cols = {"f_fw": f_fw, "md_t": tissue["md"], "fa_t": tissue["fa"], "ufa_t": tissue["ufa"],
             "c_md_t": tissue["c_md"], "md": full["md"], "ufa": full["ufa"], "c_md": full["c_md"]}
     return torch.stack([cols[k] for k in TARGETS], -1)
@@ -146,7 +147,7 @@ class SimBatch:
 
 
 def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32, prior_version=2,
-                   log_snr=True, device=None, sim_dtype=None):
+                   log_snr=True, device=None, sim_dtype=None, exact_fw=False):
     """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal).
 
     SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
@@ -156,6 +157,9 @@ def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.floa
     ``sim_dtype``, default float32: MPS has no float64 and consumer GPUs run it slowly. On a GPU this
     removes the CPU simulation that otherwise dominates a training step. ``dtype`` is the output dtype
     of features and targets.
+
+    ``exact_fw``: free water as an exactly weighted compartment (``simulate.sample_brain``), so true f_fw is
+    the voxel's free-water fraction rather than a random count out of M (brain priors only).
     """
     if device is None:
         kw = {}
@@ -165,13 +169,18 @@ def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.floa
         d6, free = simulate.sample_dtd(V, M=M, g=g, return_free=True, **kw)
         cls = torch.full((V,), -1, dtype=torch.long, device=d6.device)
     else:
-        d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, **kw)
+        if exact_fw:
+            d6, cls, free, wts = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version,
+                                                       exact_fw=True, **kw)
+        else:
+            d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, **kw)
+    wts = wts if prior_version != 0 and exact_fw else None
     dev = d6.device
     b6 = protocol.b6.to(dtype=d6.dtype, device=dev)
-    clean = simulate.signal(d6, b6)
+    clean = simulate.signal(d6, b6, weights=wts)
     u = torch.rand(V, dtype=d6.dtype, generator=g, device=dev)
     lo, hi = snr
     s = torch.exp(torch.log(torch.tensor(lo)) + u * torch.log(torch.tensor(hi / lo))) if log_snr else lo + (hi - lo) * u
     S = simulate.rician(clean, 1.0 / s, g)
     x = features(S, b6, protocol.b.to(dtype=d6.dtype, device=dev), protocol.b_delta().to(dtype=d6.dtype, device=dev))
-    return SimBatch(x.to(dtype), targets(d6, free).to(dtype), cls, S)
+    return SimBatch(x.to(dtype), targets(d6, free, wts).to(dtype), cls, S)

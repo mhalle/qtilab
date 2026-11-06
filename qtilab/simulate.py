@@ -149,7 +149,7 @@ BRAIN_PRIORS = {
 
 
 def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs=(0.35, 0.35, 0.15, 0.15),
-                 return_free=False, version=2, return_comp=False):
+                 return_free=False, version=2, return_comp=False, exact_fw=False):
     """Brain-like tensor distributions. -> (d6 (V, M, 6), class index (V,)[, free-water mask (V, M)]).
 
     Compartments are Gaussian (no restriction or exchange); values in um^2/ms are typical of the
@@ -168,6 +168,11 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     also be a dict of the same keys (for prior experiments); optional keys ``wm_nb`` (probabilities of
     1, 2, 3 bundles, default (0.6, 0.3, 0.1)) and ``wm_alpha`` (integer Dirichlet concentration of the
     bundle weights, default 2).
+
+    ``exact_fw=True``: free water is not one of the M sampled micro-tensors (whose count is random, and
+    often 0 at a few percent of free water) but one extra micro-tensor (3 I) carrying exactly the voxel's
+    free-water fraction. Returns (d6 (V, M + 1, 6), class, free mask (V, M + 1), weights (V, M + 1));
+    pass the weights to ``signal`` and ``posterior.targets``. Requires ``return_free``.
     """
     P = version if isinstance(version, dict) else BRAIN_PRIORS[version]
     kw = dict(dtype=dtype, device=device)
@@ -214,6 +219,18 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     w[:, :6] = w[:, :6] * (1 - fw)[:, None]
     w[:, 6] = fw
     d_iso[:, 6], d_del[:, 6], spread[:, 6] = 3.0, 0.0, 0.0
+    if exact_fw:
+        assert return_free and not return_comp, "exact_fw returns (d6, cls, free, weights)"
+        wt = w.clone()
+        wt[:, 6] = 0.0
+        wt = wt / wt.sum(-1, keepdim=True)
+        d6 = micro_tensors(wt, d_iso, d_del, spread, disp, mu, M, g)
+        fw6 = torch.tensor([3.0, 3.0, 3.0, 0.0, 0.0, 0.0], dtype=dtype, device=device).expand(V, 1, 6)
+        d6 = torch.cat([d6, fw6], 1)
+        weights = torch.cat([((1 - fw) / M)[:, None].expand(V, M), fw[:, None]], 1)
+        free = torch.zeros(V, M + 1, dtype=torch.bool, device=device)
+        free[:, M] = True
+        return d6, cls, free, weights
     d6, comp = micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g, return_comp=True)
     if return_comp:
         return d6, cls, comp
@@ -267,12 +284,19 @@ def dtd_params(d6, s0=None, weights=None):
     return torch.cat([ls0, mean, vec21(C)], dim=-1)
 
 
-def signal(d6, B6, chunk=8192):
-    """Noise-free S/S0 (V, N) for micro-tensors (V, M, 6) and b-tensors (N, 6), Mandel."""
+def signal(d6, B6, chunk=8192, weights=None):
+    """Noise-free S/S0 (V, N) for micro-tensors (V, M, 6) and b-tensors (N, 6), Mandel.
+
+    Equal weights unless ``weights`` (V, M) (normalized here), e.g. from ``sample_brain(exact_fw=True)``.
+    """
     out = []
     for i in range(0, d6.shape[0], chunk):
         e = torch.exp(-torch.einsum("vmk,nk->vmn", d6[i:i + chunk], B6))
-        out.append(e.mean(1))
+        if weights is None:
+            out.append(e.mean(1))
+        else:
+            w = weights[i:i + chunk]
+            out.append(torch.einsum("vm,vmn->vn", w / w.sum(1, keepdim=True), e))
     return torch.cat(out)
 
 

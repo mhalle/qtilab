@@ -122,3 +122,22 @@ def test_simulation_is_reproducible_from_generator():
     w = simulate._dirichlet(2, (200_000, 3), torch.Generator().manual_seed(0), torch.float64, "cpu")
     assert torch.allclose(w.sum(-1), torch.ones(200_000, dtype=torch.float64))
     assert abs(float(w.var(0).mean()) - 2 / 63) < 1e-3     # Dirichlet(2, 2, 2): var = 2 * 4 / (36 * 7)
+
+
+def test_exact_free_water_weights():
+    """exact_fw: one weighted free-water tensor carries exactly the voxel's free-water fraction."""
+    from qtilab import posterior
+    g = torch.Generator().manual_seed(3)
+    d6, cls, free, w = simulate.sample_brain(400, M=16, g=g, return_free=True, version=4, exact_fw=True)
+    assert d6.shape == (400, 17, 6) and free[:, -1].all() and not free[:, :-1].any()
+    assert torch.allclose(w.sum(1), torch.ones(400, dtype=w.dtype))
+    y = posterior.targets(d6, free, w)
+    assert torch.allclose(y[:, posterior.TARGETS.index("f_fw")], w[:, -1])
+    assert (y[:, 0] > 0).all()                                 # never an exact zero
+    p = _protocol()
+    S = simulate.signal(d6, p.b6.to(d6.dtype), weights=w)
+    assert torch.allclose(S[:, p.b < 0.05], torch.ones_like(S[:, p.b < 0.05]))
+    # free water alone: the weighted signal's high-b decay matches exp(-3 b) for the free-water part
+    pure = torch.cat([torch.zeros(1, 1, 6, dtype=d6.dtype), d6[:1, -1:]], 1)
+    S1 = simulate.signal(pure, p.b6.to(d6.dtype), weights=torch.tensor([[0.0, 1.0]], dtype=d6.dtype))
+    assert torch.allclose(S1[0], torch.exp(-3 * p.b.to(d6.dtype)))

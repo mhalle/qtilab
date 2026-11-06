@@ -77,6 +77,8 @@ python scripts/prior_match.py --priors 1 2 3 4                 # priors vs real 
 python scripts/posterior_smoke.py 12000 --batch 2048 --prior 4 --snr 20 150 --test-snr 30 140 --tag _v4long --device mps   # 22 min
 python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v4long.pt _v4long --whole-brain --device mps
 python scripts/network_regions.py --tags _v2 _v4 _v4long         # needs those _full posteriors
+python scripts/calibration.py results/posterior_smoke_hhs_v4long.pt; python scripts/calibration.py results/posterior_smoke_hhs_v4longfw.pt --exact-fw
+python scripts/seed_spread.py --tags _v4long _v4long_s1 _v4long_s2   # long runs with --seed 1 / 2, each mapped --whole-brain
 python scripts/prepare_session.py 01 02   # also 01 03, 02 01, 06 01; then the held-out grid in scripts/prior_heldout_summary.py's docstring
 python scripts/prior_heldout_summary.py
 # v2-era results rerun with v4 (NOTES 2026-11-06, last entry)
@@ -112,6 +114,7 @@ Development now runs locally on an Apple M1 Max (10 cores, 64 GB, MPS). The resu
 - zuko flow sampling is memory-hungry (about 90 kB per voxel-sample), so `PosteriorNet.sample` chunks at 64 voxels by default. That was sized for the sandbox; chunk 1024 with n = 100 peaks at 9 GB, fine here.
 
 GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for CUDA.
+- Run **one MPS training at a time**: two together tripped macOS's GPU watchdog ("Impacting Interactivity") and killed one at step 9,000.
 - MPS has **no float64**. DIPY validation and the reference benchmarks stay float64 on CPU; use float32 on MPS.
 - Rank-deficient WLS solves in X's row space (Cholesky), not with `pinv`. MPS's batched `pinv` was off by up to 1e-2 in µFA in float32. With the fix, MPS float32 matches CPU float64 at default settings (µFA within 1e-3 of the tight reference; NOTES 2026-11-05 late night). Don't reintroduce batched `pinv` on hot paths.
 - An objective-based ADMM stopping rule was tried and rejected (NOTES); don't retry it without a new idea.
@@ -160,6 +163,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).
      - Prior v4 (`BRAIN_PRIORS[4]`) matches real classical maps in WM and cortex and covers real tissue in the (µFA, C_c) and (MD, C_MD) planes (`scripts/prior_match.py`, NOTES 2026-11-06). Trained (`_v4`, `_v4long`): narrows the FA_t gap; longer training moves real-data estimates by a few hundredths, and 90% coverage stays at 0.77–0.89 (NOTES 2026-11-06).
    - Include time dependence (WM only) in the training prior: r ≈ 1.5 with v4 (five sessions; r ≈ 4 was fitted with v2).
+   - Train with `--exact-fw` (free water as an exact weight; the old random count made the network look overconfident) and long (12,000 × 2048 or more: short runs are not converged on real data; seeds then agree within ~0.01 regionally). NOTES 2026-11-06, calibration entry.
    - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
 5. **H4 follow-ups.**
    - Brain prior: under v2, LTE-only recovered WM tissue µFA nearly as well as the full protocol (+5% error). Under v4 it is about 75% worse in WM and the posterior SD about 2× larger on real WM, at either training budget: v2's coherent WM hid it (NOTES 2026-11-06).
