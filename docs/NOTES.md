@@ -1026,7 +1026,34 @@ Three results in the Westin summary still came from v2 networks. Rerun with v4. 
 - **Real data, regional medians vs `_v4longfw`** (long runs; seed spread ≤ ~0.005 in WM, up to 0.02 in pallidum and brainstem; `results/network_regions_s0101.json`):
   - The **WM FA_t gap does not close**: 0.396 → 0.391 (classical 0.434). Time dependence is not its explanation.
   - **µFA_t drops where WM time dependence acts:** cerebral WM 0.882 → 0.866, cerebellar WM 0.923 → 0.911, thalamus 0.817 → 0.795, brainstem 0.898 → 0.878 (1–3× the seed spread, towards classical µFA). Without time dependence the network was absorbing part of the STE deficit as extra microscopic anisotropy. GM unchanged (cortex 0.613 → 0.608).
-  - **Pallidum and brainstem anisotropy fall** (FA_t 0.424 → 0.376 and 0.473 → 0.427; C_c,t 0.21 → 0.16 and 0.28 → 0.24), beyond the seed spread there. Not attributed: time dependence, pulsation (brainstem borders CSF) or the SNR floor; needs an ablation.
+  - **Pallidum and brainstem anisotropy fall** (FA_t 0.424 → 0.376 and 0.473 → 0.427; C_c,t 0.21 → 0.16 and 0.28 → 0.24), beyond the seed spread there. Attributed to the SNR floor in the next entry.
   - f_fw, MD_t and C_MD,t: within about 0.01.
 - **Low-signal edge voxels** (lowest 2% of b0, tissue): median posterior SD of µFA_t v2 0.040 (below mid-b0 voxels' 0.097: overconfident where it should be least sure), v4long 0.081, v4longfw 0.071, v5 0.090 (vs 0.062 mid-b0). Uncertainty now grows as signal falls.
-- **Status:** v5 is the current best network: matched prior, calibrated where the data are informative, honest at low signal, and with the measured time dependence. Open: the WM FA_t gap (about 0.04), the pallidum/brainstem attribution, and a held-out check of the noise options (the k-NN held-out tests the prior and time dependence, not the noise model).
+- **Status:** v5 is the current best network: matched prior, calibrated where the data are informative, honest at low signal, and with the measured time dependence. Open: the WM FA_t gap (about 0.04) and a held-out check of the noise options (the k-NN held-out tests the prior and time dependence, not the noise model).
+
+## 2026-11-06: v5 ablations — the pallidum/brainstem drop is the SNR floor, and it is a correction
+
+Three long runs, each v5 with one addition removed (12,000 × 2048, seed 0, `--exact-fw`, mapped `--whole-brain`): `_v5_notd` (no time dependence), `_v5_nopuls` (no pulsation), `_v5_snr20` (SNR from 20 again). Regional medians in `results/network_regions_s0101.json`. These are single runs, so differences under the seed spread (≤ ~0.005 in WM, up to 0.02 in pallidum and brainstem) mean nothing.
+
+| | `_v4longfw` | `_v5` | no td | no pulsation | SNR from 20 |
+|---|---|---|---|---|---|
+| pallidum FA_t | 0.424 | 0.376 | 0.369 | 0.361 | 0.398 |
+| brainstem FA_t | 0.473 | 0.427 | 0.435 | 0.415 | 0.463 |
+| brainstem C_c,t | 0.276 | 0.235 | 0.240 | 0.221 | 0.273 |
+| cerebral WM µFA_t | 0.882 | 0.866 | 0.880 | 0.866 | 0.868 |
+| cerebral WM MD_t | 0.858 | 0.844 | 0.859 | 0.845 | 0.843 |
+
+- **The SNR floor explains the brainstem drop** (FA_t 0.036 of 0.046, C_c,t all of it) **and about half the pallidum drop** (FA_t 0.022 of 0.048; the rest is near the seed spread there, or the α/gain terms, which were not ablated). Time dependence and pulsation do not cause it.
+- **Why there:** these are the low-SNR regions (`scripts/low_snr_bias.py`; b0 SNR = mean b0 / SD of the 15 STE b = 1500 repeats). The median is 24 in both, and 35% (pallidum) and 38% (brainstem) of voxels are below 20. Elsewhere the median is 45–80 and under 2.5% of voxels are below 20. Pallidum has a low b0 (iron, short T2: median 259 vs 430–600). Brainstem has a normal b0 but large repeat-to-repeat variation, so its noise is mostly physiological.
+- **The drop is a correction.** On v4 with v5's forward model at SNR 10–20, networks trained from SNR 20 overestimate FA_t:
+  - WM: +0.039 (`_v4longfw`) and +0.022 (`_v5_snr20`), against −0.007 for v5.
+  - GM: +0.054 and +0.043, against +0.020 for v5.
+  - Their 90% coverage is 0.82–0.84, against 0.89 for v5.
+  - Below the training range they read noise as anisotropy.
+  - At SNR 20–40 and 40–150 all three agree within 0.01.
+  - Classical FA has the same noise bias, so classical pallidum and brainstem values (0.45, 0.46) are not a target.
+- **Time dependence is what lowers WM µFA_t** (cerebral 0.882 → 0.866, cerebellar 0.923 → 0.911; without it 0.880 and 0.921). It also lowers WM MD_t by about 0.015 (cerebral 0.858 → 0.844, cerebellar 0.800 → 0.784), which the v5 entry missed. The simulated STE signal decays faster under time dependence, so the same observed signal implies a lower base diffusivity.
+- **Pulsation** has no regional effect beyond about one seed spread. Without it brainstem FA_t is 0.415, slightly lower.
+- **Caveat:** the brainstem's real noise is mostly physiological (structured, likely cardiac). The simulator's noise is Rician thermal plus a white signal-proportional term, so v5's low-SNR behaviour there is right in direction but not proven in size.
+- **Status:** keep v5 as trained. Open: the WM FA_t gap (about 0.04), a structured physiological-noise model for the brainstem, and a held-out check of the noise options.
+

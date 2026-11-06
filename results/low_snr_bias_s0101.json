@@ -1,0 +1,265 @@
+{
+ "tags": [
+  "_v4longfw",
+  "_v5",
+  "_v5_snr20"
+ ],
+ "sub": "01",
+ "ses": "01",
+ "real_snr": {
+  "cortex": {
+   "n": 12975,
+   "median": 79.5,
+   "p10": 36.8,
+   "pct_below_20": 1.9
+  },
+  "caudate": {
+   "n": 343,
+   "median": 52.3,
+   "p10": 39.1,
+   "pct_below_20": 0.0
+  },
+  "putamen": {
+   "n": 444,
+   "median": 45.4,
+   "p10": 30.0,
+   "pct_below_20": 0.7
+  },
+  "thalamus": {
+   "n": 808,
+   "median": 44.9,
+   "p10": 31.4,
+   "pct_below_20": 0.1
+  },
+  "pallidum": {
+   "n": 176,
+   "median": 23.8,
+   "p10": 14.6,
+   "pct_below_20": 35.2
+  },
+  "cerebral_wm": {
+   "n": 18263,
+   "median": 68.7,
+   "p10": 40.8,
+   "pct_below_20": 0.3
+  },
+  "cerebellum_wm": {
+   "n": 1096,
+   "median": 47.2,
+   "p10": 28.4,
+   "pct_below_20": 2.2
+  },
+  "brainstem": {
+   "n": 1057,
+   "median": 24.3,
+   "p10": 13.3,
+   "pct_below_20": 37.7
+  }
+ },
+ "simulation": {
+  "10-20": {
+   "_v4longfw": {
+    "WM_fa_t": {
+     "bias": 0.039,
+     "rmse": 0.0923,
+     "coverage90": 0.843
+    },
+    "WM_ufa_t": {
+     "bias": -0.0016,
+     "rmse": 0.0455,
+     "coverage90": 0.856
+    },
+    "GM_fa_t": {
+     "bias": 0.0544,
+     "rmse": 0.092,
+     "coverage90": 0.827
+    },
+    "GM_ufa_t": {
+     "bias": 0.0229,
+     "rmse": 0.1091,
+     "coverage90": 0.875
+    }
+   },
+   "_v5": {
+    "WM_fa_t": {
+     "bias": -0.0069,
+     "rmse": 0.0787,
+     "coverage90": 0.893
+    },
+    "WM_ufa_t": {
+     "bias": -0.0097,
+     "rmse": 0.0448,
+     "coverage90": 0.891
+    },
+    "GM_fa_t": {
+     "bias": 0.0198,
+     "rmse": 0.0578,
+     "coverage90": 0.89
+    },
+    "GM_ufa_t": {
+     "bias": 0.0182,
+     "rmse": 0.1017,
+     "coverage90": 0.873
+    }
+   },
+   "_v5_snr20": {
+    "WM_fa_t": {
+     "bias": 0.0224,
+     "rmse": 0.0872,
+     "coverage90": 0.816
+    },
+    "WM_ufa_t": {
+     "bias": -0.0143,
+     "rmse": 0.0496,
+     "coverage90": 0.831
+    },
+    "GM_fa_t": {
+     "bias": 0.0426,
+     "rmse": 0.0817,
+     "coverage90": 0.836
+    },
+    "GM_ufa_t": {
+     "bias": 0.012,
+     "rmse": 0.1047,
+     "coverage90": 0.856
+    }
+   }
+  },
+  "20-40": {
+   "_v4longfw": {
+    "WM_fa_t": {
+     "bias": 0.0078,
+     "rmse": 0.0445,
+     "coverage90": 0.883
+    },
+    "WM_ufa_t": {
+     "bias": 0.0109,
+     "rmse": 0.033,
+     "coverage90": 0.816
+    },
+    "GM_fa_t": {
+     "bias": 0.0077,
+     "rmse": 0.0412,
+     "coverage90": 0.874
+    },
+    "GM_ufa_t": {
+     "bias": 0.004,
+     "rmse": 0.0857,
+     "coverage90": 0.873
+    }
+   },
+   "_v5": {
+    "WM_fa_t": {
+     "bias": -0.0009,
+     "rmse": 0.0432,
+     "coverage90": 0.892
+    },
+    "WM_ufa_t": {
+     "bias": 0.0019,
+     "rmse": 0.0311,
+     "coverage90": 0.883
+    },
+    "GM_fa_t": {
+     "bias": 0.005,
+     "rmse": 0.0392,
+     "coverage90": 0.881
+    },
+    "GM_ufa_t": {
+     "bias": 0.0049,
+     "rmse": 0.0832,
+     "coverage90": 0.863
+    }
+   },
+   "_v5_snr20": {
+    "WM_fa_t": {
+     "bias": 0.0047,
+     "rmse": 0.0431,
+     "coverage90": 0.875
+    },
+    "WM_ufa_t": {
+     "bias": 0.0,
+     "rmse": 0.0312,
+     "coverage90": 0.865
+    },
+    "GM_fa_t": {
+     "bias": 0.0076,
+     "rmse": 0.0411,
+     "coverage90": 0.864
+    },
+    "GM_ufa_t": {
+     "bias": -0.0021,
+     "rmse": 0.085,
+     "coverage90": 0.872
+    }
+   }
+  },
+  "40-150": {
+   "_v4longfw": {
+    "WM_fa_t": {
+     "bias": 0.0002,
+     "rmse": 0.0296,
+     "coverage90": 0.897
+    },
+    "WM_ufa_t": {
+     "bias": 0.0159,
+     "rmse": 0.0301,
+     "coverage90": 0.798
+    },
+    "GM_fa_t": {
+     "bias": -0.0048,
+     "rmse": 0.0295,
+     "coverage90": 0.875
+    },
+    "GM_ufa_t": {
+     "bias": -0.0002,
+     "rmse": 0.0715,
+     "coverage90": 0.884
+    }
+   },
+   "_v5": {
+    "WM_fa_t": {
+     "bias": 0.0011,
+     "rmse": 0.0299,
+     "coverage90": 0.896
+    },
+    "WM_ufa_t": {
+     "bias": 0.0035,
+     "rmse": 0.0255,
+     "coverage90": 0.905
+    },
+    "GM_fa_t": {
+     "bias": -0.0017,
+     "rmse": 0.0294,
+     "coverage90": 0.885
+    },
+    "GM_ufa_t": {
+     "bias": 0.0011,
+     "rmse": 0.0706,
+     "coverage90": 0.876
+    }
+   },
+   "_v5_snr20": {
+    "WM_fa_t": {
+     "bias": 0.0013,
+     "rmse": 0.0296,
+     "coverage90": 0.903
+    },
+    "WM_ufa_t": {
+     "bias": 0.0038,
+     "rmse": 0.0255,
+     "coverage90": 0.886
+    },
+    "GM_fa_t": {
+     "bias": -0.002,
+     "rmse": 0.0292,
+     "coverage90": 0.887
+    },
+    "GM_ufa_t": {
+     "bias": 0.0021,
+     "rmse": 0.0724,
+     "coverage90": 0.887
+    }
+   }
+  }
+ }
+}
