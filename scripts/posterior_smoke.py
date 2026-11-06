@@ -31,6 +31,7 @@ ap.add_argument("--compile", action="store_true",
                 help="torch.compile the training loss (fused kernels; the spline cumsum dominates eager CUDA steps)")
 ap.add_argument("--batch", type=int, default=512, help="simulated voxels per training step")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
+ap.add_argument("--model", default="", help="with steps = 0: evaluate this saved model instead of the tag's (output still named by --tag)")
 args = ap.parse_args()
 steps = args.steps
 tag = args.tag
@@ -52,7 +53,7 @@ if args.compile:
     loss_fn = torch.compile(loss_fn, dynamic=False)
 t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
-    net.load_state_dict(torch.load(model_path))
+    net.load_state_dict(torch.load(args.model or model_path, map_location="cpu"))
 for step in range(1, steps + 1):
     b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
     loss = loss_fn(b.x, b.y)

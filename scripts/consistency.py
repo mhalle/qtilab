@@ -2,10 +2,14 @@
 
 A. Same voxels, two protocols: DiB_217 vs DiB_70 (both subsampled from one acquisition, so their
    noise is partly shared; this tests protocol dependence, not scan-rescan reproducibility).
-B. One subject, three Hormone Health sessions (sub-01): classical QTI regional medians and the v2
+B. One subject, three Hormone Health sessions (sub-01): classical QTI regional medians and the
    network's regional medians on a mid-brain slice of each session. Regions are defined per session
    (FA and free-water thresholds), so slice placement differences matter less than voxelwise
    comparison would.
+C. Session 1 of five other subjects (between-subject spread).
+
+    python scripts/consistency.py PART [MODEL] [TAG]    # PART: AB, B, C; MODEL default the v2 network;
+                                                        # writes results/consistency_{PART}{TAG}.json
 """
 import json
 import sys
@@ -22,6 +26,8 @@ torch.set_num_threads(2)
 out = {}
 
 PART = sys.argv[1] if len(sys.argv) > 1 else "AB"
+MODEL = sys.argv[2] if len(sys.argv) > 2 else "results/posterior_smoke_hhs_v2.pt"   # network for part B/C
+TAG = sys.argv[3] if len(sys.argv) > 3 else ""                                        # output suffix
 SUBJECTS = [("01", "01"), ("01", "02"), ("01", "03")]
 if PART == "C":            # between-subject spread: session 1 of five other subjects
     SUBJECTS = [(sub, "01") for sub in ("02", "06", "07", "08", "09")]
@@ -46,7 +52,7 @@ if "A" in PART:
 
 # ---- B. three sessions of sub-01
 net = posterior.PosteriorNet()
-net.load_state_dict(torch.load("results/posterior_smoke_hhs_v2.pt"))
+net.load_state_dict(torch.load(MODEL, map_location="cpu"))
 net.eval()
 from dipy.segment.mask import median_otsu  # noqa: E402
 rows = []
@@ -86,4 +92,5 @@ print("\nacross rows: mean, max - min")
 for k in keys:
     v = np.array([r[k] for r in rows])
     print(f"   {k:20s} {v.mean():.3f}   {v.max() - v.min():.3f}")
-json.dump(out, open(f"results/consistency_{PART}.json", "w"), indent=1)
+out["model"] = MODEL
+json.dump(out, open(f"results/consistency_{PART}{TAG}.json", "w"), indent=1)

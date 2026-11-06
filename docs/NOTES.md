@@ -943,3 +943,55 @@ Per session, WM STE bias: v2 −0.90 to −1.45; v4 −0.07 to −0.42 (negative
 - **H5, revised:** about 80% of the WM STE deficit (bias −1.29 → −0.27) was the prior's over-coherent WM. A small residual remains, negative in every session, and WM-only time dependence at r ≈ 1.5 removes it (1.28 → 1.23). r = 4 was fitted to compensate for the prior. Time dependence in WM is still supported as a small effect; its size is now about a fifth of the previous estimate (the scaling 1 + τ(√r − 1): √1.5 − 1 = 0.22 vs √4 − 1 = 1.0, at the same τ ranges, which are still guesses).
 - CSF LTE gets slightly worse with any time dependence (1.56 → 1.62); CSF has no WM time dependence, so this is the bank composition shifting, worth a look if r is fitted per tissue.
 - Implication for training (CLAUDE.md task 4): use v4 with WM-only time dependence at r ≈ 1.5, not r ≈ 4.
+
+## 2026-11-06: the v2-era network results rerun with v4 — test–retest and LTE-only change, the simulation table holds
+
+Three results in the Westin summary still came from v2 networks. Rerun with v4. New outputs carry the tags below; the v2 files are untouched.
+
+**Network vs classical on simulation** (`posterior_smoke.py 0 --model ... --test-snr 20 35`, new `--model` option for evaluating a saved model under another tag; `results/posterior_smoke_hhs_{v2,v4long}_test20_35.json`). 4,000 voxels from each network's own prior, SNR 20–35. Tissue µFA median |error|, network / classical constrained:
+
+| class | v2 network | v4long network |
+|---|---|---|
+| WM | 0.023 / 0.036 | 0.020 / 0.043 |
+| GM | 0.065 / 0.086 | 0.060 / 0.083 |
+| WM+CSF | 0.040 / 0.348 | 0.037 / 0.393 |
+| GM+CSF | 0.085 / 0.299 | 0.087 / 0.269 |
+
+- Tissue MD at CSF boundaries: classical 0.81–0.93 µm²/ms off (it reports the mixture), network 0.05–0.10.
+- 90% coverage at this SNR: v4long 0.74–0.88, v2 0.79–0.88. Same picture as at SNR 30–140.
+- The table previously quoted in the Westin summary as "v2" (WM 0.025 / 0.037, …) was the 2026-11-04 smoke test, prior v1 (untagged `posterior_smoke_hhs.json`).
+
+**Test–retest** (`consistency.py B|C MODEL TAG`, new optional arguments; `results/consistency_{B,C}_v4long.json`). Same sessions and slices as before (sub-01 ses-01/02/03; sub-02/06/07/08/09 ses-01), regional medians, SD with ddof = 1 (reproduces the v2 table exactly):
+
+| measure | v2: within / between / ratio | v4long: within / between / ratio |
+|---|---|---|
+| classical WM µFA | 0.013 / 0.010 / 0.8 | 0.013 / 0.011 / 0.9 |
+| network WM tissue µFA | 0.0026 / 0.010 / **3.9** | 0.0069 / 0.010 / **1.5** |
+| network WM tissue MD | 0.0033 / 0.012 / 3.5 | 0.0063 / 0.014 / 2.2 |
+| network WM tissue C_MD | 0.0006 / 0.0019 / 3.3 | 0.0005 / 0.0006 / 1.3 |
+| network WM f_fw | 0.0020 / 0.0044 / 2.2 | 0.0009 / 0.0010 / 1.1 |
+| network GM tissue µFA | 0.0022 / 0.006 / 2.7 | 0.017 / 0.029 / 1.7 |
+| network GM tissue MD | 0.0094 / 0.010 / 1.1 | 0.013 / 0.012 / 0.9 |
+| network GM f_fw | 0.0026 / 0.0043 / 1.7 | 0.0016 / 0.0082 / 5.1 |
+| network GM tissue C_MD | 0.0008 / 0.0012 / 1.5 | 0.0008 / 0.0038 / 4.7 |
+
+- **The v2 "5× more stable, between-subject differences kept" result was mostly the prior.** With v4long, WM tissue µFA varies 2.7× more between sessions than under v2. It is still about half the classical within-subject SD, and between-subject SD is unchanged (0.010), so the ratio is 1.5 vs classical 0.9: better than classical, not 4× better.
+- v2's caveat anticipated this: real WM sat in v2's FA gap, where the posterior mean is a compromise between modes and moves little with the data.
+- WM f_fw and WM C_MD,t barely vary at all under v4long (SDs ≤ 0.001): both are pinned by the prior (WM f_fw range 0–5%), so their ratios carry no information. GM f_fw and GM C_MD,t now separate subjects (ratios ≈ 5), which is new.
+- Classical values match the earlier run to ≤ 1e-4 except sub-08 (WM µFA 0.872 → 0.866; run-to-run alignment).
+- Caveats as before: one subject's three sessions span menstrual-cycle phases; single-slice medians; posterior sampling unseeded (n = 50, negligible at these medians). Proper ICCs need the cohort (H7).
+
+**H4, linear encoding only** (`h4_lte_only.py`, now with a v4 label; new networks `_v4longlte` = v4long's recipe with `--shapes LTE`, 12,000 × 2048 on MPS, and `_v4lte` = v4's recipe, 3,000 × 512 on CPU; `results/h4_lte_only_{v4long,v4}.{json,png}`). Tissue µFA median |error|, full → LTE-only, on each pair's training prior:
+
+| pair | WM | GM | real WM: SD ratio, r | real GM: SD ratio, r |
+|---|---|---|---|---|
+| v2 (3000 × 512) | 0.022 → 0.023 (+5%) | 0.073 → 0.078 (+7%) | ×1.18, 0.93 | ×1.06, 0.84 |
+| v4 (3000 × 512) | 0.016 → 0.028 (+75%) | 0.063 → 0.075 (+19%) | ×1.7, 0.80 | ×1.3, 0.72 |
+| v4long (12,000 × 2048) | 0.014 → 0.025 (+79%) | 0.052 → 0.074 (+42%) | ×1.9, 0.80 | ×1.4, 0.67 |
+
+- **Under v4, spherical encoding matters in white matter.** Dropping STE costs ~75% in WM tissue µFA error, against 5% under v2, at the same training budget, so this is the prior, not training length. v2's WM was coherent single bundles, the regime where LTE alone suffices; v4's dispersed WM is not.
+- In GM the cost grows with training (19% → 42%): the longer-trained full network uses STE better.
+- The v4long pair on other test priors: on v2 voxels WM 0.018 → 0.020 (the old result reappears), on v3 voxels 0.025 → 0.035.
+- Real data: WM tissue µFA 0.906 (full) vs 0.886 (LTE-only), posterior SD 1.9× larger without STE, voxel r 0.80 (v2: 0.93).
+- **H4 revised:** "WM µFA is recoverable from standard multi-shell data under any reasonable prior" held only for v2's over-coherent WM. Under the prior that matches real WM, LTE-only WM µFA is ~75% worse and ~2× less certain; usable, but STE earns its place in WM too. The GM conclusion (STE matters, the prior matters more) stands.
+- Not rerun: the generic-prior pair (`_v0`, `_v0lte`), which does not depend on the brain prior.

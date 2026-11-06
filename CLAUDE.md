@@ -79,6 +79,13 @@ python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v4long.pt
 python scripts/network_regions.py --tags _v2 _v4 _v4long         # needs those _full posteriors
 python scripts/prepare_session.py 01 02   # also 01 03, 02 01, 06 01; then the held-out grid in scripts/prior_heldout_summary.py's docstring
 python scripts/prior_heldout_summary.py
+# v2-era results rerun with v4 (NOTES 2026-11-06, last entry)
+python scripts/posterior_smoke.py 0 --prior 4 --test-snr 20 35 --model results/posterior_smoke_hhs_v4long.pt --tag _v4long_test20_35
+python scripts/consistency.py B results/posterior_smoke_hhs_v4long.pt _v4long; python scripts/consistency.py C results/posterior_smoke_hhs_v4long.pt _v4long
+python scripts/posterior_smoke.py 12000 --batch 2048 --prior 4 --snr 20 150 --test-snr 30 140 --tag _v4longlte --device mps --shapes LTE   # 17 min
+python scripts/posterior_smoke.py 3000 --prior 4 --snr 20 150 --test-snr 30 140 --tag _v4lte --shapes LTE
+python scripts/h4_lte_only.py --full-model results/posterior_smoke_hhs_v4long.pt --lte-model results/posterior_smoke_hhs_v4longlte.pt --test-priors 4,2,3,0 --tag _v4long
+python scripts/h4_lte_only.py --full-model results/posterior_smoke_hhs_v4.pt --lte-model results/posterior_smoke_hhs_v4lte.pt --test-priors 4 --tag _v4
 ```
 
 - Trained models are committed in `results/*.pt`. `posterior_smoke.py 0 ...` evaluates a saved model without training.
@@ -148,14 +155,14 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
 3. **Cohort run for H7 (reliability).**
    - Align, fit (constrained) and run network inference for all 66 sessions on GPU.
    - Report whole-brain regional ICCs, classical vs network.
-   - The 5-subject pilot: the network keeps between-subject differences while cutting session-to-session variation about 5× (`results/consistency_*.json`).
+   - The 5-subject pilot: under v2 the network cut session-to-session variation about 5× while keeping between-subject differences, but most of that was the prior. With v4long, WM tissue µFA between/within is 1.5 (classical 0.9, v2 3.9; `results/consistency_*_v4long.json`, NOTES 2026-11-06).
 4. **Longer network training on GPU**, across several protocols with random measurement subsets, for protocol invariance. This is the hook for the embedding work.
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).
      - Prior v4 (`BRAIN_PRIORS[4]`) matches real classical maps in WM and cortex and covers real tissue in the (µFA, C_c) and (MD, C_MD) planes (`scripts/prior_match.py`, NOTES 2026-11-06). Trained (`_v4`, `_v4long`): narrows the FA_t gap; longer training moves real-data estimates by a few hundredths, and 90% coverage stays at 0.77–0.89 (NOTES 2026-11-06).
    - Include time dependence (WM only) in the training prior: r ≈ 1.5 with v4 (five sessions; r ≈ 4 was fitted with v2).
    - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
 5. **H4 follow-ups.**
-   - Brain prior: LTE-only recovers tissue µFA nearly as well as the full protocol.
+   - Brain prior: under v2, LTE-only recovered WM tissue µFA nearly as well as the full protocol (+5% error). Under v4 it is about 75% worse in WM and the posterior SD about 2× larger on real WM, at either training budget: v2's coherent WM hid it (NOTES 2026-11-06).
    - Generic prior: spherical encoding cuts GM µFA error by about 25–30%, with no gain in WM.
    - Next: apply LTE-only models to a legacy multi-shell dataset (HCP-style), and quantify prior dependence there.
 6. **Real waveforms.** DiB ships its waveforms. For HHS, ask the authors (Erlangen waveforms, Martin et al. 2020). Replace the single spectral ratio with real encoding spectra.

@@ -1,8 +1,10 @@
 """H4: how much of QTI's information is recoverable from linear encoding (LTE) alone?
 
-Two networks, identical except for the measurements they see (same prior v2, SNR range, steps):
+Two networks, identical except for the measurements they see (same prior, SNR range, steps). Defaults:
   full      all 107 volumes of the HHS protocol (LTE + STE)          results/posterior_smoke_hhs_v2.pt
   LTE-only  the 69 LTE volumes plus every b = 0 volume (71 volumes)  results/posterior_smoke_hhs_v2lte.pt
+Prior v4 (long training): --full-model results/posterior_smoke_hhs_v4long.pt
+  --lte-model results/posterior_smoke_hhs_v4longlte.pt --test-priors 4,2,3,0 --tag _v4long
 
 1. Simulation, same voxels for both: error of the posterior mean, width of the 90% interval and its
    coverage, by tissue class and target. Test data from prior v2 (the training prior) and from priors
@@ -68,7 +70,8 @@ for pv in [int(x) for x in args.test_priors.split(",")]:
     cls = test.cls.numpy()
     smp = run_both(test.S)
     res = {}
-    label = {2: "brain v2 (training prior)", 1: "brain v1", 3: "brain v3 (wide)", 0: "generic (non-anatomical)"}[pv]
+    label = {1: "brain v1", 2: "brain v2", 3: "brain v3 (wide)", 4: "brain v4 (matched)",
+             0: "generic (non-anatomical)"}[pv]
     print(f"\n=== test data from prior {label}: median |error| / median 90% width / 90% coverage, full -> LTE-only")
     groups = [("all", cls == -1)] if pv == 0 else [(cname, cls == c) for c, cname in enumerate(names)]
     for cname, m in groups:
