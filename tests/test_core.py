@@ -1,4 +1,6 @@
 """Core correctness tests that need no downloaded data."""
+import shutil
+
 import numpy as np
 import pytest
 import torch
@@ -90,3 +92,19 @@ def test_rank_deficient_wls_float32_matches_float64():
     u32 = scalars.scalars(fit.wls(X32, S.float()).double())["ufa"]
     ok = torch.isfinite(u64) & (u64.abs() < 2)
     assert float((u32 - u64).abs()[ok].max()) < 1e-3
+
+
+@pytest.mark.skipif(shutil.which("cc") is None, reason="torch.compile on CPU needs a C compiler")
+def test_compiled_sampling_matches_eager():
+    """PosteriorNet.sample(compile=True) equals eager on the same noise, and pads a short last chunk."""
+    from qtilab import posterior
+
+    torch.manual_seed(0)
+    net = posterior.PosteriorNet(d_emb=16, transforms=2, hidden=(32,)).eval()
+    x = posterior.simulate_batch(_protocol(), 300, g=torch.Generator().manual_seed(0), M=16).x
+    kw = dict(n=4, chunk=128)
+    eager = net.sample(x[:256], generator=torch.Generator().manual_seed(1), **kw)
+    comp = net.sample(x[:256], generator=torch.Generator().manual_seed(1), compile=True, **kw)
+    assert float((comp - eager).abs().max()) < 1e-4
+    padded = net.sample(x, compile=True, **kw)             # 300 voxels: last chunk of 44 padded to 128
+    assert padded.shape == (4, 300, len(posterior.TARGETS)) and bool(torch.isfinite(padded).all())

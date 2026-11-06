@@ -101,13 +101,40 @@ class PosteriorNet(nn.Module):
         return self.flow(self.embed(x, mask)).log_prob(to_unconstrained(y))
 
     @torch.no_grad()
-    def sample(self, x, n=100, mask=None, chunk=64):
-        """-> (n, V, len(TARGETS)) posterior samples in natural units."""
+    def sample(self, x, n=100, mask=None, chunk=64, compile=False, generator=None):
+        """-> (n, V, len(TARGETS)) posterior samples in natural units.
+
+        Base noise z ~ N(0, I) (the flow's base is a standard normal independent of the context, drawn from
+        ``generator`` if given) is pushed through the inverse flow, one chunk of voxels at a time.
+
+        ``compile=True`` runs the inverse through ``torch.compile`` (fused generated kernels). Sampling inverts
+        each autoregressive transform one dimension at a time (32 passes of MLP + spline rebuild + spline
+        inverse); in eager mode that is ~2,800 small kernels per chunk and, on CUDA, mostly PyTorch's slow
+        cumsum over 8-bin rows. Compiled: 13.5x faster on an A10, 6.3x on MPS, within 2e-3 of eager
+        (NOTES 2026-11-06). The first call per (n, chunk) compiles (20-50 s); the last chunk is padded to
+        ``chunk`` so one graph serves every chunk. Use chunk >= 512 when compiling.
+        """
+        inv = self._compiled_inverse() if compile else self._inverse
         outs = []
         for i in range(0, x.shape[0], chunk):
-            ctx = self.embed(x[i:i + chunk], None if mask is None else mask[i:i + chunk])
-            outs.append(from_unconstrained(self.flow(ctx).sample((n,))))
+            xi = x[i:i + chunk]
+            mi = None if mask is None else mask[i:i + chunk]
+            m = xi.shape[0]
+            if compile and m < chunk:                     # pad, so the compiled graph keeps one shape
+                xi = torch.cat([xi, xi[-1:].expand(chunk - m, *xi.shape[1:])])
+                if mi is not None:
+                    mi = torch.cat([mi, mi[-1:].expand(chunk - m, *mi.shape[1:])])
+            z = torch.randn(n, xi.shape[0], len(TARGETS), generator=generator, device=x.device, dtype=x.dtype)
+            outs.append(from_unconstrained(inv(self.embed(xi, mi), z)[:, :m]))
         return torch.cat(outs, 1)
+
+    def _inverse(self, ctx, z):
+        return self.flow(ctx).transform.inv(z)
+
+    def _compiled_inverse(self):
+        if self.__dict__.get("_inv_compiled") is None:
+            self.__dict__["_inv_compiled"] = torch.compile(self._inverse, dynamic=False)
+        return self.__dict__["_inv_compiled"]
 
 
 @dataclass

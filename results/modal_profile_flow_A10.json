@@ -1,0 +1,134 @@
+{
+ "gpu": "NVIDIA A10",
+ "torch": "2.15.0+cu132",
+ "voxels": 20480,
+ "n": 50,
+ "eager": {
+  "512": {
+   "seconds_20k_voxels": 10.634745990999999,
+   "us_per_sample": 10.385494131835936,
+   "whole_session_est_s": 49.74703616620073,
+   "kernels_per_chunk": 2816,
+   "gpu_kernel_ms_per_chunk": 268.32136000000025,
+   "wall_ms_per_chunk": 264.84217099999796,
+   "gpu_busy_fraction": 1.01313683914788,
+   "top_kernels": [
+    {
+     "name": "void at::native::tensor_kernel_scan_innermost_dim<float, std::plus<float> >(float*, float ",
+     "count": 64,
+     "ms": 203.10473700000003
+    },
+    {
+     "name": "ampere_sgemm_64x64_tn",
+     "count": 32,
+     "ms": 7.936299000000001
+    },
+    {
+     "name": "ampere_sgemm_128x64_tn",
+     "count": 32,
+     "ms": 5.552547000000097
+    },
+    {
+     "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native:",
+     "count": 96,
+     "ms": 5.412387000000021
+    },
+    {
+     "name": "ampere_sgemm_32x128_tn",
+     "count": 32,
+     "ms": 5.103709999999963
+    },
+    {
+     "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native:",
+     "count": 96,
+     "ms": 4.692191000000041
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<float>",
+     "count": 160,
+     "ms": 4.490712999999885
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, ",
+     "count": 256,
+     "ms": 4.4239929999998
+    }
+   ]
+  },
+  "2048": {
+   "seconds_20k_voxels": 10.8149337915,
+   "us_per_sample": 10.561458780761718,
+   "whole_session_est_s": 50.58991563278767,
+   "kernels_per_chunk": 2816,
+   "gpu_kernel_ms_per_chunk": 1103.0674649999974,
+   "wall_ms_per_chunk": 1078.9968819999985,
+   "gpu_busy_fraction": 1.0223082970873671,
+   "top_kernels": [
+    {
+     "name": "void at::native::tensor_kernel_scan_innermost_dim<float, std::plus<float> >(float*, float ",
+     "count": 64,
+     "ms": 845.0892960000006
+    },
+    {
+     "name": "ampere_sgemm_64x64_tn",
+     "count": 32,
+     "ms": 30.548101999999876
+    },
+    {
+     "name": "ampere_sgemm_128x64_tn",
+     "count": 32,
+     "ms": 20.23110400000001
+    },
+    {
+     "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native:",
+     "count": 96,
+     "ms": 20.1867899999996
+    },
+    {
+     "name": "ampere_sgemm_32x128_tn",
+     "count": 32,
+     "ms": 20.10438600000011
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<float>",
+     "count": 160,
+     "ms": 18.180593999999594
+    },
+    {
+     "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native:",
+     "count": 96,
+     "ms": 17.988663000000887
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, ",
+     "count": 256,
+     "ms": 17.43756499999947
+    }
+   ]
+  }
+ },
+ "compiled": {
+  "default": {
+   "compile_seconds": 52.331870029,
+   "2048": {
+    "seconds_20k_voxels": 0.8006913210000022,
+    "us_per_sample": 0.7819251181640646,
+    "whole_session_est_s": 3.745460412261778,
+    "speedup_vs_eager": 13.506995152630074,
+    "max_abs_diff_vs_eager": 0.001049041748046875,
+    "frac_diff_gt_1e-4": 1.6601563402218744e-05
+   }
+  },
+  "max-autotune-no-cudagraphs": {
+   "compile_seconds": 139.55055806000001,
+   "2048": {
+    "seconds_20k_voxels": 0.7869749724999906,
+    "us_per_sample": 0.7685302465820221,
+    "whole_session_est_s": 3.6812983076402146,
+    "speedup_vs_eager": 13.742411346505849,
+    "max_abs_diff_vs_eager": 0.000766754150390625,
+    "frac_diff_gt_1e-4": 1.5625000742147677e-05
+   }
+  }
+ }
+}

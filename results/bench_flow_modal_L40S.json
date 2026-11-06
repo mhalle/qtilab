@@ -1,0 +1,71 @@
+[
+ {
+  "device": "cuda",
+  "torch": "2.15.0+cu132",
+  "host": "modal",
+  "machine": "x86_64",
+  "gpu": "NVIDIA L40S",
+  "sampling": [
+   {
+    "chunk": 512,
+    "voxels": 8192,
+    "n": 50,
+    "eager_first_call_s": 0.8505903330000004,
+    "eager_s": 1.3366455320000004,
+    "eager_us_per_sample": 3.2632947558593757,
+    "eager_whole_session_est_s": 15.631345045304203,
+    "compiled_first_call_s": 57.396457276999996,
+    "compiled_s": 0.1142505840000041,
+    "compiled_us_per_sample": 0.27893208984376,
+    "compiled_whole_session_est_s": 1.3360986569561026,
+    "speedup": 11.699244635808185,
+    "max_abs_diff": 0.00015175342559814453,
+    "frac_diff_gt_1e-4": 1.5258788153005298e-06
+   },
+   {
+    "chunk": 2048,
+    "voxels": 8192,
+    "n": 50,
+    "eager_first_call_s": 0.35940884100000403,
+    "eager_s": 1.4151645870000067,
+    "eager_us_per_sample": 3.454991667480485,
+    "eager_whole_session_est_s": 16.5495828368149,
+    "compiled_first_call_s": 51.61066132900001,
+    "compiled_s": 0.17257479799999942,
+    "compiled_us_per_sample": 0.4213251904296861,
+    "compiled_whole_session_est_s": 2.018168728417718,
+    "speedup": 8.20029693443426,
+    "max_abs_diff": 0.00022125244140625,
+    "frac_diff_gt_1e-4": 1.8310546465727384e-06
+   }
+  ],
+  "training": [
+   {
+    "batch": 512,
+    "steps": 20,
+    "eager_first_step_s": 0.04267113000000222,
+    "eager_loss0": 3.902419328689575,
+    "eager_ms_per_step": 23.07465894999936,
+    "compiled_first_step_s": 22.305558336999994,
+    "compiled_loss0": 3.902414083480835,
+    "compiled_ms_per_step": 5.421927849999975,
+    "speedup": 4.255803394727849,
+    "loss0_abs_diff": 5.245208740234375e-06,
+    "grad_max_rel_diff": 0.00018864536832552403
+   },
+   {
+    "batch": 4096,
+    "steps": 20,
+    "eager_first_step_s": 0.04278152200001273,
+    "eager_loss0": 3.9563424587249756,
+    "eager_ms_per_step": 31.98918949999978,
+    "compiled_first_step_s": 22.778089375000008,
+    "compiled_loss0": 3.956338405609131,
+    "compiled_ms_per_step": 20.335549200000003,
+    "speedup": 1.5730673996254685,
+    "loss0_abs_diff": 4.0531158447265625e-06,
+    "grad_max_rel_diff": 0.0001265402534045279
+   }
+  ]
+ }
+]

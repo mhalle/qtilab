@@ -1,0 +1,70 @@
+[
+ {
+  "device": "mps",
+  "torch": "2.15.0",
+  "host": "m1max",
+  "machine": "arm64",
+  "sampling": [
+   {
+    "chunk": 512,
+    "voxels": 8192,
+    "n": 50,
+    "eager_first_call_s": 1.3053107080049813,
+    "eager_s": 3.565189166984055,
+    "eager_us_per_sample": 8.704075114707166,
+    "eager_whole_session_est_s": 41.69295500320306,
+    "compiled_first_call_s": 5.2894750000559725,
+    "compiled_s": 0.6937771249795333,
+    "compiled_us_per_sample": 1.6937918090320636,
+    "compiled_whole_session_est_s": 8.113347454854036,
+    "speedup": 5.138810489159945,
+    "max_abs_diff": 0.0002593994140625,
+    "frac_diff_gt_1e-4": 2.7465821403893642e-06
+   },
+   {
+    "chunk": 2048,
+    "voxels": 8192,
+    "n": 50,
+    "eager_first_call_s": 1.0371157079935074,
+    "eager_s": 3.731770750018768,
+    "eager_us_per_sample": 9.110768432663008,
+    "eager_whole_session_est_s": 43.64103633087744,
+    "compiled_first_call_s": 2.2452158750384115,
+    "compiled_s": 0.9092359160422347,
+    "compiled_us_per_sample": 2.219814248149987,
+    "compiled_whole_session_est_s": 10.633021239350846,
+    "speedup": 4.104293158878497,
+    "max_abs_diff": 0.00025177001953125,
+    "frac_diff_gt_1e-4": 1.220703097715159e-06
+   }
+  ],
+  "training": [
+   {
+    "batch": 512,
+    "steps": 20,
+    "eager_first_step_s": 0.09075995901366696,
+    "eager_loss0": 2.8081936836242676,
+    "eager_ms_per_step": 38.415435451315716,
+    "compiled_first_step_s": 0.6951943329768255,
+    "compiled_loss0": 2.808218479156494,
+    "compiled_ms_per_step": 32.05275209911633,
+    "speedup": 1.198506615984928,
+    "loss0_abs_diff": 2.47955322265625e-05,
+    "grad_max_rel_diff": 0.00021484711032826453
+   },
+   {
+    "batch": 4096,
+    "steps": 20,
+    "eager_first_step_s": 0.3301756249857135,
+    "eager_loss0": 3.071255922317505,
+    "eager_ms_per_step": 276.0948853974696,
+    "compiled_first_step_s": 0.8641904999967664,
+    "compiled_loss0": 3.071265697479248,
+    "compiled_ms_per_step": 620.988968751044,
+    "speedup": 0.4446051367913377,
+    "loss0_abs_diff": 9.775161743164062e-06,
+    "grad_max_rel_diff": 0.00015565051580779254
+   }
+  ]
+ }
+]

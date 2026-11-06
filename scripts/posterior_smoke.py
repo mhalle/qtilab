@@ -27,6 +27,8 @@ ap.add_argument("--tag", default="")
 ap.add_argument("--no-eval", action="store_true", help="train and save only")
 ap.add_argument("--device", default="cpu",
                 help="train on this device (mps, cuda); batches are then simulated there in float32. Evaluation stays on CPU")
+ap.add_argument("--compile", action="store_true",
+                help="torch.compile the training loss (fused kernels; the spline cumsum dominates eager CUDA steps)")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
 args = ap.parse_args()
 steps = args.steps
@@ -44,12 +46,15 @@ net = posterior.PosteriorNet().to(dev)
 opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-5)
 sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=1e-3, total_steps=max(steps, 1), pct_start=0.05)
 
+loss_fn = lambda xb, yb: -net.log_prob(xb, yb).mean()                      # noqa: E731
+if args.compile:
+    loss_fn = torch.compile(loss_fn, dynamic=False)
 t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
     net.load_state_dict(torch.load(model_path))
 for step in range(1, steps + 1):
     b = posterior.simulate_batch(prot, 512, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
-    loss = -net.log_prob(b.x, b.y).mean()
+    loss = loss_fn(b.x, b.y)
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
     opt.step(); sched.step()

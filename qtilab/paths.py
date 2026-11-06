@@ -25,3 +25,8 @@ def classical_fit(sub="01", ses="01") -> Path:
 def posterior_slice(tag="_v2", sub="01", ses="01") -> Path:
     """Network posterior on slice 20 (scripts/posterior_maps_hhs.py)."""
     return WORK / f"hhs_sub{sub}_ses{ses}_posterior{tag}.npz"
+
+
+def posterior_volume(tag="_v2", sub="01", ses="01") -> Path:
+    """Network posterior (mean, SD) for every brain voxel (scripts/posterior_maps_hhs.py --whole-brain)."""
+    return WORK / f"hhs_sub{sub}_ses{ses}_posterior{tag}_full.npz"

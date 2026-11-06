@@ -734,3 +734,74 @@ Reservation 1 from the algorithm review (no independent check on the rank-defici
 - Near-collapsed voxels remain: the lowest MD is 0.004 µm²/ms and K_bulk still reaches 5,706 (K_µ 4,290) in a few of them (13 voxels with MD ≤ 0.05 beyond the 5 dropped). Not degenerate, so no principled cutoff; any mean-based statistic over K should be robust to them.
 
 **Non-physical values allowed by the "dc" constraints** (left as they are; a modelling question): µFA > 1 in 140 voxels (max 1.224) and C_c > 1 in 3,069. ⟨D⟩ ⪰ 0 and ℂ ⪰ 0 are necessary but not sufficient for the data to come from a distribution of positive-definite micro-tensors, so they do not bound µFA by 1 or C_c by 1. This is reservation 3 from the algorithm review made concrete. Options: the stronger QTI+ constraint set (to be checked against Herberthson et al. 2021), or clipping only for display.
+
+## 2026-11-06: real-data GPU check on Modal (A10) — consistent with CPU, and the cohort timings
+
+`scripts/modal_check_hhs.py` runs sub-01 ses-01 (95,801 voxels) on a Modal GPU against CPU float64 references packed locally (`work/modal_check_sub01_ses01.npz`); result `results/modal_check_hhs_sub01_ses01_A10.json`.
+
+**Consistency** (|difference| p99 / max)
+- CUDA float64 vs CPU float64, all voxels: ≤ 1e-11 in every scalar. The same answer on both platforms.
+- CUDA float32 vs CPU float64, all voxels: MD 2e-4 / 5e-4, FA 1e-4 / 4e-4, µFA 2e-4 / 1e-3, C_MD 2e-4 / 9e-4, C_c 2e-4 / 1e-2 (p99.99 1e-3: a handful of voxels). Against the float64 tight fit on the validation voxels: µFA 2e-4 / 7e-4, C_c 3e-4 / 2e-3. Same as MPS float32 and as ADMM's own tolerance.
+- Network on GPU vs CPU: features 5e-7, embeddings 3e-6 (scale 3.4), log-probability 2e-3 (median 10.8).
+
+**Performance, whole session**
+
+| | constrained fit | WLS | network sampling, n = 50 (best chunk) |
+|---|---|---|---|
+| CPU float64 (M1 Max) | 106 s | 0.41 s | — |
+| MPS float32 (M1 Max) | 25 s | 0.85 s | 41 s (chunk 512) |
+| A10 float32 | 7.1 s (chunk 153k, 5.3 GB peak) | 0.04 s | 50 s (chunk 512–2048) |
+| A10 float64 | 34 s (chunk 76k, 10.2 GB) | 0.17 s | — |
+
+- Posterior sampling is no faster on the A10 than on MPS. (First explained here as launch-bound; that was wrong — see the next entry: on CUDA it is one pathological kernel, and torch.compile makes it 6–14× faster.) Chunk 512 is the sweet spot in eager mode on both (the default of 64 is 1.2–1.6× slower); chunk 2048 only costs memory (11 GB on the A10, 16 GB on MPS).
+- Cohort implications (66 sessions): constrained fits ≈ 8 min on an A10 in float32 (37 min in float64), ≈ 27 min on MPS, ≈ 2 h on CPU; network inference ≈ 1 h on either GPU; run alignment (~1 min per session, CPU/dipy) ≈ 1 h serially. Float64 on an A10 is still 3× faster than the M1 CPU, so reference-quality fits need not be local.
+
+## 2026-11-06: why posterior sampling was slow on GPUs — and torch.compile makes it 6–14× faster
+
+**Structure.** The v2 flow (zuko NSF) has 4 masked autoregressive transforms over the 8 targets with 8-bin rational-quadratic splines; the conditioner is a 72→128→128→184 masked MLP. Sampling inverts each transform one dimension at a time: 32 sequential passes, each running the full MLP, rebuilding all splines (softmax, cumsum) and inverting all 8 dimensions although only one becomes final. Training's log-probability needs 4 passes.
+
+**Where the time goes** (`scripts/modal_profile_flow.py`, A10, real voxels, n = 50; `results/modal_profile_flow_A10.json`):
+- Not launch-bound: the GPU is busy ~100% of wall time (2,816 kernels per chunk). Locally, time per sample is flat from chunk 256 up (MPS 9 µs, CPU 16 µs); only tiny chunks are launch-bound (MPS 35 µs at chunk 16).
+- Not memory bandwidth in general either (an earlier estimate): **76–78% of GPU time is one kernel**, PyTorch's CUDA `cumsum` over the 8-bin innermost dimension (`tensor_kernel_scan_innermost_dim`, 64 calls per chunk: 203 of 268 ms at chunk 512). The scan kernel is pathological for rows of 8. On MPS `cumsum` is cheap (0.27 ms vs 0.10 ms for an add over the same 7M elements); MPS's time is the many small unfused ops. Replacing cumsum with a matmul by a triangular matrix is slower on both, so no eager-mode fix there.
+
+**torch.compile** (Inductor generates fused kernels — Triton on CUDA, Metal on MPS), compared value for value with eager on identical base noise:
+
+| | eager | compiled | speed-up | max \|diff\| (> 1e-4) | compile time |
+|---|---|---|---|---|---|
+| A10, chunk 2048 | 10.6 µs/sample (≈51 s/session) | 0.78 µs (≈4 s) | 13.5× | 1.0e-3 (0.00%) | 52 s |
+| A10, max-autotune | | 0.77 µs | 13.7× | 7.7e-4 | 140 s |
+| MPS, chunk 512 | 8.3 µs (≈40 s) | 1.32 µs (≈6 s) | 6.3× | 1.6e-3 (0.00%) | 22 s |
+
+The differences are float32 reassociation, far below the Monte Carlo error of a 50-sample posterior mean. Hand-written kernels are not needed for this; compiling is the fix. Remaining levers, if ever needed: a coupling or inverse-autoregressive flow (2 passes instead of 8 per transform; needs retraining), fewer samples, or a fused hand-written kernel. Compilation is per input shape, so a fixed chunk (padding the last one) avoids recompiles.
+
+## 2026-11-06: compiled sampling and training implemented — results per device
+
+**Changes**
+- `PosteriorNet.sample(..., compile=False, generator=None)`: base noise is drawn with `torch.randn` (optionally from a generator, so sampling is now reproducible) and pushed through the flow's inverse; `compile=True` uses `torch.compile` of that inverse and pads the last chunk so one graph serves every chunk. The eager path is equivalent to the old `flow(ctx).sample` (statistically identical; the noise now comes from `torch.randn`).
+- `scripts/posterior_smoke.py --compile`: compiles the training loss (forward + backward).
+- `scripts/bench_flow.py` (any device, no data needed; value-for-value correctness: same noise and chunking for sampling, identical weights and batch for training) and `scripts/modal_profile_flow.py --what bench` (CUDA). `tests/test_core.py::test_compiled_sampling_matches_eager` (skipped without a C compiler; ~16 s).
+
+**Results** (n = 50; whole-session estimate for 95,801 voxels; files `results/bench_flow_m1max_{mps,cpu}.json`, `results/bench_flow_modal_L40S.json`)
+
+| device | sampling, chunk 512 | training step, batch 512 | training step, batch 4096 |
+|---|---|---|---|
+| L40S (CUDA) | 16 → 1 s per session (11.7×) | 23.1 → 5.4 ms (4.3×) | 32.0 → 20.3 ms (1.6×) |
+| M1 Max MPS | 42 → 8 s (5.1×) | 38 → 32 ms (1.2×) | 276 → 621 ms (**0.4×**, slower) |
+| M1 Max CPU | 110 → 59 s (1.9×) | 63 → 67 ms (0.9×) | — |
+
+- Accuracy: compiled sampling within 2.6e-4 of eager everywhere (no value differs by more than 1e-4 at the 0.001% level); compiled training loss within 3e-5 and gradients within 4e-4 relative.
+- Compilation: 20–60 s the first time per shape, then 1–6 s from PyTorch's on-disk cache.
+- Recommendation: compiled sampling for any whole-brain inference on any device (chunk 512); compiled training only on CUDA; on MPS and CPU it is slower at realistic batch sizes.
+- Pitfall: compiling for MPS and then CPU in one process segfaulted (exit 139, torch 2.15); run one device per process.
+- The L40S is much faster in eager mode than the A10 (3.3 vs 10.4 µs per sample), presumably a better `cumsum` path; the compiled speed-up is relative to each GPU's own eager time.
+
+## 2026-11-06: whole-brain posterior inference
+
+`posterior_maps_hhs.py --whole-brain --device mps` samples every brain voxel with compiled sampling (chunk 512, n = 100, seeded) and writes `work/hhs_subXX_sesYY_posterior_v2_full.npz` (`paths.posterior_volume`) plus a `_full.png`. Slice mode and its outputs (read by the held-out and surprise scripts) are unchanged. The slice restriction dated from the 2-core sandbox ("one slice keeps CPU time to a few minutes"; the whole brain eagerly on 2 cores would be ~11 min).
+
+sub-01 ses-01, 95,801 voxels, M1 Max MPS:
+- **Time:** 47 s on first use (includes compilation), **29 s** warm (n = 100; ≈15 s at n = 50). Features 0.8 s.
+- **Reproducible:** a seeded rerun is bit-identical.
+- **Agrees with the slice file:** on the 4,012 slice-20 voxels, (whole-brain mean − slice mean) / Monte Carlo SE has mean ≈ 0 and SD 0.995–1.019 for every target, with ≤ 0.02% beyond 4σ: identical up to sampling noise.
+- **Whole-brain regions** (classical µFA / network full µFA / network tissue µFA): WM-like (n = 14,583) 0.87 / 0.67 / 0.87; GM-like (29,111) 0.54 / 0.48 / 0.63; CSF-ish (19,570) 0.33 / 0.14 / 0.74. Slice 20 gave 0.87 / 0.68 / 0.87, 0.54 / 0.47 / 0.62, 0.31 / 0.15 / 0.73, so the slice was representative.
+- Median f_fw 0.10 whole brain; 20% of voxels have f_fw > 0.5 (slice 20: 15%), the extra coming from CSF-rich slices.

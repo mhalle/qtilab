@@ -60,6 +60,7 @@ python scripts/hhs_run_scaling.py                               # all 66 session
 python scripts/prepare_session.py 01 01                         # -> work/hhs_sub01_ses01_{aligned,qti}.npz
 python scripts/posterior_smoke.py 3000 --prior 2 --snr 20 150 --test-snr 30 140 --tag _v2   # train + evaluate
 python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v2.pt _v2            # -> work/..._posterior_v2.npz
+python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v2.pt _v2 --whole-brain --device mps   # -> work/..._posterior_v2_full.npz, ~30 s
 python scripts/surprise_check.py; python scripts/surprise_td.py  # need the _v2 posterior file
 python scripts/heldout_hhs.py --prior 2 --tag _v2                # also --prior 0/1/3, --td 2.5
 python scripts/consistency.py AB; python scripts/consistency.py C
@@ -67,6 +68,7 @@ python scripts/consistency.py AB; python scripts/consistency.py C
 
 - Trained models are committed in `results/*.pt`. `posterior_smoke.py 0 ...` evaluates a saved model without training.
 - `posterior_maps_hhs.py` takes positional arguments: aligned, classical, model, tag. Empty strings use the defaults.
+  - `--whole-brain` samples every brain voxel (compiled, chunk 512, seeded with `--seed`) on `--device`. It writes `paths.posterior_volume` and leaves the slice-20 file the held-out and surprise scripts read untouched. Use `--sub`/`--ses` for other sessions.
 
 ## Conventions
 
@@ -99,6 +101,12 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
 
 - The `modal` CLI is a uv tool (`~/.local/bin/modal`, profile `mhalle`), not in the project venv. Run from the repo root: `modal run scripts/modal_smoke.py` (tests plus `bench_devices.run("cuda")`, a few minutes, under $1).
 - **Modal can stall silently.** An L4 job sat in "waiting to be scheduled on a GPU_L4 worker" with no local output. After launching, check `modal app list` (Tasks 0 = no container) and `perl -e 'alarm 25; exec @ARGV' modal app logs <app-id>` (macOS has no `timeout`). Use a GPU fallback list (`gpu=["L4", "A10G", "L40S"]`). Stop stuck apps with `modal app stop -y <app-id>`.
+- Real-data check: `scripts/modal_check_hhs.py` (needs `work/modal_check_sub01_ses01.npz`, packed locally; NOTES 2026-11-06). On an A10, float64 matches CPU float64 to ≤ 1e-11 and float32 is within 1e-3 in µFA. Whole session: constrained fit 7 s (float32) / 34 s (float64), vs 106 s on the M1 CPU.
+- Posterior sampling in eager mode is about 50 s per session on an A10 and 41 s on MPS (n = 50). On CUDA, 76% of that is PyTorch's `cumsum` over 8-bin rows, a pathological scan kernel; on MPS it is many small unfused ops.
+  - Use `PosteriorNet.sample(x, n, chunk=512, compile=True)` for whole-brain inference: 11.7× faster on an L40S (≈1 s per session), 5.1× on MPS (≈8 s), 1.9× on CPU, within 3e-4 of eager. Pass `generator=` for reproducible samples. In eager mode use chunk 512, not the default 64.
+  - `posterior_smoke.py --compile` (compiled training loss) helps only on CUDA (1.6–4.3×). On MPS it is 2.5× slower at batch 4096, and on CPU 0.9×.
+  - Compile for one device per process: compiling for MPS and then CPU in one process segfaulted.
+- Inspect a running container with `modal container exec <ta-id> -- nvidia-smi` (the `--` is required; the image has no `ps`).
 - Return plain JSON from remote functions: the local CLI has no torch, so torch objects (even `torch.__version__`) fail to unpickle.
 - Train on GPU with `scripts/posterior_smoke.py ... --device cuda` (or `mps`): batches are then simulated on the device in float32 (`posterior.simulate_batch(device=...)`). A10: 66 ms per step at batch 4096, vs 257 ms with CPU simulation. Without `--device` the original float64 CPU path runs unchanged.
 - **CUDA batched eigensolvers need huge workspace** (`pinv` at 200k asked for 66 GB, `eigvalsh` on 3×3 for 51 GB). Route any new batched `eigh`/`eigvalsh`/`pinv`/`svd` through `tensors.batched` (16k per call). Peak memory per stage is in NOTES (2026-11-05 evening).
