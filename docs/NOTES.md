@@ -689,3 +689,25 @@ HHS downloaded locally (2,273 files, 8.78 GB, `data/hhs`, Dropbox-ignored). Chai
 - **Held-out prediction (prior v2):** all 42 numbers within 0.042 of the sandbox (median RMS error / noise sd). Run 4 simulator WM / GM / CSF 2.12 / 1.34 / 1.32 (sandbox 2.12 / 1.34 / 1.34); run 8 1.81 / 1.18 / 1.07 (1.78 / 1.18 / 1.08). The differences are posterior-sampling noise (the flow is sampled unseeded) feeding the region assignment, plus small numeric differences in alignment; the conclusions are unchanged.
 - **Timing:** prepare 2 min 45 s (sandbox ~6 min), posterior maps 32 s, held-out 8 s.
 - **Blocker found and fixed:** on macOS, dipy's wheel and torch each bundle `libomp`; importing `dipy.align` with torch aborts (`OMP: Error #15`). `scripts/macos_fix_libomp.sh` makes dipy share torch's runtime. The tests do not import `dipy.align`, so they did not catch it.
+
+## 2026-11-05 (night): the constrained fit on the HHS protocol agrees with DIPY SDPdc
+
+Until now the constrained fit had been checked against DIPY only on the full-rank DiB protocol; on HHS (107 volumes, LTE + STE, rank 23) it had been checked only against itself. `scripts/validate_dipy_hhs.py` fits 2,500 WLS-violating and 500 non-violating voxels of sub-01 ses-01 four ways and scores every solution on the shared objective ½x'Hx − g'x (DIPY-equivalent weights). Result: `results/validate_dipy_hhs_sub01_ses01.json`. (61% of the session's 95,806 brain voxels violate a constraint under WLS.)
+
+**Violating voxels**, |scalar difference| median / 99th percentile / max:
+
+| pair | FA | µFA | C_MD | K_bulk | relative objective gap, median / p99 |
+|---|---|---|---|---|---|
+| qtilab default vs CLARABEL | 1e-5 / 1e-4 / 5e-4 | 1e-5 / 3e-4 / 1e-3 | 6e-6 / 4e-4 / 1e-3 | 2e-5 / 1e-3 / 6e-3 | +6e-12 / +8e-10 |
+| qtilab tight vs CLARABEL | 9e-6 / 7e-5 / 2e-4 | 1e-5 / 1e-4 / 4e-4 | 6e-6 / 9e-5 / 3e-4 | 2e-5 / 3e-4 / 5e-3 | +5e-12 / +7e-10 |
+| DIPY SCS vs CLARABEL | 3e-6 / 7e-5 / 2e-4 | 4e-6 / 1e-4 / 2e-3 | 1e-6 / 8e-5 / 3e-3 | 5e-6 / 3e-4 / 8e-3 | 0 / +6e-9 |
+
+MD agrees to 2e-5 µm²/ms median (p99 3e-4). Non-violating voxels agree to ≤ 1e-5 in every scalar (all four fits reduce to WLS there).
+
+**Findings**
+1. **Same optimum.** qtilab's objective is within 1e-9 (relative, p99) of CLARABEL's in every voxel, and the scalar differences are as small as DIPY's own SCS-vs-CLARABEL differences. The ridge used for the rank-deficient case does not move the solution measurably, and the scalars do not depend measurably on the unobserved directions (max µFA difference 1e-3, about equal to the solver-to-solver spread).
+2. **Strictly feasible.** Minimum eigenvalue of ⟨D⟩ and ℂ: qtilab −4e-15 (round-off), CLARABEL −1e-5, SCS −1e-3 (µm²/ms units).
+3. **"Unconverged" voxels are a stopping-rule artifact.** With default settings only 85% of violating voxels meet ADMM's residual tolerance within 1000 iterations (tight settings: 99.8% after 20,000). But the objective of the default fit is already at the optimum (gap vs the tight fit: 1.5e-10 at p99), and its scalars differ from the tight fit by at most 1e-3. On a rank-deficient design the residuals in the unobserved directions shrink slowly without affecting the objective, so the residual-based rule is much stricter than needed here. `FitInfo.converged_fraction` therefore understates fit quality on HHS. A stopping rule on the objective, or residuals measured in the observed subspace, would end most voxels far earlier (and make the fit faster).
+4. **Speed on CPU (3,000 voxels, float64):** qtilab 5.5 s (2.2 ms per voxel, mostly constrained), CLARABEL 35 s (12 ms), SCS 93 s (31 ms).
+
+Reservation 1 from the algorithm review (no independent check on the rank-deficient protocol) is resolved for this session; repeating it on another subject would make it general.

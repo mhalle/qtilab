@@ -73,7 +73,10 @@ python scripts/consistency.py AB; python scripts/consistency.py C
 - b in ms/µm², diffusivities in µm²/ms.
 - Parameter vector (28) = [ln S0, ⟨D⟩ Mandel 6, ℂ Mandel 21 in DIPY's order].
 - Everything is batched over voxels and device-agnostic. Keep it that way: no per-voxel Python loops and no NumPy inside hot paths.
-- Validate any change to fitting against DIPY (`scripts/validate_dipy.py`, `scripts/bench_constrained.py`).
+- Validate any change to fitting against DIPY: `scripts/validate_dipy.py`, `scripts/bench_constrained.py` (DiB, full rank) and `scripts/validate_dipy_hhs.py` (HHS, rank 23; needs a prepared session).
+  - On HHS the fit matches DIPY SDPdc/CLARABEL as closely as DIPY's SCS does, and is strictly feasible (NOTES 2026-11-05 night).
+  - On HHS `FitInfo.converged_fraction` is about 0.85 even though the objective is at the optimum: the residual stopping rule is too strict on rank-deficient designs.
+  - DIPY returns ⟨D⟩ in mm²/s and ℂ in (mm²/s)² when given bvals in s/mm². Multiply by 1e3 and 1e6 before comparing with qtilab's µm²/ms.
 - Report network outputs as **tissue moments plus f_fw**. Full-distribution µFA is dominated by the poorly identified free-water fraction (about −0.02 µFA per 1% free water).
 
 ## Compute
