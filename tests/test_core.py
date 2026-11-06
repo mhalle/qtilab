@@ -108,3 +108,17 @@ def test_compiled_sampling_matches_eager():
     assert float((comp - eager).abs().max()) < 1e-4
     padded = net.sample(x, compile=True, **kw)             # 300 voxels: last chunk of 44 padded to 128
     assert padded.shape == (4, 300, len(posterior.TARGETS)) and bool(torch.isfinite(padded).all())
+
+
+def test_simulation_is_reproducible_from_generator():
+    """Every random draw in the simulators goes through the generator (Dirichlet weights once did not)."""
+    torch.manual_seed(1)
+    a = (simulate.sample_brain(500, M=8, g=torch.Generator().manual_seed(7))[0],
+         simulate.sample_dtd(500, M=8, g=torch.Generator().manual_seed(7)))
+    torch.manual_seed(2)                                   # a different global state must not matter
+    b = (simulate.sample_brain(500, M=8, g=torch.Generator().manual_seed(7))[0],
+         simulate.sample_dtd(500, M=8, g=torch.Generator().manual_seed(7)))
+    assert all(torch.equal(x, y) for x, y in zip(a, b))
+    w = simulate._dirichlet(2, (200_000, 3), torch.Generator().manual_seed(0), torch.float64, "cpu")
+    assert torch.allclose(w.sum(-1), torch.ones(200_000, dtype=torch.float64))
+    assert abs(float(w.var(0).mean()) - 2 / 63) < 1e-3     # Dirichlet(2, 2, 2): var = 2 * 4 / (36 * 7)

@@ -44,6 +44,18 @@ def _unif(lo, hi, shape, g, dtype, device):
     return lo + (hi - lo) * torch.rand(shape, generator=g, dtype=dtype, device=device)
 
 
+def _dirichlet(alpha: int, shape, g, dtype, device):
+    """Symmetric Dirichlet(alpha) weights over the last axis of ``shape``, for integer alpha, drawn from ``g``.
+
+    torch.distributions.Dirichlet ignores generators, so simulations seeded through ``g`` were not
+    reproducible. Gamma(alpha) for integer alpha is a sum of alpha Exp(1) draws; normalized, they are
+    Dirichlet(alpha) exactly.
+    """
+    u = torch.rand((alpha, *shape), generator=g, dtype=dtype, device=device)
+    gam = -torch.log1p(-u).sum(0)                       # rand is in [0, 1), so every term is finite
+    return gam / gam.sum(-1, keepdim=True).clamp_min(torch.finfo(dtype).tiny)
+
+
 def sample_dtd(V, M=48, prior=Prior(), g=None, dtype=torch.float64, device="cpu", return_free=False):
     """-> micro-tensors in Mandel form (V, M, 6)."""
     K = prior.max_comp
@@ -51,7 +63,7 @@ def sample_dtd(V, M=48, prior=Prior(), g=None, dtype=torch.float64, device="cpu"
     # component parameters (V, K)
     n_comp = torch.randint(1, K + 1, (V,), generator=g, device=device)
     active = torch.arange(K, device=device).unsqueeze(0) < n_comp.unsqueeze(1)
-    w = torch.distributions.Dirichlet(torch.ones(K, dtype=dtype, device=device)).sample((V,))
+    w = _dirichlet(1, (V, K), g, dtype, device)
     w = torch.where(active, w, torch.zeros_like(w))
     w = w / w.sum(-1, keepdim=True)
     d_iso = _logu(*prior.d_iso, (V, K), **kw)
@@ -157,7 +169,7 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
 
     # --- white matter
     nb = torch.multinomial(torch.tensor([0.6, 0.3, 0.1], **kw), V, replacement=True, generator=g) + 1
-    bw = torch.distributions.Dirichlet(torch.full((3,), 2.0, **kw)).sample((V,))
+    bw = _dirichlet(2, (V, 3), g, dtype, device)
     bw = torch.where(torch.arange(3, device=device) < nb[:, None], bw, torch.zeros_like(bw))
     bw = bw / bw.sum(-1, keepdim=True)
     f_ax = u(*P['f_ax'], (V, 3))
