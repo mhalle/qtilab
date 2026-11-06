@@ -141,3 +141,23 @@ def test_exact_free_water_weights():
     pure = torch.cat([torch.zeros(1, 1, 6, dtype=d6.dtype), d6[:1, -1:]], 1)
     S1 = simulate.signal(pure, p.b6.to(d6.dtype), weights=torch.tensor([[0.0, 1.0]], dtype=d6.dtype))
     assert torch.allclose(S1[0], torch.exp(-3 * p.b.to(d6.dtype)))
+
+
+def test_forward_model_options():
+    """simulate_batch's v5 options: time dependence at r = 1 is a no-op; noise terms have the requested size."""
+    from qtilab import posterior
+    p = _protocol()
+    d6, cls, free, w, comp = simulate.sample_brain(200, M=16, g=torch.Generator().manual_seed(4), return_free=True,
+                                                   version=4, exact_fw=True, return_comp=True)
+    assert comp.shape == free.shape and (comp[:, -1] == 6).all()
+    tau = simulate.sample_tau(cls, comp, torch.Generator().manual_seed(5), gm_scale=0.0)
+    assert (tau[:, -1] == 0).all() and (tau[(cls == 1) | (cls == 3)] == 0).all()     # no free-water / GM td
+    b6 = p.b6.to(d6.dtype)
+    assert torch.allclose(simulate.signal_td(d6, b6, torch.ones(p.n), tau, weights=w), simulate.signal(d6, b6, weights=w))
+    # multiplicative noise only (no thermal noise to speak of): relative sd at b = 0 equals alpha
+    kw = dict(g=torch.Generator().manual_seed(6), snr=(1e6, 1e6 + 1), prior_version=4, exact_fw=True, M=16)
+    b = posterior.simulate_batch(p, 4000, alpha=(0.02, 0.02), **kw)
+    clean = posterior.simulate_batch(p, 4000, **kw)
+    assert abs(float((b.S[:, 0] - 1).std()) - 0.02) < 0.002 and float((clean.S[:, 0] - 1).abs().max()) < 1e-4
+    td = posterior.simulate_batch(p, 2000, td_ratio=1.5, gain_sd=0.01, pulsation=0.15, **kw)
+    assert torch.isfinite(td.x).all() and torch.isfinite(td.y).all()

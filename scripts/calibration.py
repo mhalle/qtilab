@@ -26,6 +26,10 @@ ap = argparse.ArgumentParser()
 ap.add_argument("model", nargs="?", default="results/posterior_smoke_hhs_v4long.pt")
 ap.add_argument("--prior", type=int, default=4)
 ap.add_argument("--n", type=int, default=8000)
+ap.add_argument("--td-ratio", type=float, default=None, help="WM-only time dependence: STE at this relative frequency")
+ap.add_argument("--alpha", type=float, nargs=2, default=None, help="signal-proportional noise, per-voxel a ~ U(lo, hi)")
+ap.add_argument("--pulsation", type=float, default=0.0, help="extra fluid noise, U(0, x) * f_fw * max(0, 1 - b)")
+ap.add_argument("--gain-sd", type=float, default=0.0, help="per-measurement gain jitter sd")
 ap.add_argument("--exact-fw", action="store_true", help="test voxels with exactly weighted free water (true f_fw continuous)")
 ap.add_argument("--snr", type=float, nargs=2, default=(20.0, 150.0), help="test SNR range (the training range)")
 args = ap.parse_args()
@@ -36,7 +40,9 @@ net = posterior.PosteriorNet()
 net.load_state_dict(torch.load(args.model, map_location="cpu"))
 net.eval()
 b = posterior.simulate_batch(prot, args.n, g=torch.Generator().manual_seed(777), snr=tuple(args.snr),
-                             prior_version=args.prior, exact_fw=args.exact_fw)
+                             prior_version=args.prior, exact_fw=args.exact_fw, td_ratio=args.td_ratio,
+                             alpha=tuple(args.alpha) if args.alpha else None, pulsation=args.pulsation,
+                             gain_sd=args.gain_sd)
 smp = net.sample(b.x, n=200, chunk=512, generator=torch.Generator().manual_seed(0)).numpy()   # (n, V, T)
 y = b.y.numpy()
 T = posterior.TARGETS
@@ -45,7 +51,8 @@ cov = (pit > 0.05) & (pit < 0.95)
 cls = b.cls.numpy()
 fw0 = y[:, T.index("f_fw")] < 1e-9
 
-res = {"model": args.model, "exact_fw_test": args.exact_fw, "prior": args.prior, "n": args.n, "snr": list(args.snr),
+res = {"model": args.model, "exact_fw_test": args.exact_fw, "td_ratio": args.td_ratio, "alpha": args.alpha,
+       "pulsation": args.pulsation, "gain_sd": args.gain_sd, "prior": args.prior, "n": args.n, "snr": list(args.snr),
        "pct_true_f_fw_zero": round(float(fw0.mean() * 100), 1),
        "pct_true_f_fw_zero_by_class": {n: round(float(fw0[cls == c].mean() * 100), 1)
                                        for c, n in enumerate(simulate.BRAIN_CLASSES)},
@@ -63,6 +70,7 @@ for i, k in enumerate(T):
     h = np.histogram(pit[~fw0, i], bins=10, range=(0, 1))[0] / (~fw0).sum() * 10
     res["pit_hist_f_fw_positive"][k] = h.round(3).tolist()
     print(f"  {k:7s} " + " ".join(f"{x:.2f}" for x in h))
-out = f"results/calibration_{Path(args.model).stem}{'_exactfw_test' if args.exact_fw else ''}.json"
+fm = args.td_ratio is not None or args.alpha or args.pulsation or args.gain_sd
+out = f"results/calibration_{Path(args.model).stem}{'_exactfw' if args.exact_fw else ''}{'_fm' if fm else ''}{'_test' if args.exact_fw or fm else ''}.json"
 json.dump(res, open(out, "w"), indent=1)
 print(f"-> {out}")

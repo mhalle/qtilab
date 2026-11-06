@@ -32,9 +32,15 @@ ap.add_argument("--compile", action="store_true",
 ap.add_argument("--batch", type=int, default=512, help="simulated voxels per training step")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
 ap.add_argument("--seed", type=int, default=None, help="seed for weight init and training batches (default: batches from seed 11, init unseeded, as before)")
+ap.add_argument("--td-ratio", type=float, default=None, help="WM-only time dependence: STE at this relative frequency")
+ap.add_argument("--alpha", type=float, nargs=2, default=None, help="signal-proportional noise, per-voxel a ~ U(lo, hi)")
+ap.add_argument("--pulsation", type=float, default=0.0, help="extra fluid noise, U(0, x) * f_fw * max(0, 1 - b)")
+ap.add_argument("--gain-sd", type=float, default=0.0, help="per-measurement gain jitter sd")
 ap.add_argument("--exact-fw", action="store_true", help="free water as an exactly weighted compartment (simulate.sample_brain exact_fw), in training and test")
 ap.add_argument("--model", default="", help="with steps = 0: evaluate this saved model instead of the tag's (output still named by --tag)")
 args = ap.parse_args()
+fm = dict(exact_fw=args.exact_fw, td_ratio=args.td_ratio, alpha=tuple(args.alpha) if args.alpha else None,
+          pulsation=args.pulsation, gain_sd=args.gain_sd)   # forward-model options, training and test
 steps = args.steps
 tag = args.tag
 model_path = f"results/posterior_smoke_hhs{tag}.pt"
@@ -60,7 +66,7 @@ if steps == 0:                                   # evaluation only, from the sav
     net.load_state_dict(torch.load(args.model or model_path, map_location="cpu"))
 for step in range(1, steps + 1):
     b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior,
-                                 exact_fw=args.exact_fw, **sim_kw)
+                                 **fm, **sim_kw)
     loss = loss_fn(b.x, b.y)
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
@@ -77,7 +83,7 @@ if args.no_eval:
 net.eval()
 gt = torch.Generator().manual_seed(12345)
 test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=args.prior,
-                                exact_fw=args.exact_fw)
+                                **fm)
 smp = net.sample(test.x, n=100)                         # (n, V, T)
 pm = smp.mean(0).numpy()
 y = test.y.numpy()
@@ -128,5 +134,5 @@ for i, k in enumerate(T):
 res["coverage50"] = dict(zip(T, map(float, cov50)))
 res["coverage90"] = dict(zip(T, map(float, cov90)))
 res["prior"], res["snr"], res["test_snr"] = args.prior, list(args.snr), list(args.test_snr)
-res["exact_fw"] = args.exact_fw
+res["forward_model"] = {**fm, "alpha": list(fm["alpha"]) if fm["alpha"] else None}
 json.dump(res, open(f"results/posterior_smoke_hhs{tag}.json", "w"), indent=1)

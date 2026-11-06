@@ -172,7 +172,8 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     ``exact_fw=True``: free water is not one of the M sampled micro-tensors (whose count is random, and
     often 0 at a few percent of free water) but one extra micro-tensor (3 I) carrying exactly the voxel's
     free-water fraction. Returns (d6 (V, M + 1, 6), class, free mask (V, M + 1), weights (V, M + 1));
-    pass the weights to ``signal`` and ``posterior.targets``. Requires ``return_free``.
+    pass the weights to ``signal`` and ``posterior.targets``. Requires ``return_free``; with ``return_comp``
+    also the compartment index (V, M + 1) (6 = free water), e.g. for ``sample_tau``.
     """
     P = version if isinstance(version, dict) else BRAIN_PRIORS[version]
     kw = dict(dtype=dtype, device=device)
@@ -220,17 +221,18 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     w[:, 6] = fw
     d_iso[:, 6], d_del[:, 6], spread[:, 6] = 3.0, 0.0, 0.0
     if exact_fw:
-        assert return_free and not return_comp, "exact_fw returns (d6, cls, free, weights)"
+        assert return_free, "exact_fw returns (d6, cls, free, weights[, comp])"
         wt = w.clone()
         wt[:, 6] = 0.0
         wt = wt / wt.sum(-1, keepdim=True)
-        d6 = micro_tensors(wt, d_iso, d_del, spread, disp, mu, M, g)
+        d6, comp = micro_tensors(wt, d_iso, d_del, spread, disp, mu, M, g, return_comp=True)
         fw6 = torch.tensor([3.0, 3.0, 3.0, 0.0, 0.0, 0.0], dtype=dtype, device=device).expand(V, 1, 6)
         d6 = torch.cat([d6, fw6], 1)
+        comp = torch.cat([comp, torch.full((V, 1), 6, dtype=comp.dtype, device=device)], 1)
         weights = torch.cat([((1 - fw) / M)[:, None].expand(V, M), fw[:, None]], 1)
         free = torch.zeros(V, M + 1, dtype=torch.bool, device=device)
         free[:, M] = True
-        return d6, cls, free, weights
+        return (d6, cls, free, weights, comp) if return_comp else (d6, cls, free, weights)
     d6, comp = micro_tensors(w, d_iso, d_del, spread, disp, mu, M, g, return_comp=True)
     if return_comp:
         return d6, cls, comp
@@ -245,30 +247,36 @@ TAU_MAX = {"WM": (0.15, 0.35, 0.15, 0.35, 0.15, 0.35, 0.0),      # axon, extra (
            "GM": (0.15, 0.40, 0.35, 0.0, 0.0, 0.0, 0.0)}          # neurite, soma, extracellular, free water
 
 
-def sample_tau(cls, comp, g=None, wm_scale=1.0, gm_scale=1.0):
+def sample_tau(cls, comp, g=None, wm_scale=1.0, gm_scale=1.0, dtype=torch.float64):
     """Per-micro-tensor time-dependence strength (V, M) from tissue class and compartment index.
 
-    wm_scale / gm_scale multiply the TAU_MAX ranges of white- and gray-matter compartments."""
-    V = cls.shape[0]
-    dtype = torch.float64
+    wm_scale / gm_scale multiply the TAU_MAX ranges of white- and gray-matter compartments. Runs on
+    ``cls``'s device (``g`` must be a generator there)."""
+    V, device = cls.shape[0], cls.device
     wm = ((cls == 0) | (cls == 2)).unsqueeze(-1)
-    tmax = torch.where(wm, wm_scale * torch.tensor(TAU_MAX["WM"], dtype=dtype),
-                       gm_scale * torch.tensor(TAU_MAX["GM"], dtype=dtype))
-    tau_c = tmax * torch.rand((V, 7), generator=g, dtype=dtype)
+    tmax = torch.where(wm, wm_scale * torch.tensor(TAU_MAX["WM"], dtype=dtype, device=device),
+                       gm_scale * torch.tensor(TAU_MAX["GM"], dtype=dtype, device=device))
+    tau_c = tmax * torch.rand((V, 7), generator=g, dtype=dtype, device=device)
     return torch.gather(tau_c, 1, comp)
 
 
-def signal_td(d6, B6, omega, tau, chunk=8192):
+def signal_td(d6, B6, omega, tau, chunk=8192, weights=None):
     """Noise-free S/S0 with time-dependent compartments.
 
-    omega (N,) relative encoding frequency per measurement; tau (V, M) per micro-tensor strength.
+    omega (N,) relative encoding frequency per measurement; tau (V, M) per micro-tensor strength;
+    equal micro-tensor weights unless ``weights`` (V, M).
     """
-    f = torch.sqrt(torch.as_tensor(omega, dtype=d6.dtype)) - 1.0                     # (N,)
+    f = torch.sqrt(torch.as_tensor(omega, dtype=d6.dtype, device=d6.device)) - 1.0      # (N,)
     out = []
     for i in range(0, d6.shape[0], chunk):
         base = torch.einsum("vmk,nk->vmn", d6[i:i + chunk], B6)
-        scale = 1.0 + tau[i:i + chunk].unsqueeze(-1) * f
-        out.append(torch.exp(-base * scale).mean(1))
+        scale = 1.0 + tau[i:i + chunk].to(d6.dtype).unsqueeze(-1) * f
+        e = torch.exp(-base * scale)
+        if weights is None:
+            out.append(e.mean(1))
+        else:
+            w = weights[i:i + chunk]
+            out.append(torch.einsum("vm,vmn->vn", w / w.sum(1, keepdim=True), e))
     return torch.cat(out)
 
 

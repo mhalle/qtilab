@@ -147,7 +147,8 @@ class SimBatch:
 
 
 def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32, prior_version=2,
-                   log_snr=True, device=None, sim_dtype=None, exact_fw=False):
+                   log_snr=True, device=None, sim_dtype=None, exact_fw=False, td_ratio=None, alpha=None,
+                   pulsation=0.0, gain_sd=0.0):
     """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal).
 
     SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
@@ -160,27 +161,63 @@ def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.floa
 
     ``exact_fw``: free water as an exactly weighted compartment (``simulate.sample_brain``), so true f_fw is
     the voxel's free-water fraction rather than a random count out of M (brain priors only).
+
+    Forward-model options (all off by default; brain priors only):
+    * ``td_ratio``: time dependence in WM only (``simulate.sample_tau`` with GM strengths 0): spherical
+      encodings (b_delta ~ 0) at relative frequency ``td_ratio``, the others at 1.
+    * ``alpha`` (lo, hi): signal-proportional noise, S -> S (1 + a eps) per measurement, with a per-voxel
+      a ~ U(lo, hi) (fitted tissue values about 0.005-0.02, NOTES 2026-11-05).
+    * ``pulsation``: extra fractional noise for fluid, a += U(0, pulsation) * f_fw * max(0, 1 - b), b in
+      ms/um^2 (CSF: about 0.1 at b = 0.1, falling to about 0.03 by b = 1).
+    * ``gain_sd``: per-measurement gain S -> S (1 + gain_sd * eps), independent per voxel (per-volume
+      calibration offsets such as the STE period-3 pattern, about 0.5-1%).
+    Multiplicative terms act on the clean signal before Rician thermal noise at the drawn SNR.
     """
     if device is None:
         kw = {}
     else:
         kw = dict(device=device, dtype=torch.float32 if sim_dtype is None else sim_dtype)
+    wts, comp = None, None
+    need_comp = td_ratio is not None
     if prior_version == 0:                          # the generic, non-anatomical prior (simulate.Prior)
+        assert not (need_comp or alpha or pulsation or gain_sd), "forward-model options need a brain prior"
         d6, free = simulate.sample_dtd(V, M=M, g=g, return_free=True, **kw)
         cls = torch.full((V,), -1, dtype=torch.long, device=d6.device)
+    elif exact_fw:
+        out = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, exact_fw=True,
+                                    return_comp=need_comp, **kw)
+        d6, cls, free, wts = out[:4]
+        comp = out[4] if need_comp else None
+    elif need_comp:
+        d6, cls, comp = simulate.sample_brain(V, M=M, g=g, version=prior_version, return_comp=True, **kw)
+        free = comp == 6
     else:
-        if exact_fw:
-            d6, cls, free, wts = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version,
-                                                       exact_fw=True, **kw)
-        else:
-            d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, **kw)
-    wts = wts if prior_version != 0 and exact_fw else None
+        d6, cls, free = simulate.sample_brain(V, M=M, g=g, return_free=True, version=prior_version, **kw)
     dev = d6.device
     b6 = protocol.b6.to(dtype=d6.dtype, device=dev)
-    clean = simulate.signal(d6, b6, weights=wts)
+    b = protocol.b.to(dtype=d6.dtype, device=dev)
+    bd = protocol.b_delta().to(dtype=d6.dtype, device=dev)
+    y = targets(d6, free, wts)
+    if need_comp:
+        tau = simulate.sample_tau(cls, comp, g, gm_scale=0.0, dtype=d6.dtype)
+        omega = 1.0 + (td_ratio - 1.0) * ((bd.abs() < 0.1) & (b > 0.05)).to(d6.dtype)
+        clean = simulate.signal_td(d6, b6, omega, tau, weights=wts)
+    else:
+        clean = simulate.signal(d6, b6, weights=wts)
+    N = clean.shape[1]
+    if gain_sd:
+        clean = clean * (1 + gain_sd * torch.randn(V, N, generator=g, dtype=d6.dtype, device=dev))
+    if alpha is not None or pulsation:
+        a = torch.zeros(V, 1, dtype=d6.dtype, device=dev)
+        if alpha is not None:
+            a = a + alpha[0] + (alpha[1] - alpha[0]) * torch.rand(V, 1, generator=g, dtype=d6.dtype, device=dev)
+        if pulsation:
+            amp = pulsation * torch.rand(V, 1, generator=g, dtype=d6.dtype, device=dev)
+            a = a + amp * y[:, :1].to(d6.dtype) * (1 - b).clamp_min(0)[None]
+        clean = clean * (1 + a * torch.randn(V, N, generator=g, dtype=d6.dtype, device=dev))
     u = torch.rand(V, dtype=d6.dtype, generator=g, device=dev)
     lo, hi = snr
     s = torch.exp(torch.log(torch.tensor(lo)) + u * torch.log(torch.tensor(hi / lo))) if log_snr else lo + (hi - lo) * u
     S = simulate.rician(clean, 1.0 / s, g)
-    x = features(S, b6, protocol.b.to(dtype=d6.dtype, device=dev), protocol.b_delta().to(dtype=d6.dtype, device=dev))
-    return SimBatch(x.to(dtype), targets(d6, free, wts).to(dtype), cls, S)
+    x = features(S, b6, b, bd)
+    return SimBatch(x.to(dtype), y.to(dtype), cls, S)
