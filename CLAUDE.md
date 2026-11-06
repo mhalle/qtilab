@@ -77,6 +77,8 @@ python scripts/consistency.py AB; python scripts/consistency.py C
   - On HHS the fit matches DIPY SDPdc/CLARABEL as closely as DIPY's SCS does, and is strictly feasible (NOTES 2026-11-05 night).
   - On HHS `FitInfo.converged_fraction` is about 0.85 even though the objective is at the optimum: the residual stopping rule is too strict on rank-deficient designs.
   - DIPY returns ⟨D⟩ in mm²/s and ℂ in (mm²/s)² when given bvals in s/mm². Multiply by 1e3 and 1e6 before comparing with qtilab's µm²/ms.
+- Voxels whose constrained fit collapses to ⟨D⟩ = 0 (`scalars.collapsed`) are dropped from the mask in `prepare_session.py`. Near-collapsed voxels still give extreme K values (K_bulk up to ~6e3), so aggregate K by medians, not means.
+- The "dc" constraints allow µFA > 1 (140 voxels in sub-01 ses-01) and C_c > 1 (3,069). This is a known limitation of the relaxation, not a bug; see NOTES 2026-11-06.
 - Report network outputs as **tissue moments plus f_fw**. Full-distribution µFA is dominated by the poorly identified free-water fraction (about −0.02 µFA per 1% free water).
 
 ## Compute

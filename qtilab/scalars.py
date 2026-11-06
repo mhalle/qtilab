@@ -13,6 +13,19 @@ def _inner(A, B):
     return (A * B).sum(dim=(-1, -2))
 
 
+MD_MIN = 1e-6   # um^2/ms
+
+
+def collapsed(sc: dict[str, torch.Tensor], md_min: float = MD_MIN) -> torch.Tensor:
+    """Boolean mask of voxels whose fit collapsed to <D> = 0 (MD <= ``md_min``).
+
+    This happens where the signal shows no attenuation above the noise floor (low-signal voxels at the
+    brain-mask edge; 5 of 95,806 in HHS sub-01 ses-01, b0 ~50 vs a brain median of 534). There every
+    ratio scalar is meaningless: FA 0, C_MD 1, K_bulk and K_mu ~1e29, µFA up to 1.2. Exclude them.
+    """
+    return sc["md"] <= md_min
+
+
 def scalars(params: torch.Tensor, eps: float = 1e-30) -> dict[str, torch.Tensor]:
     """params (..., 28) = [ln S0, <D> (6, Mandel), C (21)] -> dict of (...) tensors."""
     E_iso, E_bulk, E_shear = projection_tensors(params.dtype, params.device)
