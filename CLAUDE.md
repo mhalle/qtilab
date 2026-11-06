@@ -79,6 +79,9 @@ python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v4long.pt
 python scripts/network_regions.py --tags _v2 _v4 _v4long         # needs those _full posteriors
 python scripts/calibration.py results/posterior_smoke_hhs_v4long.pt; python scripts/calibration.py results/posterior_smoke_hhs_v4longfw.pt --exact-fw
 python scripts/seed_spread.py --tags _v4long _v4long_s1 _v4long_s2   # long runs with --seed 1 / 2, each mapped --whole-brain
+# v5: v4 + exact free water + WM time dependence r = 1.5 + noise model + gain jitter + SNR from 10 (23 min on MPS)
+python scripts/posterior_smoke.py 12000 --batch 2048 --prior 4 --snr 10 150 --test-snr 30 140 --exact-fw --td-ratio 1.5 --alpha 0 0.03 --pulsation 0.15 --gain-sd 0.007 --seed 0 --device mps --tag _v5
+python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v5.pt _v5 --whole-brain --device mps
 python scripts/prepare_session.py 01 02   # also 01 03, 02 01, 06 01; then the held-out grid in scripts/prior_heldout_summary.py's docstring
 python scripts/prior_heldout_summary.py
 # v2-era results rerun with v4 (NOTES 2026-11-06, last entry)
@@ -163,6 +166,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).
      - Prior v4 (`BRAIN_PRIORS[4]`) matches real classical maps in WM and cortex and covers real tissue in the (µFA, C_c) and (MD, C_MD) planes (`scripts/prior_match.py`, NOTES 2026-11-06). Trained (`_v4`, `_v4long`): narrows the FA_t gap; longer training moves real-data estimates by a few hundredths, and 90% coverage stays at 0.77–0.89 (NOTES 2026-11-06).
    - Include time dependence (WM only) in the training prior: r ≈ 1.5 with v4 (five sessions; r ≈ 4 was fitted with v2).
+   - **v5 (`results/posterior_smoke_hhs_v5.pt`) is the current best network** (NOTES 2026-11-06, v5 entry); its time dependence lowers WM µFA_t by about 0.016. Open: the WM FA_t gap (~0.04) and why pallidum/brainstem anisotropy fell (ablate td, pulsation, SNR floor).
    - Train with `--exact-fw` (free water as an exact weight; the old random count made the network look overconfident) and long (12,000 × 2048 or more: short runs are not converged on real data; seeds then agree within ~0.01 regionally). NOTES 2026-11-06, calibration entry.
    - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
 5. **H4 follow-ups.**

@@ -1017,3 +1017,16 @@ Three results in the Westin summary still came from v2 networks. Rerun with v4. 
 - So the v4 → v4long shifts (cortex µFA_t 0.583 → 0.611, C_MD,t 0.076 → 0.058) were under-training, not seed noise: long runs converge to the same answer. From one long run, regional differences above about 0.01–0.02 are interpretable; short (3000 × 512) runs are not converged on real data.
 
 **MPS:** two trainings at once on the M1 Max killed one of them at step 9,000 with "MPS command buffer execution failed: Impacting Interactivity" (macOS's GPU watchdog). Run one MPS training at a time.
+
+## 2026-11-06: v5 — v4 plus the measured forward model
+
+`posterior_smoke.py 12000 --batch 2048 --prior 4 --snr 10 150 --exact-fw --td-ratio 1.5 --alpha 0 0.03 --pulsation 0.15 --gain-sd 0.007 --seed 0 --device mps --tag _v5` (23 min). New `simulate_batch` options (all off by default, so earlier training reproduces): WM-only time dependence (STE at relative frequency r), signal-proportional noise (per-voxel α ~ U(0, 0.03); fitted tissue α 0.005–0.018), fluid pulsation (U(0, 0.15) × f_fw × max(0, 1 − b); CSF fit about 0.1 at b = 0.1), per-measurement gain jitter (sd 0.7%; STE period-3 offsets 1–1.5% peak to peak), SNR from 10 (was 20).
+
+- **Calibration on its own simulator** (`calibration.py ... --exact-fw --td-ratio 1.5 ...`): 90% coverage 0.84–0.90, the same as v4 with exact free water; again only WM f_fw near zero falls short (0.79).
+- **Real data, regional medians vs `_v4longfw`** (long runs; seed spread ≤ ~0.005 in WM, up to 0.02 in pallidum and brainstem; `results/network_regions_s0101.json`):
+  - The **WM FA_t gap does not close**: 0.396 → 0.391 (classical 0.434). Time dependence is not its explanation.
+  - **µFA_t drops where WM time dependence acts:** cerebral WM 0.882 → 0.866, cerebellar WM 0.923 → 0.911, thalamus 0.817 → 0.795, brainstem 0.898 → 0.878 (1–3× the seed spread, towards classical µFA). Without time dependence the network was absorbing part of the STE deficit as extra microscopic anisotropy. GM unchanged (cortex 0.613 → 0.608).
+  - **Pallidum and brainstem anisotropy fall** (FA_t 0.424 → 0.376 and 0.473 → 0.427; C_c,t 0.21 → 0.16 and 0.28 → 0.24), beyond the seed spread there. Not attributed: time dependence, pulsation (brainstem borders CSF) or the SNR floor; needs an ablation.
+  - f_fw, MD_t and C_MD,t: within about 0.01.
+- **Low-signal edge voxels** (lowest 2% of b0, tissue): median posterior SD of µFA_t v2 0.040 (below mid-b0 voxels' 0.097: overconfident where it should be least sure), v4long 0.081, v4longfw 0.071, v5 0.090 (vs 0.062 mid-b0). Uncertainty now grows as signal falls.
+- **Status:** v5 is the current best network: matched prior, calibrated where the data are informative, honest at low signal, and with the measured time dependence. Open: the WM FA_t gap (about 0.04), the pallidum/brainstem attribution, and a held-out check of the noise options (the k-NN held-out tests the prior and time dependence, not the noise model).
