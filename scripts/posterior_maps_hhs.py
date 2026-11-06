@@ -107,9 +107,12 @@ panels = [
 fig, axes = plt.subplots(2, 4, figsize=(15, 8), facecolor="black")
 for ax, (title, v, (lo, hi)) in zip(axes.ravel(), panels):
     cmap = "RdBu_r" if lo < 0 else "gray"
-    ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cmap, vmin=lo, vmax=hi)
+    im = ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cmap, vmin=lo, vmax=hi)
     ax.set_title(title, color="white", fontsize=9)
     ax.axis("off")
+    cb = fig.colorbar(im, ax=ax, orientation="horizontal", fraction=0.046, pad=0.02, ticks=[lo, (lo + hi) / 2, hi])
+    cb.ax.tick_params(colors="white", labelsize=8)
+    cb.outline.set_edgecolor("#888")
 fig.suptitle(f"Hormone Health sub-{sub} ses-{ses}: posterior network {tag or 'v1'} (trained on simulation only, "
              f"{'whole brain, slice ' + str(z) + ' shown' if whole else 'CPU'})", color="white", fontsize=10)
 plt.tight_layout()

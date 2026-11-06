@@ -36,9 +36,13 @@ panels = [("MD (µm²/ms)", sc["md"].numpy(), (0, 3)), ("FA", sc["fa"].numpy(), 
 fig, axes = plt.subplots(2, 4, figsize=(14, 7.5), facecolor="black")
 for ax, (title, v, (lo, hi)) in zip(axes.ravel(), panels):
     im = vol(v)[:, :, z]
-    ax.imshow(np.rot90(im), cmap="gray", vmin=lo, vmax=hi)
+    h = ax.imshow(np.rot90(im), cmap="gray", vmin=lo, vmax=hi)
     ax.set_title(title, color="white", fontsize=10)
     ax.axis("off")
+    if not title.startswith("unconstrained"):          # the last panel is categorical; its title is the key
+        cb = fig.colorbar(h, ax=ax, orientation="horizontal", fraction=0.046, pad=0.02, ticks=[lo, (lo + hi) / 2, hi])
+        cb.ax.tick_params(colors="white", labelsize=8)
+        cb.outline.set_edgecolor("#888")
 fig.suptitle(f"DiB_217 (LTE+PTE+STE), slice {z}: qtilab constrained fit (QTI+ dc). "
              f"{100*neg_c.mean():.0f}% of brain voxels had a non-PSD covariance under WLS, "
              f"{100*neg_d.mean():.1f}% a non-PSD mean tensor.", color="white", fontsize=10)

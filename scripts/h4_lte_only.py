@@ -145,6 +145,10 @@ panels = [("tissue µFA, full protocol", pm["full"][:, iu], "gray", (0, 1)),
           ("posterior SD ratio, C_MD", sd["lte"][:, ic] / np.maximum(sd["full"][:, ic], 1e-6), "magma", (1, 3))]
 fig, axes = plt.subplots(2, 4, figsize=(15, 8), facecolor="black")
 for ax, (t, v, cm, (lo, hi)) in zip(axes.ravel(), panels):
-    ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cm, vmin=lo, vmax=hi); ax.set_title(t, color="white", fontsize=9); ax.axis("off")
+    im = ax.imshow(np.rot90(vol(v)[:, :, z]), cmap=cm, vmin=lo, vmax=hi)
+    ax.set_title(t, color="white", fontsize=9); ax.axis("off")
+    cb = fig.colorbar(im, ax=ax, orientation="horizontal", fraction=0.046, pad=0.02, ticks=[lo, (lo + hi) / 2, hi])
+    cb.ax.tick_params(colors="white", labelsize=8)
+    cb.outline.set_edgecolor("#888")
 fig.suptitle("H4: what linear encoding alone recovers (HHS sub-01 ses-01, slice 20)", color="white")
 plt.tight_layout(); plt.savefig(f"results/h4_lte_only{args.tag}.png", dpi=110, facecolor="black")
