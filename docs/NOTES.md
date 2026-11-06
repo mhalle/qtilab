@@ -867,3 +867,22 @@ sub-01 ses-01, 95,801 posterior voxels (`results/fastsurfer_vs_qti_s0101.json`):
   - WM µFA_t may be affected too: in simulation classical µFA reads 0.04 below true tissue µFA in WM, so real tissue µFA_t near 0.88 would be consistent with classical 0.84; v3 gives 0.88, v2 0.84.
   - Earlier statements that "network tissue µFA matches classical µFA in WM" (2026-11-04, 2026-11-06 whole brain) need this caveat.
 - **Fix:** a prior whose WM covers the real FA range: more 2–3-bundle voxels with comparable weights and wider dispersion (up to ~1), checked by matching the simulated classical-FA histogram to the real one before training. Then retrain (CLAUDE.md task 4) and rerun held-out prediction, which is the arbiter between priors.
+
+## 2026-11-06: prior v4, matched to real classical maps by region (no training yet)
+
+`scripts/prior_match.py --priors 1 2 3 4` (`results/prior_match_s0101.{json,png}`). Each prior's pure WM and pure GM voxels go through sub-01 ses-01's protocol with Rician noise at SNRs drawn from the matching FastSurfer region (per-voxel SNR from the STE b = 1.5 repeats) and the same constrained fit as the real data; classical scalars are compared with real voxels ≥ 80% cerebral WM or cortex. Classical on both sides, so the fit's own biases cancel; summary statistics only, never voxels.
+
+- **WM was wrong in orientation coherence, not microstructure.** Real cerebral WM: classical C_c median 0.28 (5th–95th 0.08–0.61); v1–v3: 0.76–0.87. µFA (0.84 real vs 0.81–0.87) and MD were roughly right. Real WM C_MD is also low (0.026 vs v2's 0.068): little free water or compartment-diffusivity spread.
+- **GM was close** in every prior; v2's cortex µFA was high (0.60 vs 0.53).
+- **v4** (`simulate.BRAIN_PRIORS[4]`; `sample_brain` now takes optional `wm_nb`, `wm_alpha`, or a whole dict for experiments): mostly 2–3 bundles (10/40/50%) with more equal weights (Dirichlet 3), dispersion 0.25–1.0 (v2: 0.03–0.4), free water 0–5% in WM (v2: 0–10%), extra-axonal D_iso 0.7–1.3 and D_Δ 0.1–0.7, GM neurite fraction 0.15–0.45. A wider dispersion range (0.15–2.0) matched the medians but gave a bimodal C_c; the narrower one matches the shape.
+
+  | WM, classical | FA | µFA | MD | C_MD | C_c | % FA 0.3–0.5 |
+  |---|---|---|---|---|---|---|
+  | real cerebral WM | 0.43 [0.20, 0.69] | 0.84 [0.63, 0.93] | 0.88 | 0.026 | 0.28 [0.08, 0.61] | 48.3 |
+  | v2 | 0.79 [0.52, 0.92] | 0.87 | 0.87 | 0.068 | 0.87 [0.40, 1.01] | 3.8 |
+  | v4 | 0.42 [0.21, 0.69] | 0.85 [0.73, 0.91] | 0.86 | 0.025 | 0.25 [0.06, 0.64] | 48.4 |
+
+  Wasserstein distances to real WM, v2 → v4: FA 0.32 → 0.012, C_c 0.50 → 0.022, C_MD 0.027 → 0.007. GM: µFA 0.60 → 0.55 (real 0.53).
+- **Label-free check (the WM/GM classes are anatomy, QTI measures something else).** Simulated WM + GM against all real tissue (FastSurfer fluid + background < 20%, any region, 59,279 voxels) as joint histograms in the QTI planes. % of real tissue where the prior has under 10% of the real density: (µFA, C_c) v1 33, v2 26, v3 4, v4 6; (MD, C_MD) v1 7, v2 6, v3 22, v4 5. v4 is the only prior that covers both planes; v3 covered (µFA, C_c) by being wide everywhere, at the cost of MD and C_MD.
+- **Not covered:** the real low-µFA tail of cortex (µFA < 0.35, CSF partial volume in 4 mm slices) and the cortex C_c tail (WM partial volume); deep gray matter has no class of its own and is covered only through the planes above.
+- **Caveats:** one session; real "pure" voxels still carry partial volume; matching classical maps can fit the simulator to acquisition artifacts as well as to tissue (WM STE deficit, H5), so held-out prediction stays the arbiter. **Next:** train a v4 network and compare it with v2 on held-out prediction, simulated coverage, FastSurfer regions and the FA_t gap.

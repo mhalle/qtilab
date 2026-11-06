@@ -73,6 +73,7 @@ python scripts/t1_to_dwi.py                                     # rigid T1 -> b0
 python scripts/fastsurfer_vs_qti.py                             # -> results/fastsurfer_*_s0101.*
 python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v3.pt _v3 --whole-brain --device mps   # -> work/..._posterior_v3_full.npz
 python scripts/prior_fa_gap.py --device mps --with-v3          # needs the _v3_full posterior
+python scripts/prior_match.py --priors 1 2 3 4                 # priors vs real classical maps, by region and label-free; ~2 min
 ```
 
 - Trained models are committed in `results/*.pt`. `posterior_smoke.py 0 ...` evaluates a saved model without training.
@@ -144,6 +145,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - The 5-subject pilot: the network keeps between-subject differences while cutting session-to-session variation about 5× (`results/consistency_*.json`).
 4. **Longer network training on GPU**, across several protocols with random measurement subsets, for protocol invariance. This is the hook for the embedding work.
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).
+     - Prior v4 (`BRAIN_PRIORS[4]`) matches real classical maps in WM and cortex and covers real tissue in the (µFA, C_c) and (MD, C_MD) planes (`scripts/prior_match.py`, NOTES 2026-11-06). Not trained yet: train it and compare with v2 by held-out prediction.
    - Include time dependence (r ≈ 4, WM only) in the training prior.
    - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
 5. **H4 follow-ups.**

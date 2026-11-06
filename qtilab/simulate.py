@@ -136,6 +136,15 @@ BRAIN_PRIORS = {
     3: dict(f_ax=(0.3, 0.9), ax_d=(0.4, 1.1), ex_d=(0.5, 1.4), ex_dd=(0.0, 0.9), wm_disp=(0.02, 0.8),
             gm_fn=(0.1, 0.6), gm_nd=(0.4, 1.2), gm_fs=(0.0, 0.4), gm_sd=(0.1, 1.0), gm_ed=(0.6, 1.6), gm_edd=(0.0, 0.4),
             fw_wm=(0.0, 0.25), fw_gm=(0.0, 0.25)),
+    # v4: v2 matched to real classical maps by FastSurfer region (scripts/prior_match.py, NOTES 2026-11-06):
+    # real 2 x 2 x 4 mm WM is far less coherent (classical C_c 0.28 vs v2's 0.86), so mostly 2-3 bundles with
+    # more equal weights and moderate-to-wide dispersion (a wider range gave the right median but a bimodal
+    # C_c); less free water and wider extra-axonal diffusivity (real WM C_MD 0.026 vs v2's 0.066); a lower
+    # GM neurite fraction (cortex µFA 0.53 vs v2's 0.60).
+    4: dict(f_ax=(0.4, 0.85), ax_d=(0.55, 0.95), ex_d=(0.7, 1.3), ex_dd=(0.1, 0.7), wm_disp=(0.25, 1.0),
+            wm_nb=(0.1, 0.4, 0.5), wm_alpha=3,
+            gm_fn=(0.15, 0.45), gm_nd=(0.5, 1.0), gm_fs=(0.05, 0.3), gm_sd=(0.2, 0.8), gm_ed=(0.7, 1.4),
+            gm_edd=(0.0, 0.3), fw_wm=(0.0, 0.05), fw_gm=(0.0, 0.15)),
 }
 
 
@@ -155,9 +164,12 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     * WM+CSF, GM+CSF: the same tissue plus 10-90% free water (D 3.0): partial volume at
       ventricles and sulci.
 
-    Ranges above are ``version=1``; ``version=2`` (default) widens them, see ``BRAIN_PRIORS``.
+    Ranges above are ``version=1``; ``version=2`` (default) widens them, see ``BRAIN_PRIORS``. ``version`` may
+    also be a dict of the same keys (for prior experiments); optional keys ``wm_nb`` (probabilities of
+    1, 2, 3 bundles, default (0.6, 0.3, 0.1)) and ``wm_alpha`` (integer Dirichlet concentration of the
+    bundle weights, default 2).
     """
-    P = BRAIN_PRIORS[version]
+    P = version if isinstance(version, dict) else BRAIN_PRIORS[version]
     kw = dict(dtype=dtype, device=device)
     u = lambda lo, hi, shape=(V,): lo + (hi - lo) * torch.rand(shape, generator=g, **kw)
     lu = lambda lo, hi, shape=(V,): torch.exp(torch.log(torch.tensor(lo, **kw)) + torch.rand(shape, generator=g, **kw) * torch.log(torch.tensor(hi / lo, **kw)))
@@ -168,8 +180,8 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     spread = u(0.0, 0.15, (V, K)); disp = torch.ones(V, K, **kw); mu = _unit((V, K, 3), g, dtype, device)
 
     # --- white matter
-    nb = torch.multinomial(torch.tensor([0.6, 0.3, 0.1], **kw), V, replacement=True, generator=g) + 1
-    bw = _dirichlet(2, (V, 3), g, dtype, device)
+    nb = torch.multinomial(torch.tensor(P.get("wm_nb", (0.6, 0.3, 0.1)), **kw), V, replacement=True, generator=g) + 1
+    bw = _dirichlet(P.get("wm_alpha", 2), (V, 3), g, dtype, device)
     bw = torch.where(torch.arange(3, device=device) < nb[:, None], bw, torch.zeros_like(bw))
     bw = bw / bw.sum(-1, keepdim=True)
     f_ax = u(*P['f_ax'], (V, 3))
