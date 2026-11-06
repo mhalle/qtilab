@@ -679,3 +679,13 @@ On MPS the network step itself dominates (290 ms at batch 4096), so simulating o
 - Fits on a GPU cost roughly 55–60 kB per voxel per chunk; the peak is WLS's normal equations (`einsum` materializes the weighted design, V × N × 28). The 250k cap is about 14 GB: fine on 24 GB cards (L4, A10, A10G) and MPS, tight on a 16 GB card.
 - Training costs about 0.75 MB per batch element (M = 64 micro-tensors × 186 volumes, plus flow activations).
 - Posterior sampling costs about 90 kB per voxel-sample; the default chunk of 64 voxels was sized for the 7 GB sandbox and can be raised 10–20× here.
+
+## 2026-11-05 (night): local reproduction on the M1 Max — matches the sandbox
+
+HHS downloaded locally (2,273 files, 8.78 GB, `data/hhs`, Dropbox-ignored). Chain for sub-01 ses-01: `prepare_session.py 01 01` → `posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v2.pt _v2` → `heldout_hhs.py --prior 2 --tag _v2_m1` (`results/heldout_hhs_v2_m1.json`, compared with the sandbox's `heldout_hhs_v2.json`).
+
+- **Alignment:** run-to-run rotations identical to the sandbox (run 2: 0.61°, the largest).
+- **v2 posterior maps:** classical / network full / network tissue µFA = WM 0.87 / 0.68 / 0.87, GM 0.54 / 0.47 / 0.62, CSF-ish 0.31 / 0.15 / 0.73, identical to the 2026-11-04 (late) table to two decimals.
+- **Held-out prediction (prior v2):** all 42 numbers within 0.042 of the sandbox (median RMS error / noise sd). Run 4 simulator WM / GM / CSF 2.12 / 1.34 / 1.32 (sandbox 2.12 / 1.34 / 1.34); run 8 1.81 / 1.18 / 1.07 (1.78 / 1.18 / 1.08). The differences are posterior-sampling noise (the flow is sampled unseeded) feeding the region assignment, plus small numeric differences in alignment; the conclusions are unchanged.
+- **Timing:** prepare 2 min 45 s (sandbox ~6 min), posterior maps 32 s, held-out 8 s.
+- **Blocker found and fixed:** on macOS, dipy's wheel and torch each bundle `libomp`; importing `dipy.align` with torch aborts (`OMP: Error #15`). `scripts/macos_fix_libomp.sh` makes dipy share torch's runtime. The tests do not import `dipy.align`, so they did not catch it.

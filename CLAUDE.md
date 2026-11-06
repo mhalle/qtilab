@@ -30,6 +30,9 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   `uv pip install --no-deps "tractline @ git+https://github.com/mhalle/tractline@v0.11.0"`.
   - The `../tractline` checkout is on its `ismrm2027` branch, which predates v0.11.0 and has no `motion_eddy`.
   - This install is not part of `uv sync`, so redo it after `uv sync` or after recreating `.venv`.
+- **libomp clash (macOS):** dipy's wheel and torch each bundle `libomp`, and importing `dipy.align` (used by `hhs.load_session`) with torch aborts with `OMP: Error #15`. The tests don't import `dipy.align`, so they don't catch it.
+  - Fix: `sh scripts/macos_fix_libomp.sh` symlinks dipy's copy to torch's (idempotent; rerun after recreating `.venv` or after `uv sync` upgrades dipy or torch).
+  - Do not use `KMP_DUPLICATE_LIB_OK=TRUE` instead: OpenMP warns it can silently give incorrect results.
 
 ## Data
 
