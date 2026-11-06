@@ -77,6 +77,8 @@ python scripts/prior_match.py --priors 1 2 3 4                 # priors vs real 
 python scripts/posterior_smoke.py 12000 --batch 2048 --prior 4 --snr 20 150 --test-snr 30 140 --tag _v4long --device mps   # 22 min
 python scripts/posterior_maps_hhs.py "" "" results/posterior_smoke_hhs_v4long.pt _v4long --whole-brain --device mps
 python scripts/network_regions.py --tags _v2 _v4 _v4long         # needs those _full posteriors
+python scripts/prepare_session.py 01 02   # also 01 03, 02 01, 06 01; then the held-out grid in scripts/prior_heldout_summary.py's docstring
+python scripts/prior_heldout_summary.py
 ```
 
 - Trained models are committed in `results/*.pt`. `posterior_smoke.py 0 ...` evaluates a saved model without training.
@@ -130,7 +132,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - `scripts/motion_eddy_hhs.py SUB SES` runs tractline's FSL-style eddy (CPU, about 15 min) as LTE and STE passes, and writes `work/hhs_subXX_sesYYec_aligned.npz`.
    - `scripts/motion_eddy_compare.py` compares residuals in signal units. Noise-normalized scores are not comparable, because resampling raises fitted SNR.
    - The WM STE deficit (H5) is unchanged after correction, and r ≈ 4 time dependence removes it equally.
-     With prior v4 most of the deficit goes away without time dependence, and r ≈ 1.5–2 removes the rest (NOTES 2026-11-06, one session): H5's size was mostly prior misspecification.
+     With prior v4, about 80% of the deficit goes away without time dependence, in all five sessions tested; r ≈ 1.5 removes the rest and r = 4 overshoots (NOTES 2026-11-06, `scripts/prior_heldout_summary.py`). H5 is a small effect; its earlier size was mostly prior misspecification.
    - The b = 2000 volume offsets drop only slightly. The along-fiber excess persists.
    - Within-run STE shifts along PE (up to ~1 mm) vary by subject; b-value and acquisition time are confounded, because STE runs are acquired in b order.
    - Open:
@@ -150,7 +152,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
 4. **Longer network training on GPU**, across several protocols with random measurement subsets, for protocol invariance. This is the hook for the embedding work.
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).
      - Prior v4 (`BRAIN_PRIORS[4]`) matches real classical maps in WM and cortex and covers real tissue in the (µFA, C_c) and (MD, C_MD) planes (`scripts/prior_match.py`, NOTES 2026-11-06). Trained (`_v4`, `_v4long`): narrows the FA_t gap; longer training moves real-data estimates by a few hundredths, and 90% coverage stays at 0.77–0.89 (NOTES 2026-11-06).
-   - Include time dependence (WM only) in the training prior: r ≈ 1.5–2 with v4 (r ≈ 4 was fitted with v2); confirm across sessions first.
+   - Include time dependence (WM only) in the training prior: r ≈ 1.5 with v4 (five sessions; r ≈ 4 was fitted with v2).
    - Include the fitted noise model: `qtilab/noise.py`, with α(b) about 1–2% in tissue and about 10% at b = 100 in CSF.
 5. **H4 follow-ups.**
    - Brain prior: LTE-only recovers tissue µFA nearly as well as the full protocol.

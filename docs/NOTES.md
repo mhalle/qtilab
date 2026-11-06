@@ -921,3 +921,25 @@ GM and CSF are unchanged or slightly better with v4 (GM STE 1.18 → 1.17, LTE 1
 - **The FA_t gap narrows** (WM 0.32 → 0.40 vs classical 0.43); the FA_t posterior SD in WM drops 0.075 → 0.031 (no more two-mode compromise); tissue with FA_t 0.3–0.5: 11.5% → 18.9%. Not closed: in simulation the network is unbiased, so real WM still differs from v4 somewhere (the residual STE effect is one candidate).
 - **WM f_fw tracks the prior's range** (v2 0–10% → 0.094, v3 0–25% → 0.128, v4 0–5% → 0.05): this protocol does not identify free water in WM. Report WM f_fw as prior-determined.
 - **Training length moves real-data estimates as much as the prior change** in places (cortex µFA_t 0.583 → 0.611, C_MD,t 0.076 → 0.058, putamen C_MD,t 0.088 → 0.054). Networks trained at v2's budget were not converged on real data; earlier real-data numbers carry this uncertainty. Check convergence (seeds, longer runs) before reading real-data differences of a few hundredths.
+
+## 2026-11-06: the v4 result replicates across five sessions — H5 is a small effect (r ≈ 1.5)
+
+Same five sessions as the 2026-11-05 time-dependence grid (sub-01 ses-01/02/03, sub-02 ses-01, sub-06 ses-01; prepared locally with `prepare_session.py`), same settings (`heldout_hhs.py 100000 --noise model --regions classical --slice -1`, time dependence WM-only, `--tau-gm 0`). `scripts/prior_heldout_summary.py` → `results/prior_heldout_summary.json`. v2's base row reproduces the earlier grid (WM STE 1.67 vs 1.66, WM LTE 2.16 vs 2.16).
+
+Mean over sessions, median RMS error / noise sd:
+
+| config | STE b1500: WM / GM / CSF | LTE b2000: WM / GM / CSF | WM STE bias |
+|---|---|---|---|
+| v2 | 1.67 / 1.22 / 0.86 | 2.16 / 1.47 / 1.56 | −1.29 |
+| v2, r = 4 | 1.28 / 1.22 / 0.88 | 2.17 / 1.46 / 1.58 | −0.26 |
+| **v4** | **1.28** / 1.23 / 0.87 | **2.12** / 1.43 / 1.56 | −0.27 |
+| v4, r = 1.5 | **1.23** / 1.23 / 0.87 | 2.12 / 1.44 / 1.62 | +0.07 |
+| v4, r = 2 | 1.25 / 1.23 / 0.88 | 2.13 / 1.44 / 1.63 | +0.34 |
+| v4, r = 4 | 1.48 / 1.24 / 0.88 | 2.17 / 1.44 / 1.61 | +1.01 |
+
+Per session, WM STE bias: v2 −0.90 to −1.45; v4 −0.07 to −0.42 (negative in all five); v4 + r = 1.5 −0.10 to +0.28; v4 + r = 4 +0.84 to +1.29 (overshoots in all five).
+
+- **v4 alone does what r = 4 did on v2** (WM STE 1.28 either way), and also improves WM and GM LTE extrapolation (2.16 → 2.12, 1.47 → 1.43). v4 was tuned on sub-01 ses-01's classical maps only; sub-02 and sub-06 are out of sample and behave the same.
+- **H5, revised:** about 80% of the WM STE deficit (bias −1.29 → −0.27) was the prior's over-coherent WM. A small residual remains, negative in every session, and WM-only time dependence at r ≈ 1.5 removes it (1.28 → 1.23). r = 4 was fitted to compensate for the prior. Time dependence in WM is still supported as a small effect; its size is now about a fifth of the previous estimate (the scaling 1 + τ(√r − 1): √1.5 − 1 = 0.22 vs √4 − 1 = 1.0, at the same τ ranges, which are still guesses).
+- CSF LTE gets slightly worse with any time dependence (1.56 → 1.62); CSF has no WM time dependence, so this is the bank composition shifting, worth a look if r is fitted per tissue.
+- Implication for training (CLAUDE.md task 4): use v4 with WM-only time dependence at r ≈ 1.5, not r ≈ 4.
