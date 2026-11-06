@@ -36,14 +36,47 @@ def _log_signal(S, S0_floor=MIN_SIGNAL):
     return torch.log(S.clamp_min(S0_floor))
 
 
-def _solve_normal(H, g, full_rank: bool):
+def _row_space(X: torch.Tensor, rank: int) -> torch.Tensor:
+    """(28, rank) orthonormal basis of the row space of X, computed once in float64 on the CPU.
+
+    ``rank`` must come from ``torch.linalg.matrix_rank`` at X's own precision: a float32 design cast to
+    float64 carries float32 rounding in its null singular values, so a float64 cutoff would keep them.
+
+    With positive weights H = X' W^2 X has the same null space as X for every voxel, so the minimum-norm
+    WLS solution lies in this space and can be found from an r x r Cholesky solve instead of a pseudo-inverse.
+    """
+    X64 = X.detach().cpu().double()                         # move first: MPS has no float64
+    _, _, Vh = torch.linalg.svd(X64, full_matrices=False)
+    return Vh[:rank].T.to(dtype=X.dtype, device=X.device)
+
+
+def _pinv_solve(H, g):
+    # Pseudo-inverse in sub-batches (``tensors.batched``; a 200k batch asked for 66 GB of CUDA workspace).
+    return batched(lambda h, b: (torch.linalg.pinv(h, hermitian=True) @ b.unsqueeze(-1)).squeeze(-1), H, g)
+
+
+def _solve_normal(H, g, full_rank: bool, Q=None):
+    """Solve H x = g per voxel (minimum-norm solution if H is singular).
+
+    Full rank: Cholesky. Rank-deficient with a row-space basis ``Q`` of the design (``_row_space``): Cholesky
+    of Q'HQ, which is well conditioned (median condition number ~1e3 on HHS) and gives the same
+    minimum-norm solution as the pseudo-inverse (2e-11 in float64). That replaced a batched ``pinv``,
+    which in float32 on MPS was off by up to 5e-2 in µFA, and is 9-21x faster. Voxels whose reduced matrix
+    is not positive definite (e.g. zero weights shrinking the observed space) fall back to ``pinv``.
+    """
     if full_rank:
         L, info = torch.linalg.cholesky_ex(H)
         if bool((info == 0).all()):
             return torch.cholesky_solve(g.unsqueeze(-1), L).squeeze(-1)
-    # Rank-deficient (or numerically singular) H: pseudo-inverse, in sub-batches (``tensors.batched``;
-    # a 200k batch asked for 66 GB of CUDA workspace).
-    return batched(lambda h, b: (torch.linalg.pinv(h, hermitian=True) @ b.unsqueeze(-1)).squeeze(-1), H, g)
+    if Q is None:
+        return _pinv_solve(H, g)
+    Hr = Q.T @ H @ Q
+    L, info = torch.linalg.cholesky_ex(Hr)
+    x = torch.cholesky_solve((g @ Q).unsqueeze(-1), L).squeeze(-1) @ Q.T
+    bad = info != 0
+    if bool(bad.any()):
+        x[bad] = _pinv_solve(H[bad], g[bad])
+    return x
 
 
 def ols(X: torch.Tensor, S: torch.Tensor) -> torch.Tensor:
@@ -116,13 +149,15 @@ def _normal_equations(X, y, w):
 def wls(X, S, weights=None, chunk=None):
     """DIPY-equivalent WLS: sqrt-weights = OLS-predicted signal unless given. ``chunk``: see ``_chunk``."""
     chunk = _chunk(S, chunk)
-    full_rank = int(torch.linalg.matrix_rank(X)) == X.shape[1]
+    rank = int(torch.linalg.matrix_rank(X))
+    full_rank = rank == X.shape[1]
+    Q = None if full_rank else _row_space(X, rank)
     out = []
     for i in range(0, S.shape[0], chunk):
         s = S[i:i + chunk]
         w = _weights(X, s, None if weights is None else weights[i:i + chunk])
         H, g = _normal_equations(X, _log_signal(s), w)
-        out.append(_solve_normal(H, g, full_rank))
+        out.append(_solve_normal(H, g, full_rank, Q))
     return torch.cat(out)
 
 
@@ -203,13 +238,15 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
     ``chunk``: voxels per batch, default 20k on CPU and 250k on GPUs (see ``_chunk``).
     """
     chunk = _chunk(S, chunk)
-    full_rank = int(torch.linalg.matrix_rank(X)) == X.shape[1]
+    rank = int(torch.linalg.matrix_rank(X))
+    full_rank = rank == X.shape[1]
+    Q = None if full_rank else _row_space(X, rank)
     out, n_bad, iters, conv = [], 0, 0, []
     for i in range(0, S.shape[0], chunk):
         s = S[i:i + chunk]
         w = _weights(X, s, None if weights is None else weights[i:i + chunk])
         H, g = _normal_equations(X, _log_signal(s), w)
-        p = _solve_normal(H, g, full_rank)
+        p = _solve_normal(H, g, full_rank, Q)
         bad = violates(p)
         if bool(bad.any()):
             Hb = H[bad]

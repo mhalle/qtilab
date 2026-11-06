@@ -70,3 +70,23 @@ def test_constrained_is_feasible_and_never_worse_than_projection():
     # unconstrained-feasible voxels are untouched
     ok = ~fit.violates(pw)
     assert torch.allclose(pc[ok], pw[ok])
+
+
+def test_rank_deficient_wls_float32_matches_float64():
+    """LTE + STE only (rank 23): float32 WLS must solve in the 23-dim row space and match float64.
+
+    Guards the row-space Cholesky solve: a float64 rank cutoff on a float32 design kept all 28 directions,
+    silently sending every voxel to the batched pinv (5e-3 in µFA on CPU, 5e-2 on MPS).
+    """
+    p = _protocol()
+    p = p.subset([s != "PTE" for s in p.shapes])
+    assert p.rank() == 23
+    torch.manual_seed(0)
+    S = simulate.simulate(p, 4000, g=torch.Generator().manual_seed(1))["signal"].clamp_min(1e-4)
+    X = p.design_matrix()
+    X32 = X.float()
+    assert fit._row_space(X32, int(torch.linalg.matrix_rank(X32))).shape == (28, 23)
+    u64 = scalars.scalars(fit.wls(X, S))["ufa"]
+    u32 = scalars.scalars(fit.wls(X32, S.float()).double())["ufa"]
+    ok = torch.isfinite(u64) & (u64.abs() < 2)
+    assert float((u32 - u64).abs()[ok].max()) < 1e-3

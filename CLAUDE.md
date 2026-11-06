@@ -87,6 +87,8 @@ Development now runs locally on an Apple M1 Max (10 cores, 64 GB, MPS). The resu
 
 GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for CUDA.
 - MPS has **no float64**. DIPY validation and the reference benchmarks stay float64 on CPU; use float32 on MPS.
+- Rank-deficient WLS solves in X's row space (Cholesky), not with `pinv`. MPS's batched `pinv` was off by up to 1e-2 in µFA in float32. With the fix, MPS float32 matches CPU float64 at default settings (µFA within 1e-3 of the tight reference; NOTES 2026-11-05 late night). Don't reintroduce batched `pinv` on hot paths.
+- An objective-based ADMM stopping rule was tried and rejected (NOTES); don't retry it without a new idea.
 - Device benchmark, 2026-11-05 (NOTES; `scripts/bench_devices.py cpu mps`): MPS is 3–4× faster than CPU for simulate and WLS and 1.4× for the network step, and with the default `chunk=20000` slower for `fit.constrained` (139 vs 100 s at 200k voxels). That is per-chunk overhead, not compute:
   - Fixed: `chunk=None` (the default) is 20k on CPU; on a GPU it is sized from free memory (40% of it at a conservative 88 kB per voxel, between 8k and 250k; `fit._chunk`). This Mac gets one 250k chunk (200k voxels: 26–32 s on MPS vs 100 s on CPU). A 24 GB A10 gets about 100k chunks: 10.1 s (7.4 s as one chunk, 37 s at the old fixed 20k). A 16 GB M2 (simulated) gets 52k chunks: 56 s, 6.1 GB peak. Each chunk pays a ~1000-iteration ADMM tail of small, sync-bound steps.
   - On CPU the cost is the batched `eigh` in `fit._project` (57 of ~65 ms per iteration at 17k voxels).
