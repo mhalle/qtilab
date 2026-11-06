@@ -29,6 +29,7 @@ ap.add_argument("--device", default="cpu",
                 help="train on this device (mps, cuda); batches are then simulated there in float32. Evaluation stays on CPU")
 ap.add_argument("--compile", action="store_true",
                 help="torch.compile the training loss (fused kernels; the spline cumsum dominates eager CUDA steps)")
+ap.add_argument("--batch", type=int, default=512, help="simulated voxels per training step")
 ap.add_argument("--shapes", default="", help="keep only these encoding shapes (comma list, e.g. LTE); b=0 kept")
 args = ap.parse_args()
 steps = args.steps
@@ -53,7 +54,7 @@ t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
     net.load_state_dict(torch.load(model_path))
 for step in range(1, steps + 1):
-    b = posterior.simulate_batch(prot, 512, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
+    b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior, **sim_kw)
     loss = loss_fn(b.x, b.y)
     opt.zero_grad(); loss.backward()
     torch.nn.utils.clip_grad_norm_(net.parameters(), 5.0)
@@ -82,7 +83,7 @@ cc = scalars.scalars(fit.constrained(X, S64)[0])
 T = posterior.TARGETS
 cls = test.cls.numpy()
 names = simulate.BRAIN_CLASSES
-res = {"steps": steps or 3000, "by_class": {}}
+res = {"steps": steps or 3000, "batch": args.batch, "by_class": {}}
 
 
 def stat(est, tru, m):

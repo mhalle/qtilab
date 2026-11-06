@@ -886,3 +886,38 @@ sub-01 ses-01, 95,801 posterior voxels (`results/fastsurfer_vs_qti_s0101.json`):
 - **Label-free check (the WM/GM classes are anatomy, QTI measures something else).** Simulated WM + GM against all real tissue (FastSurfer fluid + background < 20%, any region, 59,279 voxels) as joint histograms in the QTI planes. % of real tissue where the prior has under 10% of the real density: (µFA, C_c) v1 33, v2 26, v3 4, v4 6; (MD, C_MD) v1 7, v2 6, v3 22, v4 5. v4 is the only prior that covers both planes; v3 covered (µFA, C_c) by being wide everywhere, at the cost of MD and C_MD.
 - **Not covered:** the real low-µFA tail of cortex (µFA < 0.35, CSF partial volume in 4 mm slices) and the cortex C_c tail (WM partial volume); deep gray matter has no class of its own and is covered only through the planes above.
 - **Caveats:** one session; real "pure" voxels still carry partial volume; matching classical maps can fit the simulator to acquisition artifacts as well as to tissue (WM STE deficit, H5), so held-out prediction stays the arbiter. **Next:** train a v4 network and compare it with v2 on held-out prediction, simulated coverage, FastSurfer regions and the FA_t gap.
+
+## 2026-11-06: v4 trained — the white-matter STE deficit was mostly the prior; longer training matters on real data
+
+**Held-out prediction tests the prior directly** (`heldout_hhs.py`, k-NN on a 200k bank; v2 rerun after the Dirichlet fix, tag `_v2_reseeded`). WM error in noise sd (median bias):
+
+| bank | STE b1500, repeat noise, slice 20 | STE b1500, noise model, classical regions, slice 22 | LTE b2000, noise model |
+|---|---|---|---|
+| v2 | 1.80 (−1.49) | 1.67 (−1.33) | 1.90 |
+| v2 + r = 4 (WM only) | — | 1.28 (−0.34) | 1.86 |
+| v4 | 1.31 (−0.55) | 1.33 (−0.36) | 1.93 |
+| v4 + r = 1.5 (WM only) | — | 1.25 (−0.04) | 1.95 |
+| v4 + r = 2 | — | 1.24 (+0.21) | 1.95 |
+| v4 + r = 4 | — | 1.38 (+0.81) | 1.97 |
+
+GM and CSF are unchanged or slightly better with v4 (GM STE 1.18 → 1.17, LTE 1.35 → 1.30, repeat noise).
+
+- **The prior explains about two-thirds of the WM STE deficit.** The earlier conclusion that "no time-independent brain prior fits both encodings in WM" (2026-11-04) holds for v1–v3, whose WM was far too coherent; v4, matched to real classical maps, fits both. The "simulated null" (2026-11-05) used v2 voxels, for which v2 was right by construction, so it could not catch this.
+- **H5 is weakened, not refuted.** With v4, a small residual remains (bias −0.36 to −0.55), and WM-only time dependence at r ≈ 1.5–2 removes it; r = 4 now overshoots. The time-dependence strength previously estimated (r ≈ 4) was mostly compensating for the prior. One session, one slice, the τ ranges still guesses; repeat across the sessions of 2026-11-05 before using either value.
+- Why coherence affects a spherical-encoding prediction: STE signal does not depend on orientation, but the k-NN match uses the LTE volumes too; with a prior lacking dispersed WM, real dispersed voxels match tissues with the wrong size distribution (C_MD, free water), which then mispredict STE.
+
+**Networks** (`posterior_smoke.py`, v2's recipe: 3000 × 512, SNR 20–150; and `_v4long`: 12,000 × 2048 on MPS, 16× the data, 22 min). Simulated test (v4 prior, SNR 30–140):
+- v4 at v2's budget: errors and coverage close to v2's on its own prior (90% coverage 0.77–0.91).
+- v4long: median |error| 10–45% smaller (WM µFA_t 0.017 → 0.015, GM MD_t 0.044 → 0.036, WM f_fw 0.028 → 0.020), intervals narrower (f_fw 90% width 0.146 → 0.089), **coverage not better** (f_fw 0.78, full-distribution targets 0.77–0.83 at 90%). The overconfidence is structural (flow, loss or test setup), not under-training.
+
+**Real data** (`posterior_maps_hhs.py ... --whole-brain`, `scripts/network_regions.py`, `results/network_regions_s0101.json`), medians in voxels ≥ 80% one FastSurfer region, classical | v2 | v4 | v4long:
+
+| | FA_t | C_c,t | µFA_t | f_fw (network) |
+|---|---|---|---|---|
+| cerebral WM | 0.434 \| 0.315 \| 0.384 \| 0.400 | 0.281 \| 0.140 \| 0.190 \| 0.207 | 0.840 \| 0.843 \| 0.883 \| 0.883 | — \| 0.094 \| 0.051 \| 0.036 |
+| thalamus | 0.318 \| 0.187 \| 0.248 \| 0.276 | 0.197 \| 0.060 \| 0.095 \| 0.116 | 0.764 \| 0.772 \| 0.809 \| 0.812 | — \| 0.081 \| 0.060 \| 0.039 |
+| cortex | 0.127 \| 0.098 \| 0.092 \| 0.090 | 0.068 \| 0.025 \| 0.026 \| 0.025 | 0.530 \| 0.625 \| 0.583 \| 0.611 | — \| 0.088 \| 0.087 \| 0.070 |
+
+- **The FA_t gap narrows** (WM 0.32 → 0.40 vs classical 0.43); the FA_t posterior SD in WM drops 0.075 → 0.031 (no more two-mode compromise); tissue with FA_t 0.3–0.5: 11.5% → 18.9%. Not closed: in simulation the network is unbiased, so real WM still differs from v4 somewhere (the residual STE effect is one candidate).
+- **WM f_fw tracks the prior's range** (v2 0–10% → 0.094, v3 0–25% → 0.128, v4 0–5% → 0.05): this protocol does not identify free water in WM. Report WM f_fw as prior-determined.
+- **Training length moves real-data estimates as much as the prior change** in places (cortex µFA_t 0.583 → 0.611, C_MD,t 0.076 → 0.058, putamen C_MD,t 0.088 → 0.054). Networks trained at v2's budget were not converged on real data; earlier real-data numbers carry this uncertainty. Check convergence (seeds, longer runs) before reading real-data differences of a few hundredths.
