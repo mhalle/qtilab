@@ -30,3 +30,18 @@ def posterior_slice(tag="_v2", sub="01", ses="01") -> Path:
 def posterior_volume(tag="_v2", sub="01", ses="01") -> Path:
     """Network posterior (mean, SD) for every brain voxel (scripts/posterior_maps_hhs.py --whole-brain)."""
     return WORK / f"hhs_sub{sub}_ses{ses}_posterior{tag}_full.npz"
+
+
+def t1_to_dwi(sub="01", ses="01") -> Path:
+    """Rigid T1 -> diffusion registration (scripts/t1_to_dwi.py)."""
+    return WORK / f"hhs_sub{sub}_ses{ses}_t1_to_dwi.npz"
+
+
+def fastsurfer_store(sub="01", ses="01") -> Path:
+    """FastSurfer asegdkt ranked store from haversack (see scripts/fastsurfer_to_dwi.py)."""
+    return WORK / f"hhs_sub{sub}_ses{ses}_asegdkt.duckn.zip"
+
+
+def fastsurfer_fractions(sub="01", ses="01") -> Path:
+    """FastSurfer region fractions on the diffusion grid (scripts/fastsurfer_to_dwi.py)."""
+    return WORK / f"hhs_sub{sub}_ses{ses}_fastsurfer_dwi.npz"

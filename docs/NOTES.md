@@ -805,3 +805,65 @@ sub-01 ses-01, 95,801 voxels, M1 Max MPS:
 - **Agrees with the slice file:** on the 4,012 slice-20 voxels, (whole-brain mean − slice mean) / Monte Carlo SE has mean ≈ 0 and SD 0.995–1.019 for every target, with ≤ 0.02% beyond 4σ: identical up to sampling noise.
 - **Whole-brain regions** (classical µFA / network full µFA / network tissue µFA): WM-like (n = 14,583) 0.87 / 0.67 / 0.87; GM-like (29,111) 0.54 / 0.48 / 0.63; CSF-ish (19,570) 0.33 / 0.14 / 0.74. Slice 20 gave 0.87 / 0.68 / 0.87, 0.54 / 0.47 / 0.62, 0.31 / 0.15 / 0.73, so the slice was representative.
 - Median f_fw 0.10 whole brain; 20% of voxels have f_fw > 0.5 (slice 20: 15%), the extra coming from CSF-rich slices.
+
+## 2026-11-06: anisotropy classes from the posterior, checked against FastSurfer (T1)
+
+**Classes from the posterior.** Integrating the posterior's marginal Gaussians (mean, SD) over fixed regions gives soft classes per voxel (the f_fw and FA_t probabilities are multiplied, which assumes the two are independent in the posterior; integrating the flow's joint samples would avoid that), named for what defines them: free_water f_fw > 0.7; mixed 0.3–0.7; for f_fw < 0.3, low_FA FA_t < 0.15, mid_FA 0.15–0.4, high_FA > 0.4. A first try split GM from WM on µFA_t and failed: tissue µFA_t exceeds 0.5 in 99.6% of tissue voxels.
+- **They are anisotropy classes, not tissue types** (the pallidum and thalamus below land in mid/high_FA), and an earlier draft's GM / WM_disp / WM_coh names were wrong. Even "isotropic" would be wrong for low_FA: cortex has µFA_t 0.63.
+- **They use little of what is specific to QTI.** FA_t is the FA of the tissue mean tensor, and FA_t² = µFA_t² · C_c (scalars.py: FA = √C_M, µFA = √C_µ, C_c = C_M / C_µ). Thresholding FA_t mixes microscopic anisotropy with orientation coherence; apart from the free-water separation, free-water DTI could draw the same map. Classes on (µFA_t, C_c) would use the tensor-valued encoding, but see the C_c caveat below.
+- The class boundaries are thresholds, not gaps in the data; the FA_t–µFA_t cloud is continuous.
+- Boundary uncertainty: the posterior SD of FA_t is 0.049 at FA_t ≈ 0.15 and 0.100 at 0.40 (largest at 0.3–0.5, the crossing/fanning range), so the mid/high_FA split is the less certain one.
+- The lower edge of the cloud is µFA ≥ FA (C_c ≤ 1): it holds in 99.85% of voxels, with violations ≤ 0.05 from taking marginal posterior means.
+- The narrow FA–µFA curve of the posterior means is mostly prior shrinkage: in low_FA voxels the SD of FA is 0.071 (classical) vs 0.019 (network), of µFA 0.160 vs 0.061. The rising-then-saturating shape is present in the classical fit too.
+
+**rankfield compression of the posterior: not worth it.** K-means prototypes (K = 8–64) plus rankfield's ranked encoding reconstruct the posterior means within 0.1–0.3 posterior SD, but the store (2.5 MB at depth 2, 6.4 MB at depth 6) saves little against the raw means + SDs (6.6 MB) and is much larger than a label map + codebook (0.6 MB). The five class probabilities do not compress either (2.5 vs 2.4 MB): too few classes on too small a grid.
+
+**FastSurfer as an independent check.** haversack (github.com/mhalle/haversack) runs FastSurfer 2.5.4 `asegdkt` on MPS in 100 s and writes a ranked store: 7.4 MB for 79 classes on the 257³ conformed grid (220 MB of logits), the case rankfield was built for. Pipeline: `scripts/t1_to_dwi.py` (rigid MI registration of the T1 to the mean b0: 0.34°, 1.9 mm; EPI distortion near the frontal sinuses and temporal poles is not corrected), `scripts/fastsurfer_to_dwi.py` (softmax over the classes the store names, grouped into 13 regions, box-averaged into each 2 × 2 × 4 mm voxel from ~16 conformed voxels; FastSurfer sums its views' raw logits, so the probabilities are a log-linear pool, not calibrated), `scripts/fastsurfer_vs_qti.py`. Volumes are plausible: cortex 471 cm³, cerebral WM 434, thalamus 17, cerebellar cortex 103.
+
+sub-01 ses-01, 95,801 posterior voxels (`results/fastsurfer_vs_qti_s0101.json`):
+- Voxelwise r: FastSurfer GM fraction vs P(low_FA) 0.62; WM fraction vs P(mid_FA + high_FA) 0.73; fluid fraction (ventricles + CSF + background) vs f_fw 0.75.
+- Voxels ≥ 80% one FastSurfer region, with the QTI winner and medians (C_c = (FA/µFA)², from posterior means for the network):
+
+  | region | n | QTI winner | f_fw | FA_t | µFA_t | C_c,t | classical FA | µFA | C_c |
+  |---|---|---|---|---|---|---|---|---|---|
+  | cortex | 12,975 | 85% low_FA | 0.088 | 0.10 | 0.63 | 0.025 | 0.13 | 0.53 | 0.068 |
+  | caudate | 343 | 84% low_FA | 0.078 | 0.11 | 0.68 | 0.027 | 0.15 | 0.61 | 0.072 |
+  | putamen | 444 | 83% low_FA | 0.068 | 0.12 | 0.69 | 0.028 | 0.19 | 0.68 | 0.085 |
+  | cerebellar cortex | 4,850 | 66% low_FA, 28% mid_FA | 0.075 | 0.14 | 0.74 | 0.035 | 0.20 | 0.58 | 0.130 |
+  | thalamus | 808 | 61% mid_FA, 25% low_FA | 0.081 | 0.19 | 0.77 | 0.060 | 0.32 | 0.76 | 0.197 |
+  | cerebral WM | 18,263 | 51% mid_FA, 36% high_FA, 12% low_FA | 0.094 | 0.32 | 0.84 | 0.140 | 0.43 | 0.84 | 0.281 |
+  | cerebellar WM | 1,096 | 70% mid_FA, 27% high_FA | 0.081 | 0.29 | 0.87 | 0.110 | 0.40 | 0.88 | 0.214 |
+  | pallidum | 176 | 44% mid_FA, 56% high_FA | 0.078 | 0.43 | 0.90 | 0.226 | 0.45 | 0.90 | 0.254 |
+  | brainstem | 1,057 | 78% mid/high_FA, 21% free_water/mixed | 0.097 | 0.49 | 0.86 | 0.321 | 0.46 | 0.82 | 0.402 |
+  | ventricles | 717 | 95% free_water | 0.94 | — | — | — | — | — | — |
+
+- **Regions separate on the FA–µFA plane independently of the thresholds** (`results/fastsurfer_regional_scatter_s0101.png`): at similar low FA, µFA rises from cortex to caudate/putamen, then thalamus, cerebral WM, and pallidum/brainstem, in both the classical fit and the network. Exception: the network puts cerebellar cortex above the striatum (0.74), the classical fit below (0.58); possibly partial volume with cerebellar WM in 4 mm slices. Not interpreted yet.
+- The cortex and striatum differ from WM in both factors: lower µFA and much lower coherence (C_c,t 0.03 vs 0.14). Pallidum and thalamus are fiber-rich deep gray: µFA as high as WM, coherence between.
+- **The network's FA_t is below classical FA in every region** (cerebral WM 0.32 vs 0.43, cortex 0.10 vs 0.13), although removing free water should raise FA, so its C_c is about half the classical one. Explained in the next entry: the brain prior has almost no tissue at FA 0.3–0.5. Do not build classes on the network's C_c until the prior is fixed.
+- Cortical µFA_t (0.63) sits well above classical µFA (0.53) because about 9% free water is removed; it inherits the open question of whether that f_fw is real (2026-11-04).
+- **The brain mask includes non-brain:** 17,978 mask voxels (19%) are ≥ 80% FastSurfer background. Most are fluid by QTI (51% free_water, 28% mixed), but 21% get tissue classes. The anterior free-water blobs at z ≈ 16 are the eyes. Whole-brain statistics that use `prepare_session.py`'s mask include them; a T1-based brain mask (FastSurfer or SynthStrip via haversack) would remove them.
+- Caveats: one session; uncalibrated FastSurfer probabilities; few pure deep-gray voxels at this resolution; rigid registration only; FastSurfer has a single cerebral-WM label, so the corpus callosum, internal capsule and centrum semiovale still need a tract atlas or tractography.
+
+## 2026-11-06: why the network's FA_t is below classical FA — the brain prior's FA_t gap
+
+`scripts/prior_fa_gap.py --device mps --with-v3` (`results/prior_fa_gap_s0101.{json,png}`; 20,000 simulated v2-prior voxels through sub-01's protocol, Rician SNR 30–140).
+
+- **Neither estimator is biased on the prior's own voxels.** Simulated WM: network FA_t − true +0.002, classical FA − true FA_t −0.028 (classical reads FA_t slightly low, as free water lowers full FA; vs true full FA it is +0.04). GM: +0.001 and +0.007. So the classical fit is not inflated, and the real-data gap is not a classical bias.
+- **The v2 prior's tissue FA_t is bimodal with an empty middle.** % of tissue voxels per FA bin, prior true FA_t vs real classical FA (f_fw < 0.3):
+
+  | FA | 0–0.1 | 0.1–0.2 | 0.2–0.3 | 0.3–0.4 | 0.4–0.5 | 0.5–0.6 | 0.6–0.8 | 0.8–1 |
+  |---|---|---|---|---|---|---|---|---|
+  | prior v1 | 22.3 | 25.7 | 2.2 | 0.5 | 2.4 | 6.5 | 27.1 | 13.3 |
+  | prior v2 | 16.4 | 28.4 | 5.0 | 0.5 | 0.8 | 3.1 | 18.2 | 27.7 |
+  | prior v3 | 15.8 | 26.7 | 7.8 | 3.1 | 4.0 | 6.4 | 16.6 | 19.6 |
+  | real | 14.5 | 31.6 | 19.8 | 12.7 | 9.8 | 6.5 | 4.5 | 0.5 |
+
+  Prior WM has median FA_t 0.82 (5th percentile 0.56); real cerebral WM has classical FA 0.43 (5th–95th 0.20–0.69). WM in the prior is 60% single bundles with axis dispersion 0.03–0.4: real 2 × 2 × 4 mm WM voxels are far more dispersed. (The v1 → v2 widening made WM *more* anisotropic, after real µFA came out higher than v1's; macroscopic FA went the wrong way.)
+- Reproducibility: `simulate.sample_brain` (and `sample_dtd`) draw mixture weights with `torch.distributions.Dirichlet(...).sample()`, which ignores the generator, so reruns of these simulations differ in the third decimal (a rerun gave classical-FA bin 0.4–0.5 → network 0.52 instead of 0.51). The v1/v3 rows were added to the JSON from such a rerun; the other values are from the original run.
+- **In the gap the posterior mean is a compromise between modes.** Network FA_t against classical FA, simulated: 0.21 at classical 0.3–0.4, then 0.51 at 0.4–0.5 (the posterior switches modes). Real voxels at classical 0.4–0.5 get 0.32, between the two, and lower than simulated in every bin above 0.4. The FA_t posterior SD peak at 0.3–0.5 (previous entry) is the same effect. Posterior means there do not describe any tissue the prior contains.
+- **Real-data confirmation with the v3 prior** (wider dispersion, 7.1% of tissue at FA 0.3–0.5 vs v2's 1.3% and v1's 3.0%, `pct_tissue_fa_0.3_0.5` in the JSON; `posterior_maps_hhs.py ... _v3.pt _v3 --whole-brain`): FA_t rises toward the classical value where v2 had the gap (cerebral WM 0.32 → 0.38, thalamus 0.19 → 0.23, cerebellar WM 0.29 → 0.32) and does not move where both priors have mass (cortex, caudate, putamen ≈ 0.10–0.11). v3 also raises WM µFA_t (0.84 → 0.88) and f_fw (0.09 → 0.13, its free-water range is 0–25%).
+- **Consequences.**
+  - The network's FA_t, and C_c = (FA_t/µFA_t)², are biased low in dispersed WM and fiber-rich deep gray (thalamus); not in GM. The mid/high_FA class boundary at 0.4 sits in the gap.
+  - WM µFA_t may be affected too: in simulation classical µFA reads 0.04 below true tissue µFA in WM, so real tissue µFA_t near 0.88 would be consistent with classical 0.84; v3 gives 0.88, v2 0.84.
+  - Earlier statements that "network tissue µFA matches classical µFA in WM" (2026-11-04, 2026-11-06 whole brain) need this caveat.
+- **Fix:** a prior whose WM covers the real FA range: more 2–3-bundle voxels with comparable weights and wider dispersion (up to ~1), checked by matching the simulated classical-FA histogram to the real one before training. Then retrain (CLAUDE.md task 4) and rerun held-out prediction, which is the arbiter between priors.

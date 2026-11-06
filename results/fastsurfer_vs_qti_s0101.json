@@ -1,0 +1,239 @@
+{
+ "sub": "01",
+ "ses": "01",
+ "voxels": 95801,
+ "covered": 95801,
+ "pure_threshold": 0.8,
+ "pearson_r": {
+  "fs_gm_vs_P_low_FA": 0.6175171692559338,
+  "fs_wm_vs_P_mid_high_FA": 0.7263328017650635,
+  "fs_fluid_vs_f_fw": 0.7510806908066884,
+  "fs_fluid_vs_P_free_water_mixed": 0.7415266245177622
+ },
+ "contingency_row_pct": {
+  "cortex": {
+   "free_water": 1.3,
+   "mixed": 8.4,
+   "low_FA": 85.4,
+   "mid_FA": 4.6,
+   "high_FA": 0.2
+  },
+  "cerebral_wm": {
+   "free_water": 0.1,
+   "mixed": 1.1,
+   "low_FA": 12.1,
+   "mid_FA": 50.5,
+   "high_FA": 36.1
+  },
+  "thalamus": {
+   "free_water": 1.1,
+   "mixed": 9.4,
+   "low_FA": 24.5,
+   "mid_FA": 60.9,
+   "high_FA": 4.1
+  },
+  "caudate": {
+   "free_water": 1.2,
+   "mixed": 10.5,
+   "low_FA": 84.0,
+   "mid_FA": 4.1,
+   "high_FA": 0.3
+  },
+  "putamen": {
+   "free_water": 0.0,
+   "mixed": 0.0,
+   "low_FA": 82.7,
+   "mid_FA": 16.9,
+   "high_FA": 0.5
+  },
+  "pallidum": {
+   "free_water": 0.0,
+   "mixed": 0.0,
+   "low_FA": 0.0,
+   "mid_FA": 44.3,
+   "high_FA": 55.7
+  },
+  "hippo_amyg": {
+   "free_water": 5.4,
+   "mixed": 21.1,
+   "low_FA": 58.3,
+   "mid_FA": 14.3,
+   "high_FA": 0.9
+  },
+  "accumbens_vdc": {
+   "free_water": 0.0,
+   "mixed": 3.3,
+   "low_FA": 14.8,
+   "mid_FA": 39.8,
+   "high_FA": 42.1
+  },
+  "cerebellum_ctx": {
+   "free_water": 0.1,
+   "mixed": 5.4,
+   "low_FA": 66.2,
+   "mid_FA": 28.1,
+   "high_FA": 0.1
+  },
+  "cerebellum_wm": {
+   "free_water": 0.0,
+   "mixed": 0.7,
+   "low_FA": 2.3,
+   "mid_FA": 70.2,
+   "high_FA": 26.8
+  },
+  "brainstem": {
+   "free_water": 9.3,
+   "mixed": 11.4,
+   "low_FA": 1.1,
+   "mid_FA": 27.3,
+   "high_FA": 50.9
+  },
+  "csf_ventricles": {
+   "free_water": 94.8,
+   "mixed": 4.2,
+   "low_FA": 1.0,
+   "mid_FA": 0.0,
+   "high_FA": 0.0
+  },
+  "background": {
+   "free_water": 51.0,
+   "mixed": 28.4,
+   "low_FA": 10.9,
+   "mid_FA": 6.0,
+   "high_FA": 3.8
+  }
+ },
+ "regional_medians": {
+  "cortex": {
+   "n": 12975,
+   "f_fw": 0.0878,
+   "fa_t": 0.0983,
+   "ufa_t": 0.6247,
+   "c_c_t": 0.0249,
+   "ufa_classical": 0.5297,
+   "fa_classical": 0.1269,
+   "c_c_classical": 0.0677
+  },
+  "cerebral_wm": {
+   "n": 18263,
+   "f_fw": 0.094,
+   "fa_t": 0.3148,
+   "ufa_t": 0.8426,
+   "c_c_t": 0.1395,
+   "ufa_classical": 0.8398,
+   "fa_classical": 0.4338,
+   "c_c_classical": 0.2809
+  },
+  "thalamus": {
+   "n": 808,
+   "f_fw": 0.0815,
+   "fa_t": 0.1874,
+   "ufa_t": 0.7722,
+   "c_c_t": 0.0595,
+   "ufa_classical": 0.7643,
+   "fa_classical": 0.3182,
+   "c_c_classical": 0.1974
+  },
+  "caudate": {
+   "n": 343,
+   "f_fw": 0.078,
+   "fa_t": 0.1108,
+   "ufa_t": 0.6792,
+   "c_c_t": 0.0267,
+   "ufa_classical": 0.6136,
+   "fa_classical": 0.1529,
+   "c_c_classical": 0.0722
+  },
+  "putamen": {
+   "n": 444,
+   "f_fw": 0.068,
+   "fa_t": 0.1149,
+   "ufa_t": 0.6934,
+   "c_c_t": 0.0283,
+   "ufa_classical": 0.6832,
+   "fa_classical": 0.1861,
+   "c_c_classical": 0.0854
+  },
+  "pallidum": {
+   "n": 176,
+   "f_fw": 0.0781,
+   "fa_t": 0.425,
+   "ufa_t": 0.8983,
+   "c_c_t": 0.2261,
+   "ufa_classical": 0.8999,
+   "fa_classical": 0.4508,
+   "c_c_classical": 0.2542
+  },
+  "hippo_amyg": {
+   "n": 446,
+   "f_fw": 0.1198,
+   "fa_t": 0.1252,
+   "ufa_t": 0.653,
+   "c_c_t": 0.0373,
+   "ufa_classical": 0.4472,
+   "fa_classical": 0.1978,
+   "c_c_classical": 0.2069
+  },
+  "accumbens_vdc": {
+   "n": 337,
+   "f_fw": 0.0852,
+   "fa_t": 0.3469,
+   "ufa_t": 0.8387,
+   "c_c_t": 0.1729,
+   "ufa_classical": 0.7992,
+   "fa_classical": 0.4125,
+   "c_c_classical": 0.3049
+  },
+  "cerebellum_ctx": {
+   "n": 4850,
+   "f_fw": 0.0747,
+   "fa_t": 0.1371,
+   "ufa_t": 0.7355,
+   "c_c_t": 0.0351,
+   "ufa_classical": 0.583,
+   "fa_classical": 0.2033,
+   "c_c_classical": 0.1299
+  },
+  "cerebellum_wm": {
+   "n": 1096,
+   "f_fw": 0.0807,
+   "fa_t": 0.2889,
+   "ufa_t": 0.8692,
+   "c_c_t": 0.1099,
+   "ufa_classical": 0.8788,
+   "fa_classical": 0.4034,
+   "c_c_classical": 0.2144
+  },
+  "brainstem": {
+   "n": 1057,
+   "f_fw": 0.0971,
+   "fa_t": 0.4869,
+   "ufa_t": 0.8644,
+   "c_c_t": 0.3212,
+   "ufa_classical": 0.8198,
+   "fa_classical": 0.4596,
+   "c_c_classical": 0.402
+  },
+  "csf_ventricles": {
+   "n": 717,
+   "f_fw": 0.9397,
+   "fa_t": 0.6433,
+   "ufa_t": 0.8128,
+   "c_c_t": 0.6376,
+   "ufa_classical": 0.377,
+   "fa_classical": 0.2297,
+   "c_c_classical": 0.5588
+  },
+  "background": {
+   "n": 17978,
+   "f_fw": 0.7081,
+   "fa_t": 0.2871,
+   "ufa_t": 0.7448,
+   "c_c_t": 0.149,
+   "ufa_classical": 0.3843,
+   "fa_classical": 0.1917,
+   "c_c_classical": 0.3219
+  }
+ },
+ "mask_voxels_mostly_fs_background": 17978
+}
