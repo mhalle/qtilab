@@ -37,7 +37,7 @@ The program needs Python 3.11 or later. The easiest way to run it is with [uv](h
 command runs a released version without a separate install step:
 
 ```
-uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help
+uvx --from git+https://github.com/mhalle/qtilab@v0.2.0 qtilab --help
 ```
 
 The first run downloads PyTorch and the other dependencies, so it takes a while. Later runs reuse them.
@@ -45,10 +45,10 @@ The first run downloads PyTorch and the other dependencies, so it takes a while.
 To install the command so that `qtilab` is on your path:
 
 ```
-uv tool install git+https://github.com/mhalle/qtilab@v0.1.0
+uv tool install git+https://github.com/mhalle/qtilab@v0.2.0
 ```
 
-The `@v0.1.0` part names a release. Use the same release for every scan in a study, so that all of them are processed
+The `@v0.2.0` part names a release. Use the same release for every scan in a study, so that all of them are processed
 with the same code. `qtilab --version` prints the version you are running. The `main` branch always holds the newest
 release. The `dev` branch is where development happens and may be unstable.
 

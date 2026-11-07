@@ -43,8 +43,8 @@ python scripts/fetch_hhs.py data/hhs      # 8.8 GB
 The command-line tool, from a release tag (stable):
 
 ```
-uv tool install git+https://github.com/mhalle/qtilab@v0.1.0      # then: qtilab fit ..., qtilab info ...
-uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help   # or run without installing
+uv tool install git+https://github.com/mhalle/qtilab@v0.2.0      # then: qtilab fit ..., qtilab info ...
+uvx --from git+https://github.com/mhalle/qtilab@v0.2.0 qtilab --help   # or run without installing
 ```
 
 **Branches:** `main` is stable; every release is a tag on it (`v0.1.0`, ...). `dev` is where work happens and may be unstable. CI (GitHub Actions: macOS, and Linux with CPU-only torch) runs the tests on both branches and on pull requests into `main`.
