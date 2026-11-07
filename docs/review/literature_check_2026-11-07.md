@@ -144,3 +144,38 @@ Read from the [arXiv HTML](https://arxiv.org/html/2608.27212), v3. Code: github.
 Their package was cloned to `work/ext/iRICE-CWLLS` (commit 8cf9c90, not committed here) and run directly, with CLARABEL standing in for MOSEK. All 12 of their tests pass. The comparison is in `scripts/rice_compare.py` → `results/rice_compare.json`; the results are in NOTES (2026-11-07, RICE entry).
 
 **Definition correction:** iRICE's `uFA` is Lasič's µFA, which leaves the isotropic variance out of the denominator. It is not QTI's (Westin's) µFA. On real HHS data it reads 0.008 (WM) to 0.024 (GM) higher for the same tissue.
+
+## Addendum 2: prior art for a batched GPU solver of constrained QTI (2026-11-07)
+
+**Question:** has anyone published a batched or GPU solver for QTI+ (or a similar per-voxel SDP in diffusion MRI)? This was asked after `qtilab/ipm.py` (NOTES 2026-11-07, IPM entry).
+
+**Method and limits:** web searches only, about eight queries. ISMRM abstracts are partly behind a login, and I read titles and summaries, not full texts. Absence here is weak evidence.
+
+**No GPU or batched solver for constrained QTI found.** The published routes to speed are:
+- **QTI+ software** (Boito et al., SoftwareX 2022; MATLAB): per-voxel SDPs through a CPU solver, sending 50 voxels at a time, run in parallel.
+  - The RICE paper (Yu et al., arXiv 2608.27212) calls full-cumulant SDP fitting "several tens of minutes per dataset". It reports its own CWLLS at under 30 s, 160× faster than QTI±.
+  - Our measurement: RICE CWLLS 51 s on HHS with 8 workers, CLARABEL instead of MOSEK.
+- **DIPY `SDPdc`** (CVXPY, per voxel). The DIPY tutorial reports about 15 min with SCS and 2 min with MOSEK for one slice. Our measurement on HHS: 12 ms per voxel with CLARABEL, 31 ms with SCS.
+- **Learned approximations of the constrained fit:**
+  - Boito & Özarslan, ISMRM 2023 #3780;
+  - Gödicke et al., ISMRM 2024 #3464 (an MLP trained on constrained fits; more than an hour reduced to seconds);
+  - Yu et al., ISMRM 2025 (unrolled network).
+  - These are fast but approximate, trained against the constrained fit rather than solving it.
+- **General GPU qMRI fitting:** GACELLE (Chan et al., arXiv 2511.22094; MATLAB) uses stochastic gradient descent and MCMC. Earlier GPU work covered NODDI, CHARMED and similar models. No positivity-constrained QTI was mentioned.
+
+**The technique itself is known outside dMRI:**
+- **qpth / OptNet** (Amos & Kolter, ICML 2017): a batched dense primal-dual interior-point solver on the GPU for many small QPs, reported more than 100× faster than Gurobi on batches. It is the same idea as ours, for QPs rather than SDPs.
+- **CuClarabel** (arXiv 2412.19027; Julia, callable from CVXPY): a GPU version of CLARABEL with batched cuSOLVER factorizations for many small PSD cones. It is benchmarked on FEM problems with 3 × 3 PSD constraints.
+  - Restrictions: every PSD cone must have the same dimension, at most 32. QTI+ has a 3 × 3 and a 6 × 6 cone per voxel, so it would need a reformulation, for example embedding ⟨D⟩ in a 6 × 6 block with equality constraints.
+  - In principle it could solve a whole brain's QTI+ as one block-separable conic problem. It is the closest general-purpose competitor.
+
+**Assessment:**
+- A batched GPU interior-point solver is a known technique (OptNet for QPs, CuClarabel for small PSD cones).
+- I found no application of it to constrained QTI or other per-voxel dMRI SDPs. The published fast alternatives either change the model (RICE) or approximate the fit with a network.
+- So the defensible claim is engineering, not a new algorithm: the exact QTI+ (dc) optimum with every voxel converged and strictly feasible output, validated against DIPY/CLARABEL, in about 1–12 s per session on CPU, MPS or CUDA. That is about 100× DIPY + CLARABEL on CPU (extrapolated from 3,000 voxels).
+- **Oracle-based next comparisons, if wanted:**
+  1. CuClarabel on the same HHS problem: a direct GPU interior-point competitor, the strongest test of whether a custom solver is needed.
+  2. The QTI+ MATLAB package with MOSEK: the reference implementation's own speed.
+  - Both need new installs (Julia, MATLAB and MOSEK licences).
+
+Sources: [QTI+ (Herberthson 2021)](https://www.sciencedirect.com/science/article/pii/S1053811921004754); [QTI+ implementation (SoftwareX)](https://github.com/ElsevierSoftwareX/SOFTX-D-21-00175); [RICE](https://arxiv.org/pdf/2608.27212); [Diffusivity-limited QTI](https://www.sciencedirect.com/science/article/pii/S2772516223000013); [DIPY QTI+ tutorial](https://docs.dipy.org/dev/examples_built/reconstruction/reconst_qtiplus.html); [Boito & Özarslan 2023](https://archive.ismrm.org/2023/3780.html); [Gödicke 2024](https://archive.ismrm.org/2024/3464.html); [Yu 2025](https://archive.ismrm.org/2025/1283.html); [GACELLE](https://arxiv.org/abs/2511.22094); [OptNet](https://arxiv.org/abs/1703.00443); [qpth](https://locuslab.github.io/qpth); [CuClarabel](https://arxiv.org/abs/2412.19027).
