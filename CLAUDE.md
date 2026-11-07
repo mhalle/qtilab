@@ -4,6 +4,16 @@ Research code for q-space trajectory imaging (QTI, tensor-valued diffusion MRI, 
 with a GPU-friendly PyTorch core. The scientific direction and findings so far are in
 `docs/NOTES.md`; read it before proposing new work.
 
+## Branches and releases
+
+- Work on `dev`; commit there. `main` is the stable branch others install from. Never commit research work directly to `main`.
+- **Release:**
+  1. Bump `version` in `pyproject.toml` on `dev`.
+  2. Run `uv run pytest`.
+  3. Merge `dev` into `main` (fast-forward when possible).
+  4. Tag `vX.Y.Z` on `main` and push the branch and tag. Push only when asked.
+- CI (`.github/workflows/tests.yml`, macOS, `uv sync --locked` then pytest and a CLI smoke test) runs on pushes to `main` and `dev` and on PRs into `main`. Keep `uv.lock` in sync with `pyproject.toml`, or `--locked` fails.
+
 ## Layout
 
 - `qtilab/` is the library:

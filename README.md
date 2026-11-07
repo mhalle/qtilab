@@ -38,6 +38,17 @@ scripts/fetch_dib.sh data/dib             # ~340 MB; prints QTILAB_DIB_ROOT to e
 python scripts/fetch_hhs.py data/hhs      # 8.8 GB
 ```
 
+## Install
+
+The command-line tool, from a release tag (stable):
+
+```
+uv tool install git+https://github.com/mhalle/qtilab@v0.1.0      # then: qtilab fit ..., qtilab info ...
+uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help   # or run without installing
+```
+
+**Branches:** `main` is stable; every release is a tag on it (`v0.1.0`, ...). `dev` is where work happens and may be unstable. CI (GitHub Actions, macOS) runs the tests on both branches and on pull requests into `main`.
+
 ## Command line
 
 `qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI data and writes scalar maps; `qtilab info` prints the protocol (shells, shapes, design rank) without fitting. From a checkout, run them with `uv run qtilab ...`; elsewhere, `uvx --from /path/to/qtilab qtilab ...` (or `uv tool install /path/to/qtilab`).

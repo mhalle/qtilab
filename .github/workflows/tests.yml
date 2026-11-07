@@ -1,0 +1,27 @@
+name: tests
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    # macOS: PyTorch's macOS wheels are small and CPU/MPS-only; the Linux PyPI wheels pull ~2.5 GB of CUDA libraries.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install (locked)
+        run: uv sync --locked
+      - name: Tests (no downloaded data needed)
+        run: uv run pytest -q
+      - name: CLI smoke test
+        run: |
+          uv run qtilab --version
+          uv run qtilab fit --help > /dev/null
