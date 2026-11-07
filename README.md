@@ -51,26 +51,28 @@ uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help   # or run 
 
 ## Command line
 
-`qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI data and writes scalar maps; `qtilab info` prints the protocol (shells, shapes, design rank) without fitting. From a checkout, run them with `uv run qtilab ...`; elsewhere, `uvx --from /path/to/qtilab qtilab ...` (or `uv tool install /path/to/qtilab`).
+`qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI series and writes scalar maps. `qtilab info` prints the protocol (shells, shapes, design rank) without fitting, and `qtilab docs` prints every command's help and this README as one Markdown text. The command line follows [tractline](https://github.com/mhalle/tractline)'s, so the two can be merged later.
 
 ```
-uv run qtilab fit \
-    --dwi lte.nii.gz --bval lte.bval --bvec lte.bvec --btens LTE \
-    --dwi ste.nii.gz --bval ste.bval --bvec ste.bvec --btens STE \
-    --mask brain_mask.nii.gz -o out/sub-01
+qtilab fit sub-01/dwi/sub-01_acq-linear_dwi.nii.gz sub-01/dwi/sub-01_acq-spherical_dwi.nii.gz --nifti out/sub-01
+qtilab info data/hhs/sub-01/ses-01/dwi/sub-01_ses-01_acq-*_dwi.nii
 ```
 
-- Each `--dwi` takes its own `--bval` and `--bvec` (FSL text files), in the same order. The series are concatenated and must already be on one grid: motion/eddy-corrected and aligned. The tool fits; it does not register.
-- `--btens` is `LTE`, `PTE` or `STE` for a whole series, or a text file with one entry per volume: a shape name, or b_Δ (1, −0.5, 0). One `--btens` applies to every series.
-- **Outputs:** `out/sub-01_<map>.nii.gz` (float32; MD in µm²/ms), `out/sub-01_mask.nii.gz` (the fitted voxels; collapsed fits with ⟨D⟩ = 0 are left out), and `out/sub-01_fit.json` (protocol, timing, convergence, solver statistics).
+- **Series** are positional NIfTI paths. Each one's `.bval` and `.bvec` are found beside it or by BIDS inheritance, as in tractline; `--bval`/`--bvec` (one per series) override them.
+  - Several series are concatenated and must already be on one grid: motion/eddy-corrected and aligned. qtilab fits; it does not register.
+- **The b-tensor shape** comes from the BIDS name (`acq-linear`, `acq-planar`, `acq-spherical`, or LTE/PTE/STE) or a `BTensorShape` sidecar key. Otherwise give `--btens`: `LTE`, `PTE` or `STE` for a whole series, or a file with one entry per volume (a shape, or b_Δ 1, −0.5, 0). Give one for all series, or one per series in order.
+- **Mask:** `--mask median-otsu` (the default: DIPY's median_otsu with its defaults, the same code as tractline's) or a mask NIfTI.
+- **Output:** `--nifti out/sub-01` writes `out/sub-01_<map>.nii.gz` (float32; MD in µm²/ms) and `out/sub-01_mask.nii.gz` (the fitted voxels; collapsed fits with ⟨D⟩ = 0 left out).
+  - It also writes a provenance sidecar `out/sub-01.qtilab.json`, as tractline writes `<trx>.tractline.json`. Paths in it are relative to the BIDS dataset unless `--record-absolute-paths`.
   - The default maps are `md fa ufa c_md c_mu c_c k_bulk k_shear mk k_mu`. Choose others with `--maps`, or `all`. `--params` also writes the 28 parameters.
+- **Messages and errors:** progress goes to standard error. `--json FILE` (or `-` for standard output) writes the run's summary, and `-q` prints nothing but errors. Input errors end in one line; `QTILAB_DEBUG=1` shows the traceback.
 - **Defaults:**
   - the interior-point solver (`--solver admm` for the original);
-  - the device, automatically: CUDA, then MPS, then CPU;
-  - float64 on CPU and float32 on GPUs;
-  - with no `--mask`, dipy's `median_otsu` on the mean b0 (an Otsu threshold if dipy is not installed).
+  - `--device auto`, which picks the Apple GPU, then CUDA, then the CPU;
+  - float64 on the CPU and float32 on a GPU.
   - `--method wls` gives the unconstrained, DIPY-equivalent WLS.
-- **Timing:** one HHS session (95,801 voxels, 107 volumes) takes 12 s on the M1 Max CPU and 4.5 s on MPS. That matches the library fit (the saved maps to ≤ 1.2e-3 in µFA, median 1e-7).
+- **Timing:** one HHS session (95,801 voxels, 107 volumes) takes 11 s on the M1 Max CPU and 4 s on MPS. That matches the library fit (the saved maps to ≤ 1.2e-3 in µFA, median 1e-7).
+  - Note: `prepare_session.py` uses a lighter median_otsu (radius 2, 1 pass), so its masks are larger than `--mask median-otsu`'s (95.8k vs 85.9k voxels on sub-01 ses-01).
 
 ## Validation (2 CPU cores, float64, DiB_217: 72,532 brain voxels × 217 volumes)
 

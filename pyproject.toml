@@ -29,5 +29,8 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["qtilab"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"README.md" = "qtilab/_docs/README.md"     # for `qtilab docs` in an installed copy
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

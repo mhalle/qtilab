@@ -24,7 +24,8 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   - `protocol.py`: one b-tensor per volume, and the design matrix.
   - `fit.py`: OLS, WLS, and constrained QTI+ via the batched interior-point solver (default since 2026-11-07) or ADMM (`solver="admm"`, behind all earlier results).
   - `ipm.py`: the interior-point solver (5–9× faster than ADMM and fully converged; NOTES 2026-11-07).
-  - `cli.py`: the click CLI, `uv run qtilab fit|info` (NIfTI in, maps out; README "Command line"). Tested in `tests/test_cli.py`.
+  - `cli.py`: the click CLI, `uv run qtilab fit|info|docs` (NIfTI in, maps out; README "Command line"; tested in `tests/test_cli.py`). It deliberately mirrors tractline's CLI (positional series, `--mask median-otsu`, `--device auto` with MPS first, `--json`/`-q`, a provenance sidecar, one-line errors with `QTILAB_DEBUG`) so the two can merge. Keep it parallel when changing either.
+  - `bids.py` and `mask.py` contain code copied from tractline v0.11.0 (BIDS file lookup, an exact median_otsu in torch).
   - `scalars.py`: the QTI scalars.
   - `simulate.py`: explicit tensor distributions.
     - Brain priors v1–v3 (`BRAIN_PRIORS`) and a generic prior (`sample_dtd`).
