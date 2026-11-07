@@ -1,0 +1,254 @@
+{
+ "sub": "data2",
+ "n_vox": 46616,
+ "reference": "_b6v4c2",
+ "alt_references": [
+  "_b6v4stickc2",
+  "_b6v4"
+ ],
+ "b2_network": "_b2v4",
+ "groups": {
+  "WM-like": {
+   "n": 7478,
+   "medians": {
+    "ufa": {
+     "reference": 0.851,
+     "classical b<=2": 0.869,
+     "classical b<=6": 0.807,
+     "net b<=2 _b2v4": 0.868,
+     "alt ref _b6v4stickc2": 0.859,
+     "alt ref _b6v4": 0.857
+    },
+    "md": {
+     "reference": 0.893,
+     "classical b<=2": 0.852,
+     "classical b<=6": 0.77,
+     "net b<=2 _b2v4": 0.893,
+     "alt ref _b6v4stickc2": 0.89,
+     "alt ref _b6v4": 0.896
+    },
+    "c_md": {
+     "reference": 0.152,
+     "classical b<=2": 0.05,
+     "classical b<=6": 0.043,
+     "net b<=2 _b2v4": 0.145,
+     "alt ref _b6v4stickc2": 0.146,
+     "alt ref _b6v4": 0.152
+    },
+    "ufa_t": {
+     "reference": 0.926,
+     "net b<=2 _b2v4": 0.936,
+     "alt ref _b6v4stickc2": 0.931,
+     "alt ref _b6v4": 0.927
+    },
+    "md_t": {
+     "reference": 0.83,
+     "net b<=2 _b2v4": 0.829,
+     "alt ref _b6v4stickc2": 0.826,
+     "alt ref _b6v4": 0.832
+    },
+    "c_md_t": {
+     "reference": 0.037,
+     "net b<=2 _b2v4": 0.031,
+     "alt ref _b6v4stickc2": 0.034,
+     "alt ref _b6v4": 0.043
+    },
+    "f_fw": {
+     "reference": 0.026,
+     "net b<=2 _b2v4": 0.026,
+     "alt ref _b6v4stickc2": 0.026,
+     "alt ref _b6v4": 0.025
+    }
+   },
+   "abs_diff": {
+    "ufa": {
+     "classical b<=2": 0.018,
+     "classical b<=6": 0.049,
+     "net b<=2 _b2v4": 0.016,
+     "alt ref _b6v4stickc2": 0.01,
+     "alt ref _b6v4": 0.009
+    },
+    "md": {
+     "classical b<=2": 0.04,
+     "classical b<=6": 0.122,
+     "net b<=2 _b2v4": 0.01,
+     "alt ref _b6v4stickc2": 0.007,
+     "alt ref _b6v4": 0.006
+    },
+    "c_md": {
+     "classical b<=2": 0.104,
+     "classical b<=6": 0.114,
+     "net b<=2 _b2v4": 0.013,
+     "alt ref _b6v4stickc2": 0.008,
+     "alt ref _b6v4": 0.007
+    },
+    "ufa_t": {
+     "net b<=2 _b2v4": 0.01,
+     "alt ref _b6v4stickc2": 0.007,
+     "alt ref _b6v4": 0.006
+    },
+    "md_t": {
+     "net b<=2 _b2v4": 0.009,
+     "alt ref _b6v4stickc2": 0.005,
+     "alt ref _b6v4": 0.006
+    },
+    "c_md_t": {
+     "net b<=2 _b2v4": 0.009,
+     "alt ref _b6v4stickc2": 0.005,
+     "alt ref _b6v4": 0.004
+    },
+    "f_fw": {
+     "net b<=2 _b2v4": 0.003,
+     "alt ref _b6v4stickc2": 0.002,
+     "alt ref _b6v4": 0.002
+    }
+   },
+   "signed_diff": {
+    "ufa": {
+     "classical b<=2": 0.015,
+     "classical b<=6": -0.037,
+     "net b<=2 _b2v4": 0.011,
+     "alt ref _b6v4stickc2": 0.007,
+     "alt ref _b6v4": 0.005
+    },
+    "md": {
+     "classical b<=2": -0.039,
+     "classical b<=6": -0.121,
+     "net b<=2 _b2v4": 0.0,
+     "alt ref _b6v4stickc2": -0.003,
+     "alt ref _b6v4": 0.0
+    },
+    "c_md": {
+     "classical b<=2": -0.103,
+     "classical b<=6": -0.113,
+     "net b<=2 _b2v4": -0.003,
+     "alt ref _b6v4stickc2": -0.006,
+     "alt ref _b6v4": -0.002
+    }
+   },
+   "ref_posterior_sd_ufa": 0.027,
+   "b2_posterior_sd_ufa": 0.026
+  },
+  "GM-like": {
+   "n": 13894,
+   "medians": {
+    "ufa": {
+     "reference": 0.597,
+     "classical b<=2": 0.624,
+     "classical b<=6": 0.561,
+     "net b<=2 _b2v4": 0.575,
+     "alt ref _b6v4stickc2": 0.602,
+     "alt ref _b6v4": 0.603
+    },
+    "md": {
+     "reference": 1.01,
+     "classical b<=2": 0.943,
+     "classical b<=6": 0.873,
+     "net b<=2 _b2v4": 0.997,
+     "alt ref _b6v4stickc2": 1.01,
+     "alt ref _b6v4": 1.008
+    },
+    "c_md": {
+     "reference": 0.252,
+     "classical b<=2": 0.106,
+     "classical b<=6": 0.069,
+     "net b<=2 _b2v4": 0.235,
+     "alt ref _b6v4stickc2": 0.255,
+     "alt ref _b6v4": 0.252
+    },
+    "ufa_t": {
+     "reference": 0.755,
+     "net b<=2 _b2v4": 0.712,
+     "alt ref _b6v4stickc2": 0.763,
+     "alt ref _b6v4": 0.76
+    },
+    "md_t": {
+     "reference": 0.841,
+     "net b<=2 _b2v4": 0.852,
+     "alt ref _b6v4stickc2": 0.84,
+     "alt ref _b6v4": 0.84
+    },
+    "c_md_t": {
+     "reference": 0.045,
+     "net b<=2 _b2v4": 0.051,
+     "alt ref _b6v4stickc2": 0.042,
+     "alt ref _b6v4": 0.046
+    },
+    "f_fw": {
+     "reference": 0.072,
+     "net b<=2 _b2v4": 0.064,
+     "alt ref _b6v4stickc2": 0.074,
+     "alt ref _b6v4": 0.071
+    }
+   },
+   "abs_diff": {
+    "ufa": {
+     "classical b<=2": 0.03,
+     "classical b<=6": 0.067,
+     "net b<=2 _b2v4": 0.031,
+     "alt ref _b6v4stickc2": 0.013,
+     "alt ref _b6v4": 0.011
+    },
+    "md": {
+     "classical b<=2": 0.062,
+     "classical b<=6": 0.139,
+     "net b<=2 _b2v4": 0.018,
+     "alt ref _b6v4stickc2": 0.009,
+     "alt ref _b6v4": 0.007
+    },
+    "c_md": {
+     "classical b<=2": 0.135,
+     "classical b<=6": 0.176,
+     "net b<=2 _b2v4": 0.024,
+     "alt ref _b6v4stickc2": 0.008,
+     "alt ref _b6v4": 0.007
+    },
+    "ufa_t": {
+     "net b<=2 _b2v4": 0.041,
+     "alt ref _b6v4stickc2": 0.014,
+     "alt ref _b6v4": 0.01
+    },
+    "md_t": {
+     "net b<=2 _b2v4": 0.017,
+     "alt ref _b6v4stickc2": 0.007,
+     "alt ref _b6v4": 0.005
+    },
+    "c_md_t": {
+     "net b<=2 _b2v4": 0.01,
+     "alt ref _b6v4stickc2": 0.004,
+     "alt ref _b6v4": 0.003
+    },
+    "f_fw": {
+     "net b<=2 _b2v4": 0.014,
+     "alt ref _b6v4stickc2": 0.005,
+     "alt ref _b6v4": 0.004
+    }
+   },
+   "signed_diff": {
+    "ufa": {
+     "classical b<=2": 0.015,
+     "classical b<=6": -0.041,
+     "net b<=2 _b2v4": -0.023,
+     "alt ref _b6v4stickc2": 0.006,
+     "alt ref _b6v4": 0.003
+    },
+    "md": {
+     "classical b<=2": -0.062,
+     "classical b<=6": -0.139,
+     "net b<=2 _b2v4": -0.014,
+     "alt ref _b6v4stickc2": -0.002,
+     "alt ref _b6v4": 0.001
+    },
+    "c_md": {
+     "classical b<=2": -0.135,
+     "classical b<=6": -0.176,
+     "net b<=2 _b2v4": -0.014,
+     "alt ref _b6v4stickc2": -0.0,
+     "alt ref _b6v4": -0.0
+    }
+   },
+   "ref_posterior_sd_ufa": 0.042,
+   "b2_posterior_sd_ufa": 0.044
+  }
+ }
+}

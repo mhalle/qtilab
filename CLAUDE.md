@@ -97,6 +97,14 @@ python scripts/prior_heldout_summary.py
 # cohort (H7): all 66 sessions, then regional ICCs (classical vs network)
 scripts/cohort_run.sh                                            # 1 h 45 min; resumable; logs in work/logs/cohort
 python scripts/cohort_icc.py --tag _v5                           # -> results/cohort_icc_v5.json
+# Cardiff high-b test (NOTES 2026-11-06 Cardiff entry, 2026-11-07); networks about 75 min each on MPS, one at a time
+scripts/fetch_cardiff.sh data/cardiff
+python scripts/prepare_cardiff.py data1; python scripts/motion_eddy_cardiff.py data1   # also data2
+python scripts/cardiff_extrapolation.py --sub data1 --priors 4 2 4stick 4sticks       # also --noise rician / none
+#   C = "12000 --protocol cardiff --prior 4 --snr 50 400 --test-snr 150 350 --exact-fw --td-ratio 1.5 --alpha 0 0.03 --pulsation 0.15 --gain-sd 0.01 --seed 0 --device mps --batch 2048"
+#   posterior_smoke.py $C --bmax 2 --tag _b2v4; $C --bmax 6 --tag _b6v4; $C --bmax 6 --channels 2 --tag _b6v4c2;
+#   $C --bmax 6 --channels 2 --prior-set ax_dd=0.99,1.0 --tag _b6v4stickc2
+python scripts/cardiff_networks.py --sub data1; python scripts/cardiff_networks.py --sub data2
 # v2-era results rerun with v4 (NOTES 2026-11-06, last entry)
 python scripts/posterior_smoke.py 0 --prior 4 --test-snr 20 35 --model results/posterior_smoke_hhs_v4long.pt --tag _v4long_test20_35
 python scripts/consistency.py B results/posterior_smoke_hhs_v4long.pt _v4long; python scripts/consistency.py C results/posterior_smoke_hhs_v4long.pt _v4long
@@ -193,5 +201,5 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
 6. **Real waveforms.** DiB ships its waveforms. For HHS, ask the authors (Erlangen waveforms, Martin et al. 2020). Replace the single spectral ratio with real encoding spectra.
 7. **Cardiff high-b test: started** (NOTES 2026-11-06, Cardiff entry).
    - The simulator misses real b = 3–6 signal by 5–30%: WM LTE low, GM LTE/PTE high. Stick axons halve the WM part. Classical extrapolation fails.
-   - Next: `scripts/cardiff_networks.py`, b ≤ 2 estimates against b ≤ 6 reference networks (`_b6v4c2`, `_b6v4stickc2`, `_b6v4`).
-   - Then fix the prior's high-b behaviour (sticks; a GM exchange-like term).
+   - `scripts/cardiff_networks.py` (NOTES 2026-11-07): b ≤ 2 and b ≤ 6 networks (`_b2v4`; `_b6v4c2`, `_b6v4stickc2`, `_b6v4`) agree to ~0.01 in WM and differ by 0.02–0.04 in GM tissue µFA. The b ≤ 6 reference shares the prior and in simulation barely beats b ≤ 2, so this is not an accuracy test.
+   - Next: a GM prior with faster high-b decay (exchange-like term), then check whether the GM gap closes.

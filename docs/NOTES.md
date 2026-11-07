@@ -1174,3 +1174,46 @@ Median signed error (prediction − observed) / observed, data1 / data2:
 - The prior's high-b behaviour is wrong by 5–30% in the directions above. The network's truncation correction comes from that behaviour, so it is approximate.
 - How much this moves µFA and C_MD estimated from b ≤ 2 is the next test: `scripts/cardiff_networks.py`. It compares a b ≤ 2 network and classical QTI against b ≤ 6 reference networks, with two-channel noise, under v4 and v4-sticks, plus a Rician-noise reference for noise-model sensitivity.
 
+
+## 2026-11-07: Cardiff networks — b ≤ 2 and b ≤ 6 networks agree in WM, disagree in GM tissue µFA; the reference is not independent
+
+**Setup** (`scripts/cardiff_networks.py` → `results/cardiff_networks_{data1,data2}.json`).
+- **Networks:** prior v4 with v5's forward model at Cardiff's SNR (`--snr 50 400`), 12,000 × 2048 steps on MPS, about 75 min each.
+  - `_b2v4`: b ≤ 2, 179 volumes, single-channel noise (the floor is irrelevant there; the lowest b ≤ 2 shell is about 15× the floor).
+  - Reference `_b6v4c2`: b ≤ 6, 470 volumes, two-channel noise (`--channels 2`).
+  - Alternative references: `_b6v4stickc2` (stick axons, `--prior-set ax_dd=0.99,1.0`) and `_b6v4` (single-channel Rician).
+- **Applied to** the motion/eddy-corrected data, each in its own b-range. Posterior means from n = 50 samples. Classes are from the b ≤ 2 classical fit: WM-like FA > 0.4 (about 7,500 voxels), GM-like FA < 0.2 and 0.5 < MD < 1.2 (about 14,000).
+
+**In simulation the b ≤ 6 network knows little more than the b ≤ 2 one.** Median |error| against truth (`results/posterior_smoke_cardiff_*.json`, test SNR 150–350):
+
+| | WM µFA_t | WM µFA | WM MD_t | GM µFA_t | GM MD_t | GM C_MD_t | GM f_fw |
+|---|---|---|---|---|---|---|---|
+| b ≤ 2 network | 0.013 | 0.021 | 0.013 | 0.039 | 0.034 | 0.020 | 0.025 |
+| b ≤ 6 network | 0.011 | 0.021 | 0.012 | 0.030 | 0.027 | 0.015 | 0.021 |
+
+- Under the prior and at this SNR, b ≤ 2 already carries most of what b ≤ 6 adds: no gain in WM and about 25% in GM.
+- On real data the posterior SD of µFA is the same for both (WM 0.027, GM 0.042).
+- **So the "reference" is not a better-informed truth.** It is the same prior, given more data that the prior says is nearly redundant. Agreement with it cannot validate the b ≤ 2 network.
+
+**Real data,** regional medians, data1 / data2:
+
+| | WM µFA_t | WM µFA | WM MD | GM µFA_t | GM µFA | GM MD | GM f_fw |
+|---|---|---|---|---|---|---|---|
+| reference b ≤ 6 (c2) | 0.928 / 0.926 | 0.853 / 0.851 | 0.876 / 0.893 | 0.772 / 0.755 | 0.619 / 0.597 | 1.018 / 1.010 | 0.070 / 0.072 |
+| b ≤ 6, stick axons | 0.935 / 0.931 | 0.861 / 0.859 | 0.871 / 0.890 | 0.775 / 0.763 | 0.617 / 0.602 | 1.016 / 1.010 | 0.072 / 0.074 |
+| b ≤ 6, Rician | 0.930 / 0.927 | 0.861 / 0.857 | 0.878 / 0.896 | 0.772 / 0.760 | 0.623 / 0.603 | 1.014 / 1.008 | 0.066 / 0.071 |
+| **b ≤ 2 network** | 0.940 / 0.936 | 0.870 / 0.868 | 0.880 / 0.893 | **0.754 / 0.712** | 0.622 / 0.575 | 1.011 / 0.997 | 0.059 / 0.064 |
+| classical b ≤ 2 | — | 0.869 / 0.869 | 0.839 / 0.852 | — | 0.646 / 0.624 | 0.953 / 0.943 | — |
+| classical b ≤ 6 | — | 0.810 / 0.807 | 0.758 / 0.770 | — | 0.561 / 0.561 | 0.876 / 0.873 | — |
+
+- **Reference sensitivity.** Stick axons and single-channel noise move the reference by ≤ 0.008 in µFA_t and ≤ 0.006 in MD (voxelwise median |diff| 0.005–0.010). The noise model matters little at b ≤ 6, where the floor is at most 1/2 of the signal.
+- **WM.** The b ≤ 2 network is within about 0.01 of the reference: µFA_t +0.010, µFA +0.011–0.017, MD 0.000–0.004, f_fw identical, in both subjects. In simulation the expected difference is about 0 (the two networks' biases match). So 0.01 is a real-data discrepancy, but about the size of the reference's own prior/noise sensitivity.
+- **GM.** The b ≤ 2 network's tissue µFA is lower, by 0.018 (data1) and 0.043 (data2), and its f_fw lower by 0.01. Simulation predicts about −0.005, and the reference variants move ≤ 0.008. This is the shell the extrapolation test found mis-modelled: the prior over-predicts GM LTE/PTE signal at b = 4.5–6 by 10–29%. When the data stop following the prior's forward model, adding b ≤ 6 data moves the posterior. **It does not say which estimate is right.** Neither variant tested changes GM (stick axons are WM only).
+- **Classical b ≤ 2.** Its MD sits below the reference by 0.034–0.039 (WM) and 0.062–0.063 (GM). That matches its simulated truncation bias against the true full distribution (−0.032 WM, −0.062 GM). Its µFA is 0.012–0.015 above the reference in both classes. Its C_MD (0.05 WM, 0.10 GM) is a third to a half of the network's full C_MD, which is mostly free water (f_fw 0.026 in WM is worth about 0.12 of C_MD) and not identified at b ≤ 2 by either method.
+- **Classical b ≤ 6** drifts further from the reference, the cumulant expansion's breakdown. Its MD drift (−0.12 WM, −0.14 GM) is close to its simulated drift against truth (−0.11, −0.13), and so is WM µFA (−0.04 vs −0.05). GM µFA drifts more than simulated (−0.04 to −0.06 vs −0.01), again in GM.
+
+**What it means:**
+- **This test cannot measure the network's accuracy.** The b ≤ 6 reference shares the prior, and under that prior it is barely better informed. A prior-independent reference needs an independent model of the high-b signal, or a phantom.
+- **What it does show:** on real data the b ≤ 2 and b ≤ 6 networks agree to about 0.01 in WM and disagree by 0.02–0.04 in GM tissue µFA, subject-dependent, where the prior's high-b signal is known to be wrong. That bounds how much of the GM tissue µFA is set by the prior's assumed high-b behaviour: about 0.02–0.04, or 3–6%.
+- **Classical b ≤ 2 behaves on real data as simulation predicts** relative to the network, consistent with, but not proof of, the truncation correction being right in direction and size for MD.
+- Next, if pursued: a GM prior with faster high-b decay (an exchange-like term or a non-Gaussian neurite compartment) and check whether the b ≤ 2 vs b ≤ 6 GM gap closes. Two subjects only.
