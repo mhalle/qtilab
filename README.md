@@ -38,6 +38,29 @@ scripts/fetch_dib.sh data/dib             # ~340 MB; prints QTILAB_DIB_ROOT to e
 python scripts/fetch_hhs.py data/hhs      # 8.8 GB
 ```
 
+## Command line
+
+`qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI data and writes scalar maps; `qtilab info` prints the protocol (shells, shapes, design rank) without fitting. From a checkout, run them with `uv run qtilab ...`; elsewhere, `uvx --from /path/to/qtilab qtilab ...` (or `uv tool install /path/to/qtilab`).
+
+```
+uv run qtilab fit \
+    --dwi lte.nii.gz --bval lte.bval --bvec lte.bvec --btens LTE \
+    --dwi ste.nii.gz --bval ste.bval --bvec ste.bvec --btens STE \
+    --mask brain_mask.nii.gz -o out/sub-01
+```
+
+- Each `--dwi` takes its own `--bval` and `--bvec` (FSL text files), in the same order. The series are concatenated and must already be on one grid: motion/eddy-corrected and aligned. The tool fits; it does not register.
+- `--btens` is `LTE`, `PTE` or `STE` for a whole series, or a text file with one entry per volume: a shape name, or b_Δ (1, −0.5, 0). One `--btens` applies to every series.
+- **Outputs:** `out/sub-01_<map>.nii.gz` (float32; MD in µm²/ms), `out/sub-01_mask.nii.gz` (the fitted voxels; collapsed fits with ⟨D⟩ = 0 are left out), and `out/sub-01_fit.json` (protocol, timing, convergence, solver statistics).
+  - The default maps are `md fa ufa c_md c_mu c_c k_bulk k_shear mk k_mu`. Choose others with `--maps`, or `all`. `--params` also writes the 28 parameters.
+- **Defaults:**
+  - the interior-point solver (`--solver admm` for the original);
+  - the device, automatically: CUDA, then MPS, then CPU;
+  - float64 on CPU and float32 on GPUs;
+  - with no `--mask`, dipy's `median_otsu` on the mean b0 (an Otsu threshold if dipy is not installed).
+  - `--method wls` gives the unconstrained, DIPY-equivalent WLS.
+- **Timing:** one HHS session (95,801 voxels, 107 volumes) takes 12 s on the M1 Max CPU and 4.5 s on MPS. That matches the library fit (the saved maps to ≤ 1.2e-3 in µFA, median 1e-7).
+
 ## Validation (2 CPU cores, float64, DiB_217: 72,532 brain voxels × 217 volumes)
 
 | | result |
