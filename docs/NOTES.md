@@ -1270,7 +1270,7 @@ Median signed error (prediction − observed) / observed, data1 / data2:
 
 ## 2026-11-07: batched interior-point solver for the constrained fit — 5–9× faster than ADMM and fully converged
 
-Prompted by RICE's per-voxel interior-point solves (previous entry): the useful lesson from their solver was the algorithm class, not the code. `qtilab/ipm.py` is a batched log-barrier method for the same QTI+ (dc) problem as `fit._admm`, selected with `fit.constrained(..., solver="ipm")`. **ADMM stays the default** until we decide to switch: every existing result used it.
+Prompted by RICE's per-voxel interior-point solves (previous entry): the useful lesson from their solver was the algorithm class, not the code. `qtilab/ipm.py` is a batched log-barrier method for the same QTI+ (dc) problem as `fit._admm`, selected with `fit.constrained(..., solver="ipm")`. **It became the default the same day** (see the end of this entry); everything before then used ADMM.
 
 **Method.**
 - **Central path.** It follows the central path of t f(x) − log det ⟨D⟩ − log det C (ν = 9) with one Newton step per voxel per iteration.
@@ -1331,8 +1331,16 @@ Prompted by RICE's per-voxel interior-point solves (previous entry): the useful 
   - float32: IPM 0.8 s (98% converged) vs ADMM 4.6 s (70%). µFA vs the tight float64 fit: p99 2e-4 for both, max 7e-4 (IPM) vs 6e-4 (ADMM).
   - float64: IPM 3.0 s (100%) vs ADMM 12.6 s (85%). µFA within 8e-7 of the tight fit (ADMM 7e-4).
   - **Memory:** IPM's peak was 16 GB in float32 and 32 GB in float64 for 59k constrained voxels in one call, about 3× ADMM's 5.3 GB. The GPU chunk size had been set from ADMM's estimate, so a 16–24 GB card could have run out of memory.
-  - Fixed: on GPUs the constrained voxels now go to `ipm.barrier` in sub-batches sized from free memory at 75k × element size bytes per voxel (`fit._ipm_chunk`). That gives one call for HHS on the M1 Max (74k) and the L40S in float32 (61k), and about 29k on a 24 GB card. Sub-batching is tested to give identical results. The fix is not yet re-run on CUDA.
+  - **Cause:** the start point's `eigh` ran on all constrained voxels in one call, bypassing `tensors.batched`. CUDA's batched eigensolver workspace is about 250 kB per matrix, so this one call accounts for about 15 GB at 59k voxels.
+  - **Fixed:** that call now goes through `tensors.batched` like every other eigensolver.
+  - **Tensor memory:** measured on MPS, 21 kB per constrained voxel in float32 (about 7 28 × 28 matrices alive at the Cholesky), 1.1 GB for the session.
+  - **Sub-batching:** on GPUs the constrained voxels go to `ipm.barrier` in sub-batches sized from free memory at 2× that (`fit._ipm_chunk`). Sub-batching is tested to give identical results.
+  - The CUDA peak after the fix has not been re-measured.
 
-**Open decisions:**
-- Make IPM the default solver. It is faster, fully converged and strictly feasible, but every number in these notes so far is ADMM's, which agrees to ≤ 1e-3 in µFA.
-- Add RICE's D_max bound. In a barrier formulation it is one more log det term.
+**Default switched to IPM** (`fit.constrained` without `solver=`).
+- **Effect on saved results:** refitting HHS sub-01 ses-01 (the session behind `work/hhs_sub01_ses01_qti.npz`) moves every map by a median of ≤ 2e-7. The p99 is ≤ 1.7e-4 and the max is 1.2e-3 in µFA and 8e-3 in C_c (which LTE+STE does not identify). The WM median shift is about 1e-7.
+- **Nothing downstream needs regenerating;** everything computed with ADMM stands.
+- **Fit time** in `prepare_session.py`: 12 s instead of about 2 min.
+- Scripts that pass ADMM's options now ask for it explicitly: `validate_dipy_hhs.py`, `bench_constrained.py`, `bench_ipm.py` and the tests.
+
+**Open:** RICE's D_max bound (one more log det term in the barrier). Re-measure the CUDA memory peak after the `eigh` fix.

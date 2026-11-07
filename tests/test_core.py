@@ -101,7 +101,7 @@ def test_ipm_matches_tight_admm(drop_pte):
     X, S = p.design_matrix(), sim["signal"]
     bad = fit.violates(fit.wls(X, S))
     assert bad.float().mean() > 0.2
-    pa, _ = fit.constrained(X, S, eps_abs=1e-10, eps_rel=1e-8, max_iter=20000)
+    pa, _ = fit.constrained(X, S, solver="admm", eps_abs=1e-10, eps_rel=1e-8, max_iter=20000)
     pi, info = fit.constrained(X, S, solver="ipm")
     assert info.converged_fraction == 1.0 and info.extra["failed_fraction"] == 0.0
     assert not bool(fit.violates(pi).any())

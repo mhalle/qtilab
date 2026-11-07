@@ -65,7 +65,7 @@ def timed(dev, fn):
     return out, time.perf_counter() - t
 
 
-RUNS = {"admm": {}, "admm_300": {"max_iter": 300}, "ipm": {"solver": "ipm"},
+RUNS = {"admm": {"solver": "admm"}, "admm_300": {"solver": "admm", "max_iter": 300}, "ipm": {"solver": "ipm"},
         "ipm_nols": {"solver": "ipm", "line_search": False}, "ipm_1e-7": {"solver": "ipm", "eps_rel": 1e-7}}
 
 
@@ -92,7 +92,7 @@ for name in args.data:
     for dev in args.devices:
         dt = torch.float64 if dev == "cpu" else torch.float32
         Xd, Sd = X.to(dev, dt), torch.as_tensor(S, dtype=dt, device=dev)
-        fit.constrained(Xd, Sd[:2000], solver="ipm"); fit.constrained(Xd, Sd[:2000])      # warm-up
+        fit.constrained(Xd, Sd[:2000], solver="ipm"); fit.constrained(Xd, Sd[:2000], solver="admm")      # warm-up
         _, t_wls = timed(dev, lambda: fit.violates(fit.wls(Xd, Sd)))
         for rname, kw in RUNS.items():
             (p, info), t = timed(dev, lambda: fit.constrained(Xd, Sd, **kw))

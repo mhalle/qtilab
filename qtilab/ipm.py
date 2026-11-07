@@ -118,7 +118,7 @@ def _interior_start(x, frac=0.1):
     out = x.clone()
     for sl, m, v in ((slice(1, 7), mat3, vec6), (slice(7, 28), mat6, vec21)):
         M = m(x[:, sl])
-        w, Q = torch.linalg.eigh(M)
+        w, Q = batched(torch.linalg.eigh, M)        # CUDA's batched eigh workspace is ~250 kB per matrix
         n = M.shape[-1]
         wc = w.clamp_min(0)
         scale = wc.mean(-1, keepdim=True)

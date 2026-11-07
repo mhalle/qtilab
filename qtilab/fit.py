@@ -6,10 +6,11 @@ The constrained fit solves, per voxel,
 
     minimize 1/2 || W (X beta - y) ||^2   s.t.  <D>(beta) >= 0,  C(beta) >= 0
 
-which is DIPY's SDPdc problem (same weights, same objective up to a monotone transform),
-by ADMM. The x-update is one cached Cholesky solve per voxel; the z-update is an
-eigenvalue clip of a 3x3 and a 6x6 matrix. Only voxels whose unconstrained WLS solution
-violates a constraint go through ADMM.
+which is DIPY's SDPdc problem (same weights, same objective up to a monotone transform).
+Only voxels whose unconstrained WLS solution violates a constraint are re-solved, by default with the
+batched interior-point method in ``ipm.py`` (one 28 x 28 Newton system per voxel per step, ~20 steps),
+or with ADMM (``solver="admm"``): the x-update is one cached Cholesky solve per voxel, the z-update an
+eigenvalue clip of a 3x3 and a 6x6 matrix.
 """
 from __future__ import annotations
 
@@ -228,14 +229,15 @@ def _admm(H, g, x0, rho=1.0, max_iter=1000, eps_abs=1e-6, eps_rel=1e-4,
     return z * s, it, 1.0 - act.numel() / V
 
 
-IPM_BYTES_PER_VOXEL = 75_000   # x element size: peak per constrained voxel of ipm.barrier (CUDA, 2026-11-07)
+IPM_BYTES_PER_VOXEL = 12_000   # x element size, per constrained voxel of ipm.barrier: 2x the measured 5.3k (21 kB in float32)
 IPM_STATS = ("max_steps", "failed_fraction", "failed_near_target", "failed_dc", "failed_newton", "uncertified_fraction")
 
 
 def _ipm_chunk(H, chunk):
     """Constrained voxels per ``ipm.barrier`` call: ``chunk`` if given; all on CPU; on a GPU as many as fit in
-    ``GPU_MEMORY_FRACTION`` of free memory. Measured on an L40S, HHS (59k constrained voxels in one call):
-    16 GB peak in float32 and 32 GB in float64, about 3x ADMM's (``_bytes_per_voxel`` is sized for ADMM)."""
+    ``GPU_MEMORY_FRACTION`` of free memory. Its tensors take about 7 28 x 28 matrices per voxel (21 kB in float32,
+    measured on MPS). On CUDA the batched eigensolvers add a fixed workspace per 16k-matrix slice
+    (``tensors.batched``); an unbatched ``eigh`` in the start point once made that 16 GB for one HHS session."""
     if chunk is not None:
         return int(chunk)
     free = _gpu_free_bytes(H.device) if H.device.type != "cpu" else None
@@ -244,7 +246,7 @@ def _ipm_chunk(H, chunk):
     return max(GPU_CHUNK_MIN, int(GPU_MEMORY_FRACTION * free) // (H.element_size() * IPM_BYTES_PER_VOXEL))
 
 
-def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", ipm_chunk=None, **solver_kw):
+def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="ipm", ipm_chunk=None, **solver_kw):
     """QTI+ (dc): WLS with <D> >= 0 and C >= 0. Returns (params, FitInfo).
 
     For a rank-deficient protocol (e.g. LTE + STE only, rank 23) the objective is flat along the
@@ -253,8 +255,8 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", ipm_c
     the standard scalars do not depend on the unobserved directions.
 
     ``chunk``: voxels per batch, default 20k on CPU and 250k on GPUs (see ``_chunk``).
-    ``solver``: "admm" (``_admm``) or "ipm" (``ipm.barrier``, a batched interior-point method); ``solver_kw``
-    go to it. ``ipm_chunk``: constrained voxels per interior-point call (default: see ``_ipm_chunk``).
+    ``solver``: "ipm" (default since 2026-11-07; ``ipm.barrier``, a batched interior-point method) or "admm"
+    (``_admm``, the solver behind every result before then; it agrees to <= 1e-3 in µFA); ``solver_kw`` go to it. ``ipm_chunk``: constrained voxels per interior-point call (default: see ``_ipm_chunk``).
     """
     chunk = _chunk(S, chunk)
     rank = int(torch.linalg.matrix_rank(X))

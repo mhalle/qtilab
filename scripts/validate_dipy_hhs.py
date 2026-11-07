@@ -57,9 +57,9 @@ print(f"{bad.mean():.0%} of {len(bad)} brain voxels violate under WLS; testing {
 
 # ---- fits
 res = {}
-t = time.perf_counter(); res["qtilab"], info = fit.constrained(X, St); t_q = time.perf_counter() - t
+t = time.perf_counter(); res["qtilab"], info = fit.constrained(X, St, solver="admm"); t_q = time.perf_counter() - t
 t = time.perf_counter()
-res["qtilab_tight"], info_t = fit.constrained(X, St, eps_abs=1e-9, eps_rel=1e-7, max_iter=20000)
+res["qtilab_tight"], info_t = fit.constrained(X, St, solver="admm", eps_abs=1e-9, eps_rel=1e-7, max_iter=20000)
 t_qt = time.perf_counter() - t
 t = time.perf_counter(); res["qtilab_ipm"], info_i = fit.constrained(X, St, solver="ipm"); t_i = time.perf_counter() - t
 t = time.perf_counter()

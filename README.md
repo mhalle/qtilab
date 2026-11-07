@@ -12,9 +12,9 @@ over diffusion tensor distributions.
   the 28-column design matrix, and b_Δ. Units are ms/µm².
 - `qtilab/fit.py` — batched OLS, WLS (DIPY-equivalent weights) and the constrained fit
   (QTI+ "dc": ⟨D⟩ ⪰ 0, ℂ ⪰ 0).
-  - The constrained fit uses ADMM with per-voxel block scaling and adaptive ρ.
-  - Converged voxels drop out of the working set.
-  - Only voxels that violate a constraint under WLS go through ADMM.
+  - Only voxels that violate a constraint under WLS are re-solved. Converged voxels drop out of the working set.
+  - The default solver (`qtilab/ipm.py`, since 2026-11-07) is a batched log-barrier interior-point method: one 28 × 28 Newton system per voxel per step, about 20 steps.
+  - The original solver, ADMM with per-voxel block scaling and adaptive ρ, is `solver="admm"`. The two agree to ≤ 1e-3 in µFA, and the interior-point solver is 5–9× faster and converges every voxel (docs/NOTES.md, 2026-11-07).
 - `qtilab/scalars.py` — MD, FA, µFA, C_MD, C_μ, C_M, C_c, K_bulk, K_shear, MK, K_μ,
   V_MD, V_shear and V_iso. These match DIPY's `QtiFit` property by property.
 - `qtilab/simulate.py` — hierarchical prior over discrete tensor distributions:

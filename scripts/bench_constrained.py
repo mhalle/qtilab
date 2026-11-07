@@ -31,7 +31,7 @@ if not cache.exists():
 ref = np.load(cache)
 idx = ref["idx"]
 
-for kw in [dict(), dict(eps_abs=1e-7, eps_rel=1e-5), dict(solver="ipm")]:
+for kw in [dict(solver="admm"), dict(solver="admm", eps_abs=1e-7, eps_rel=1e-5), dict(solver="ipm")]:
     t = time.perf_counter()
     pc, info = fit.constrained(X, St, **kw)
     dt = time.perf_counter() - t
