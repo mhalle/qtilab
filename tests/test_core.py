@@ -161,3 +161,15 @@ def test_forward_model_options():
     assert abs(float((b.S[:, 0] - 1).std()) - 0.02) < 0.002 and float((clean.S[:, 0] - 1).abs().max()) < 1e-4
     td = posterior.simulate_batch(p, 2000, td_ratio=1.5, gain_sd=0.01, pulsation=0.15, **kw)
     assert torch.isfinite(td.x).all() and torch.isfinite(td.y).all()
+
+
+def test_multichannel_noise_floor():
+    """channels = 1 is the Rician draw unchanged; channels = 2 raises the zero-signal floor to non-central chi's."""
+    S = torch.zeros(20000, 4, dtype=torch.float64)
+    sig = torch.ones(20000, dtype=torch.float64)
+    a = simulate.rician(S, sig, torch.Generator().manual_seed(1))
+    b = simulate.rician(S, sig, torch.Generator().manual_seed(1), channels=1)
+    assert torch.equal(a, b)
+    assert abs(a.mean().item() - (torch.pi / 2) ** 0.5) < 0.02            # Rayleigh mean
+    c = simulate.rician(S, sig, torch.Generator().manual_seed(1), channels=2)
+    assert abs(c.mean().item() / c.std().item() - 2.75) < 0.05              # chi, 4 degrees of freedom

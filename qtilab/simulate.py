@@ -309,12 +309,19 @@ def signal(d6, B6, chunk=8192, weights=None):
     return torch.cat(out)
 
 
-def rician(S, sigma, g=None):
-    """Magnitude of S + complex Gaussian noise with per-voxel sd ``sigma`` (V,)."""
+def rician(S, sigma, g=None, channels=1):
+    """Magnitude of S + complex Gaussian noise with per-voxel sd ``sigma`` (V,).
+
+    ``channels`` > 1: a sum-of-squares magnitude over that many coil channels with the signal in one, i.e.
+    non-central chi with 2 x channels degrees of freedom (its floor at zero signal is higher than Rician's).
+    channels = 1 draws exactly as before."""
     s = sigma.unsqueeze(-1)
     n1 = torch.randn(S.shape, generator=g, dtype=S.dtype, device=S.device) * s
     n2 = torch.randn(S.shape, generator=g, dtype=S.dtype, device=S.device) * s
-    return torch.sqrt((S + n1) ** 2 + n2 ** 2)
+    p = (S + n1) ** 2 + n2 ** 2
+    for _ in range(2 * (channels - 1)):
+        p = p + (torch.randn(S.shape, generator=g, dtype=S.dtype, device=S.device) * s) ** 2
+    return torch.sqrt(p)
 
 
 def simulate(protocol, V, M=48, prior=Prior(), g=None, noise=True, dtype=torch.float64, device="cpu"):

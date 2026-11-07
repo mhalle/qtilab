@@ -6,8 +6,11 @@ results/cardiff_{sub}_checks.json:
 * b-value check: in CSF (b0-bright voxels with LTE b = 1 attenuation near free water) an isotropic Gaussian
   compartment attenuates the same at a given b whatever the b-tensor shape, so -ln(S/S0)/b at b = 1 should
   agree across LTE, PTE and STE if the nominal b-values are right;
-* noise: sigma from the 31 b0s (pooled within-run SD), b0 SNR in tissue, and each shell's powder-averaged
-  signal against the Rician floor (sigma sqrt(pi/2));
+* noise: the b0 repeat variation (pooled within-run SD of the 31 b0s: mostly motion and physiology, not
+  thermal noise; about 6x the thermal sigma before motion correction), and the thermal noise and floor from the
+  STE plateau (b = 10.5-12, where CSF and tissue level off together): the plateau mean is the magnitude floor,
+  and its SD with the mean/SD ratio (non-central chi, N effective channels) gives sigma and b0 SNR. Each shell's
+  powder-averaged signal is printed against the floor;
 * classical constrained QTI (CPU, float64) at b_max = 2, 3, 4.5, 6: regional medians in WM-like
   (FA > 0.4) and GM-like (FA < 0.2, MD < 1.2) tissue, the apparent values' drift with the b-range.
 
@@ -63,11 +66,23 @@ ste02 = (shapes == "STE") & (np.abs(b - 0.2) < 0.03)
 res["b_check_csf"]["STE_b0.2"] = round(float(np.median(-np.log(np.clip(Sn[:, ste02].mean(1), 1e-4, None))[csf] / 0.2)), 3)
 print(f"  STE b = 0.2: CSF {res['b_check_csf']['STE_b0.2']:.3f}")
 
-snr = s0[:, 0] / sigma
-res["b0_snr_tissue_median"] = round(float(np.median(snr[tissue])), 1)
-floor = np.median((sigma * np.sqrt(np.pi / 2) / s0[:, 0])[tissue])
-res["rician_floor_rel"] = round(float(floor), 4)
-print(f"b0 SNR in tissue: median {np.median(snr[tissue]):.0f}; Rician floor {floor:.4f} of S0")
+from scipy.special import gammaln  # noqa: E402
+res["b0_repeat_rel_sd_tissue_median"] = round(float(np.median((sigma / s0[:, 0])[tissue])), 4)
+plat = (shapes == "STE") & (b > 10.4)
+pm, psd = Sn[:, plat].mean(1), Sn[:, plat].std(1, ddof=1)
+ratio = float(np.median((pm / psd)[csf]))
+Ns = np.linspace(1, 16, 1501)
+cN = np.sqrt(2) * np.exp(gammaln(Ns + 0.5) - gammaln(Ns))
+Neff = float(Ns[np.argmin(np.abs(cN / np.sqrt(2 * Ns - cN ** 2) - ratio))])
+c = float(np.sqrt(2) * np.exp(gammaln(Neff + 0.5) - gammaln(Neff)))
+sig_t = psd / np.sqrt(2 * Neff - c * c)
+floor = float(np.median(pm[tissue]))
+res |= {"plateau_mean_over_sd_csf": round(ratio, 2), "n_eff": round(Neff, 2), "floor_rel": round(floor, 4),
+        "thermal_sigma_rel_tissue_median": round(float(np.median(sig_t[tissue])), 4),
+        "b0_snr_thermal_tissue_median": round(float(np.median(1 / sig_t[tissue])), 0)}
+print(f"b0 repeat variation (non-thermal) {res['b0_repeat_rel_sd_tissue_median']:.4f} of S0; STE plateau: floor {floor:.4f} of S0, "
+      f"mean/SD {ratio:.2f} in CSF -> N_eff {Neff:.2f}, thermal sigma {res['thermal_sigma_rel_tissue_median']:.4f}, "
+      f"b0 SNR {res['b0_snr_thermal_tissue_median']:.0f}")
 res["shell_signal_tissue"] = {}
 for sh in ("LTE", "PTE", "STE"):
     row = {}

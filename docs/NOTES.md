@@ -1114,3 +1114,63 @@ This is the full-cohort version of the 2026-11-06 pilot lesson: a lower test–r
 - **H7, answered for regional medians:** the network adds accuracy (bias correction), not reliability. Exceptions are WM FA_t (better) and GM MD_t (worse).
 - **Untested:** voxelwise or small-ROI reliability, where noise matters. Is the shrunken between-subject spread of C_MD closer to the truth? That needs a simulated cohort with known subject differences. Does the shrinkage depend on the prior? Rerun the posteriors with another network (`TAG=_v4long scripts/cohort_run.sh`, ~40 min; the other steps are skipped).
 
+## 2026-11-06: Cardiff b-tensor data (b to 12): the simulator does not predict real high-b signal; the noise floor is non-central χ
+
+**Data and preparation.** `scripts/fetch_cardiff.sh` fetches the data; `qtilab/cardiff.py` loads it; `scripts/prepare_cardiff.py` prepares it (→ `results/cardiff_{data1,data2}_checks.json`); `scripts/motion_eddy_cardiff.py` corrects it.
+- **Acquisition:** two subjects, 3T Connectom, 3 mm, TE 88 ms. LTE and PTE have 439 volumes each, STE 182, at nominal b = 0–12.
+- **Motion:**
+  - between runs (rigid, b0 MI): 0.5–1.9°;
+  - within runs: up to 1.4° and 1.3 mm.
+  - tractline's eddy (one call per shape, b ≤ 6, MPS, about 20 s) halves the variation between repeated b0s: 3–4% → 1–2% of S0 in interior voxels.
+- **b-values:** a cubic fit to b = 1–3 gives MD from PTE and STE that agrees within 1% (WM 0.894 / 0.889, GM 1.017 / 1.030). LTE's is 5–12% lower, consistent with its larger higher-order terms. So the nominal b is not grossly wrong. PTE bvecs are taken as plane normals (unverified).
+
+**Noise floor** (corrected after the adversarial review, `docs/review/adversarial_review_2026-11-06.md` issue 2).
+- **The plateau is the floor.** STE levels off from b ≈ 9 at the same value in CSF (true signal ≈ 0 there), WM and GM: 1.66–1.76 raw against a tissue b0 of about 217, i.e. 0.0086–0.0089 of S0 in tissue.
+- **Its distribution is not Rician.** The plateau's mean/SD in CSF is 2.8 (data1) and 2.3 (data2), against 1.91 for Rician. That is non-central χ with N_eff 2.1 and 1.4 effective channels.
+- **Thermal σ** is 0.0043–0.0053 of S0, so b0 SNR is about 190–230.
+- **Correction:** the first version of the checks reported b0 SNR 22 and a Rician floor of 0.058. Those came from the b0 repeat SD, which is 3–5% of S0 and mostly motion and physiology. They were wrong by about 6× and are replaced.
+- **New option:** `simulate.rician(..., channels=N)` and `--channels` in training. channels = 1 draws exactly as before.
+
+**Test** (`scripts/cardiff_extrapolation.py` → `results/cardiff_extrapolation_{data1,data2}.json`; `_rician` / `_none` give the other floor models).
+- **Target:** predict each voxel's b = 3, 4.5 and 6 powder averages (LTE, PTE, STE) from its b ≤ 2 volumes.
+- **Classical:** the constrained QTI cumulant extrapolated.
+- **Simulator banks:** 200k noise-free voxels per prior (exact free water, WM r = 1.5), k-NN (k = 20) on rotation-invariant b ≤ 2 features: shell powder averages and l = 2 SH power.
+- **Floor:** predictions are passed per volume through the non-central χ mean at each voxel's σ.
+
+Median signed error (prediction − observed) / observed, data1 / data2:
+
+| WM-like | LTE 3 | LTE 4.5 | LTE 6 | PTE 6 | STE 3 | STE 4.5 | STE 6 |
+|---|---|---|---|---|---|---|---|
+| observed / floor | 25 | 19 | 16 | 5 | 9 | 3.7 | 1.9 |
+| classical | +18 / +18% | +118 / +122% | +733 / +799% | +5 / +5% | +1 / +1% | −4 / −5% | −9 / −10% |
+| prior v4 | −8 / −6% | −13 / −11% | −18 / −16% | 0 / −2% | −2 / −3% | −10 / −13% | −20 / −22% |
+| prior v2 | −7 / −6% | −13 / −12% | −19 / −18% | −1 / −4% | −3 / −4% | −13 / −14% | −22 / −23% |
+| v4, stick axons | −6 / −4% | −8 / −6% | −10 / −8% | +7 / +5% | −2 / −3% | −11 / −13% | −20 / −22% |
+
+| GM-like | LTE 3 | LTE 4.5 | LTE 6 | PTE 4.5 | PTE 6 | STE 4.5 | STE 6 |
+|---|---|---|---|---|---|---|---|
+| observed / floor | 22 | 13 | 9 | 7 | 4 | 5 | 2.4 |
+| classical | +22 / +20% | +126 / +110% | +571 / +475% | +23 / +30% | +72 / +89% | +12 / +23% | +34 / +56% |
+| prior v4 | +4 / +5% | +11 / +10% | +15 / +13% | +17 / +18% | +26 / +29% | −1 / +2% | −2 / +3% |
+| v4, stick neurites too | +6 / +7% | +19 / +19% | +32 / +31% | +21 / +22% | +37 / +39% | −2 / +2% | −2 / +2% |
+
+- **Classical cumulant extrapolation fails beyond b ≈ 3,** as truncation predicts: the series diverges.
+- **The simulator misses real tissue at high b, the same way under v2 and v4.**
+  - **WM LTE is under-predicted** by 6–8% at b = 3 and 16–19% at b = 6 (15–45 noise SD). These shells are 16–25× the floor.
+  - **Stick axons halve the WM LTE miss.** That is intra-axonal D_Δ 0.99–1; v1–v4 used 0.9–1.0, a radial diffusivity up to ~0.07 that only shows at high b. STE is unchanged by construction.
+  - **GM LTE and PTE are over-predicted** by 4–29%. Stick neurites make it worse. The GM signal decays faster than the Gaussian-compartment priors allow, which is consistent with exchange, a hypothesis not tested.
+- **What the floor did:**
+  - GM STE is predicted within ±3%: the earlier "GM STE deficit" was the floor.
+  - WM STE remains under-predicted at b = 4.5 (−10 to −14%) and b = 6 (−20 to −23%). That is about 3 noise SD at only 2–4× the floor, and the fitted N_eff differs between subjects. Not established.
+- **Gradient nonlinearity is not the cause.** Splitting WM-like errors into the inner and outer thirds of radius from the brain centroid changes them by ≤ 3 percentage points. A uniform b-scale error is largely absorbed, since predictors match at b ≤ 2.
+
+**Caveats:**
+- two subjects, no repeats;
+- nominal b with no waveforms (time dependence is only the single-ratio model, STE only);
+- regions are classical-fit FA/MD classes, not anatomy;
+- the plateau may hold a little true signal, which would make the floor slightly too high and the WM STE deficit an underestimate.
+
+**What it means:**
+- The prior's high-b behaviour is wrong by 5–30% in the directions above. The network's truncation correction comes from that behaviour, so it is approximate.
+- How much this moves µFA and C_MD estimated from b ≤ 2 is the next test: `scripts/cardiff_networks.py`. It compares a b ≤ 2 network and classical QTI against b ≤ 6 reference networks, with two-channel noise, under v4 and v4-sticks, plus a Rician-noise reference for noise-model sensitivity.
+

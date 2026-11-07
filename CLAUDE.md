@@ -42,7 +42,10 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   - Several scripts read an aligned session saved by `hhs.load_session` (`hhs_sub01_ses01_aligned.npz`) and a classical fit of it (`results/hhs_sub01_ses01.npz`). Regenerate both on a new machine; paths are at the top of each script.
 - **Cardiff b-tensor data** (Afzali 2021, CC BY 4.0, DOI 10.17035/d.2021.0135083057): run `scripts/fetch_cardiff.sh data/cardiff` (251.5 MB zip, md5-checked; Figshare's API skips the web page's browser check).
   - Two participants (`data1`, `data2`) on the 3T Connectom, 3 mm isotropic, TE 88 ms, 70×70×42. LTE and PTE have 439 volumes each, STE 182, plus a reversed-PE STE b0. There are no JSON sidecars or waveforms.
-  - The bval files list nominal shells 0–12 ms/µm² for all three encodings, more than the dataset description gives. The powder-averaged decay is consistent with the nominal b at low b (LTE > PTE > STE at every shell). STE reaches the noise floor (~0.01 of S0) by b ≈ 6.
+  - The bval files list nominal shells 0–12 ms/µm² for all three encodings, more than the dataset description gives. PTE and STE give the same MD within 1%, so the nominal b looks right.
+  - The magnitude floor is about 0.009 of S0. It is non-central χ with 1.4–2.1 effective channels (`--channels 2` in training). Thermal b0 SNR is about 190–230; the b0 repeat SD, 3–5% of S0, is motion and physiology.
+  - STE is within 2–4× of the floor at b = 4.5–6.
+  - NOTES 2026-11-06, Cardiff entry.
   - PTE bvecs repeat LTE's directions; presumably they are the plane normals (unverified).
 
 ## Reproducing the results (in order)
@@ -188,4 +191,7 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - Generic prior: spherical encoding cuts GM µFA error by about 25–30%, with no gain in WM.
    - Next: apply LTE-only models to a legacy multi-shell dataset (HCP-style), and quantify prior dependence there.
 6. **Real waveforms.** DiB ships its waveforms. For HHS, ask the authors (Erlangen waveforms, Martin et al. 2020). Replace the single spectral ratio with real encoding spectra.
-7. **Cardiff b = 3–12 extrapolation test** (data fetched 2026-11-06; needs a loader, protocol and motion/eddy correction first).
+7. **Cardiff high-b test: started** (NOTES 2026-11-06, Cardiff entry).
+   - The simulator misses real b = 3–6 signal by 5–30%: WM LTE low, GM LTE/PTE high. Stick axons halve the WM part. Classical extrapolation fails.
+   - Next: `scripts/cardiff_networks.py`, b ≤ 2 estimates against b ≤ 6 reference networks (`_b6v4c2`, `_b6v4stickc2`, `_b6v4`).
+   - Then fix the prior's high-b behaviour (sticks; a GM exchange-like term).

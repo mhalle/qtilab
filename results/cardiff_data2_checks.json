@@ -37,8 +37,12 @@
   "PTE": 0.835,
   "STE": 0.868
  },
- "b0_snr_tissue_median": 30.4,
- "rician_floor_rel": 0.0412,
+ "b0_repeat_rel_sd_tissue_median": 0.0329,
+ "plateau_mean_over_sd_csf": 2.29,
+ "n_eff": 1.4,
+ "floor_rel": 0.0086,
+ "thermal_sigma_rel_tissue_median": 0.0053,
+ "b0_snr_thermal_tissue_median": 190.0,
  "shell_signal_tissue": {
   "LTE": {
    "1": 0.4788,

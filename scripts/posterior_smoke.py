@@ -35,6 +35,7 @@ ap.add_argument("--seed", type=int, default=None, help="seed for weight init and
 ap.add_argument("--td-ratio", type=float, default=None, help="WM-only time dependence: STE at this relative frequency")
 ap.add_argument("--alpha", type=float, nargs=2, default=None, help="signal-proportional noise, per-voxel a ~ U(lo, hi)")
 ap.add_argument("--pulsation", type=float, default=0.0, help="extra fluid noise, U(0, x) * f_fw * max(0, 1 - b)")
+ap.add_argument("--channels", type=int, default=1, help="noise: magnitude over this many coil channels (non-central chi)")
 ap.add_argument("--gain-sd", type=float, default=0.0, help="per-measurement gain jitter sd")
 ap.add_argument("--exact-fw", action="store_true", help="free water as an exactly weighted compartment (simulate.sample_brain exact_fw), in training and test")
 ap.add_argument("--model", default="", help="with steps = 0: evaluate this saved model instead of the tag's (output still named by --tag)")
@@ -52,7 +53,7 @@ if args.prior_set:
         k, v = kv.split("=")
         prior[k] = tuple(float(x) for x in v.split(","))
 fm = dict(exact_fw=args.exact_fw, td_ratio=args.td_ratio, alpha=tuple(args.alpha) if args.alpha else None,
-          pulsation=args.pulsation, gain_sd=args.gain_sd)   # forward-model options, training and test
+          pulsation=args.pulsation, gain_sd=args.gain_sd, channels=args.channels)   # forward-model options, training and test
 steps = args.steps
 tag = args.tag
 model_path = f"results/posterior_smoke_{args.protocol}{tag}.pt"

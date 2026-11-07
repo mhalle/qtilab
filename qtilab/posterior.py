@@ -148,8 +148,10 @@ class SimBatch:
 
 def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.float32, prior_version=2,
                    log_snr=True, device=None, sim_dtype=None, exact_fw=False, td_ratio=None, alpha=None,
-                   pulsation=0.0, gain_sd=0.0):
+                   pulsation=0.0, gain_sd=0.0, channels=1):
     """Brain-prior voxels through ``protocol`` with Rician noise -> SimBatch (features, targets, class, signal).
+
+    ``channels`` > 1 makes the noise a sum-of-squares magnitude over that many coil channels (simulate.rician).
 
     SNR (at b = 0) is drawn log-uniformly over ``snr`` unless ``log_snr`` is False.
 
@@ -218,6 +220,6 @@ def simulate_batch(protocol, V, g=None, snr=(15.0, 60.0), M=64, dtype=torch.floa
     u = torch.rand(V, dtype=d6.dtype, generator=g, device=dev)
     lo, hi = snr
     s = torch.exp(torch.log(torch.tensor(lo)) + u * torch.log(torch.tensor(hi / lo))) if log_snr else lo + (hi - lo) * u
-    S = simulate.rician(clean, 1.0 / s, g)
+    S = simulate.rician(clean, 1.0 / s, g, channels=channels)
     x = features(S, b6, b, bd)
     return SimBatch(x.to(dtype), y.to(dtype), cls, S)
