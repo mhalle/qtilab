@@ -9,7 +9,8 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
 - `qtilab/` is the library:
   - `tensors.py`: Mandel conventions, identical to DIPY.
   - `protocol.py`: one b-tensor per volume, and the design matrix.
-  - `fit.py`: OLS, WLS, and constrained QTI+ via batched ADMM.
+  - `fit.py`: OLS, WLS, and constrained QTI+ via batched ADMM (default) or `solver="ipm"`.
+  - `ipm.py`: batched log-barrier interior-point solver for the same problem (5–9× faster, fully converged; NOTES 2026-11-07).
   - `scalars.py`: the QTI scalars.
   - `simulate.py`: explicit tensor distributions.
     - Brain priors v1–v3 (`BRAIN_PRIORS`) and a generic prior (`sample_dtd`).
@@ -123,7 +124,7 @@ python scripts/h4_lte_only.py --full-model results/posterior_smoke_hhs_v4.pt --l
 - b in ms/µm², diffusivities in µm²/ms.
 - Parameter vector (28) = [ln S0, ⟨D⟩ Mandel 6, ℂ Mandel 21 in DIPY's order].
 - Everything is batched over voxels and device-agnostic. Keep it that way: no per-voxel Python loops and no NumPy inside hot paths.
-- Validate any change to fitting against DIPY: `scripts/validate_dipy.py`, `scripts/bench_constrained.py` (DiB, full rank) and `scripts/validate_dipy_hhs.py` (HHS, rank 23; needs a prepared session).
+- Validate any change to fitting against DIPY: `scripts/validate_dipy.py`, `scripts/bench_constrained.py` (DiB, full rank; DiB_217 is missing from the local checkout, so use `DiB_70_lte_pte_ste`) and `scripts/validate_dipy_hhs.py` (HHS, rank 23; needs a prepared session). Both of the last two include `solver="ipm"`. Whole-session speed and accuracy on CPU and MPS: `scripts/bench_ipm.py`.
   - On HHS the fit matches DIPY SDPdc/CLARABEL as closely as DIPY's SCS does, and is strictly feasible (NOTES 2026-11-05 night).
   - On HHS `FitInfo.converged_fraction` is about 0.85 even though the objective is at the optimum: the residual stopping rule is too strict on rank-deficient designs.
   - DIPY returns ⟨D⟩ in mm²/s and ℂ in (mm²/s)² when given bvals in s/mm². Multiply by 1e3 and 1e6 before comparing with qtilab's µm²/ms.
@@ -161,6 +162,12 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
 - **CUDA batched eigensolvers need huge workspace** (`pinv` at 200k asked for 66 GB, `eigvalsh` on 3×3 for 51 GB). Route any new batched `eigh`/`eigvalsh`/`pinv`/`svd` through `tensors.batched` (16k per call). Peak memory per stage is in NOTES (2026-11-05 evening).
 
 ## Next tasks (handoff, updated 2026-11-05), in priority order
+
+Direction (2026-11-07): prefer work with an oracle or reference to check against (optimization, numerical robustness, reproducing published methods). Open modelling research, such as new tissue priors or high-b biophysics, is better done with a collaborator who knows that field.
+
+0. **Interior-point solver (`qtilab/ipm.py`, NOTES 2026-11-07).** Validated against DIPY/CLARABEL and tight ADMM; ADMM is still the default.
+   - Open: decide whether to make it the default (every result so far used ADMM, which agrees to ≤ 1e-3 in µFA).
+   - Optimization with an oracle: a Metal kernel for the whole Newton step (the batched 28 × 28 Cholesky is 5.2× faster as a one-thread-per-voxel kernel); a CUDA run on Modal; a primal-dual (Nesterov–Todd, Mehrotra) variant; RICE's D_max bound as one more barrier term.
 
 1. **Motion/eddy: done on CPU for three sessions (sub-01, -02, -06; ses-01), and it does not explain the WM residuals** (NOTES 2026-11-05).
    - `scripts/motion_eddy_hhs.py SUB SES` runs tractline's FSL-style eddy (CPU, about 15 min) as LTE and STE passes, and writes `work/hhs_subXX_sesYYec_aligned.npz`.

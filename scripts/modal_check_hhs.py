@@ -4,8 +4,9 @@ Input: work/modal_check_sub01_ses01.npz, packed locally with the masked session 
 CPU float64 references (whole-session constrained parameters, a tight fit of 3,000 validation voxels, and
 network embeddings / log-probabilities on 10,000 voxels). On the GPU, in float32 and float64:
 
-* WLS and constrained fits of the whole session: time, chunk, iterations, peak memory, and scalar
-  differences vs the CPU float64 fit (all voxels) and vs the tight fit (validation voxels);
+* WLS and constrained fits of the whole session, with ADMM and the interior-point solver (``solver="ipm"``):
+  time, chunk, iterations, peak memory, and scalar differences vs the CPU float64 ADMM fit (all voxels) and
+  vs the tight fit (validation voxels; IPM matches tight ADMM to ~1e-6 in µFA on CPU);
 * the v2 posterior network: features, embeddings and log-probabilities vs CPU (deterministic), and
   sampling throughput at several chunk sizes.
 
@@ -70,21 +71,23 @@ def _check():
         name = str(dt).split(".")[-1]
         X = prot.design_matrix().to(dt).to(dev)
         S = S64.to(dt).to(dev)
-        fit.constrained(X, S[:2000]); fit.wls(X, S[:2000]); sync()
-        torch.cuda.reset_peak_memory_stats()
+        fit.wls(X, S[:2000]); sync()
         t = time.perf_counter(); fit.wls(X, S); sync(); t_wls = time.perf_counter() - t
-        t = time.perf_counter(); p, info = fit.constrained(X, S); sync(); t_con = time.perf_counter() - t
-        peak = torch.cuda.max_memory_allocated() / 2**30
-        sc = scalars.scalars(p.cpu().double())
-        p_v, _ = fit.constrained(X, S[idx.to(dev)])
-        sc_v = scalars.scalars(p_v.cpu().double())
-        out["fits"][name] = {
-            "seconds": {"wls": t_wls, "constrained": t_con}, "chunk": fit._chunk(S, None),
-            "iterations": info.iterations, "converged_fraction": info.converged_fraction,
-            "n_violating": info.n_violating, "peak_memory_gb": peak,
-            "vs_cpu_f64_all_voxels": stats(sc, ref_all),
-            "vs_f64_tight_validation_voxels": stats(sc_v, ref_tight),
-        }
+        for solver in ("admm", "ipm"):
+            fit.constrained(X, S[:2000], solver=solver); sync()
+            torch.cuda.reset_peak_memory_stats()
+            t = time.perf_counter(); p, info = fit.constrained(X, S, solver=solver); sync(); t_con = time.perf_counter() - t
+            peak = torch.cuda.max_memory_allocated() / 2**30
+            sc = scalars.scalars(p.cpu().double())
+            p_v, _ = fit.constrained(X, S[idx.to(dev)], solver=solver)
+            sc_v = scalars.scalars(p_v.cpu().double())
+            out["fits"][name if solver == "admm" else f"{name}_ipm"] = {
+                "solver": solver, "seconds": {"wls": t_wls, "constrained": t_con}, "chunk": fit._chunk(S, None),
+                "iterations": info.iterations, "converged_fraction": info.converged_fraction,
+                "n_violating": info.n_violating, "peak_memory_gb": peak, "ipm": info.extra,
+                "vs_cpu_f64_all_voxels": stats(sc, ref_all),       # the reference is CPU ADMM at default settings
+                "vs_f64_tight_validation_voxels": stats(sc_v, ref_tight),
+            }
 
     # network: deterministic parts vs CPU, then sampling throughput
     net = posterior.PosteriorNet()
@@ -135,7 +138,7 @@ def main():
     print(f"{r['gpu']} (torch {r['torch']}), {r['voxels']} voxels; CPU f64 (M1 Max): "
           f"constrained {r['cpu_f64_seconds']['constrained']:.0f} s, WLS {r['cpu_f64_seconds']['wls']:.2f} s")
     for name, f in r["fits"].items():
-        print(f"\n== {name}: WLS {f['seconds']['wls']:.2f} s, constrained {f['seconds']['constrained']:.1f} s "
+        print(f"\n== {name} ({f['solver']}): WLS {f['seconds']['wls']:.2f} s, constrained {f['seconds']['constrained']:.1f} s "
               f"(chunk {f['chunk']}, {f['iterations']} it, converged {f['converged_fraction']:.3f}, peak {f['peak_memory_gb']:.1f} GB)")
         for lab in ("vs_cpu_f64_all_voxels", "vs_f64_tight_validation_voxels"):
             print(f"   {lab}: " + "  ".join(f"{k} {v['p99']:.0e}/{v['max']:.0e}" for k, v in f[lab].items()) + "   (p99/max)")

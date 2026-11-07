@@ -1267,3 +1267,68 @@ Median signed error (prediction − observed) / observed, data1 / data2:
 - **iRICE's real niche is the short protocol,** where QTI is not identifiable. There GM µFA is badly biased at realistic SNR by either estimator.
 - **Reporting:** iRICE's uFA is not QTI's µFA. On real GM it is 0.024 higher (0.583 vs 0.559), which is larger than most of the effects we report. Any comparison must state the definition.
 - **For a tools paper,** "fast constrained QTI" is not distinguished from iRICE on speed or accuracy for LTE+STE data. Only the full model (PTE, C_c) and the GPU batching set it apart.
+
+## 2026-11-07: batched interior-point solver for the constrained fit — 5–9× faster than ADMM and fully converged
+
+Prompted by RICE's per-voxel interior-point solves (previous entry): the useful lesson from their solver was the algorithm class, not the code. `qtilab/ipm.py` is a batched log-barrier method for the same QTI+ (dc) problem as `fit._admm`, selected with `fit.constrained(..., solver="ipm")`. **ADMM stays the default** until we decide to switch: every existing result used it.
+
+**Method.**
+- **Central path.** It follows the central path of t f(x) − log det ⟨D⟩ − log det C (ν = 9) with one Newton step per voxel per iteration.
+  - The Newton matrix is 28 × 28 and positive definite even on rank-deficient designs, so each step is one batched Cholesky. There are no eigendecompositions except a small `eigvalsh` in the line search.
+  - The barrier Hessian in Mandel coordinates is the symmetric Kronecker product of the inverse block. It is checked against autograd in the tests.
+- **Step length.** The exact minimizer along the Newton direction, from the eigenvalues of the step relative to D and C. This halves the Newton steps compared with the damped step 1/(1+λ).
+- **Schedule.** t grows ×30 when a voxel is centred. Stop at ν/t ≤ 1e-8 × (WLS RSS/2).
+- **Float32 fixes** (each found by a failure on MPS):
+  1. Solve for the step from the WLS point: the gradient H d + (H p − g), with the last term computed once. Hx − g directly is a cancellation of terms on the scale of the signal energy. It left the Newton decrement too noisy to certify centring, and 2–4% of voxels ran to the iteration cap.
+  2. A voxel whose factorization fails (float32's precision limit, near the end) keeps its last strictly feasible iterate. It counts as converged if ν/t was within 100× of the target.
+  3. A voxel whose decrement stalls moves on after 12 steps (float32 only). Applying that rule in float64 without the line search accepted uncentred points: µFA errors up to 0.4 before it was restricted.
+  4. Jacobi equilibration of the Newton matrix (did not change the failure rate; kept as harmless).
+- **Tolerance in float32.** A tolerance relative to the RSS is loose in high-residual voxels. At 1e-5, Cardiff C's small eigenvalues stayed about 4e-4 inside the cone (true value 1e-9), and low-µFA voxels were off by up to 0.04. At 1e-8 that is gone, at no extra time, because float32 stops at its own limit anyway.
+
+**Accuracy against DIPY** (`scripts/validate_dipy_hhs.py`: HHS sub-01 ses-01, 2,500 violating + 500 other voxels, CPU float64; the DIPY cache was stale after the Nov 6 re-preparation and was recomputed):
+
+| | time | converged | µFA vs tight ADMM, p99 / max | objective vs CLARABEL, p99 |
+|---|---|---|---|---|
+| ADMM default | 5.4 s | 84% | 2e-4 / 7e-4 | 9.6e-10 |
+| ADMM tight (1e-9/1e-7, 20k iterations) | 39 s | 99.8% | — | 7.6e-10 |
+| **IPM default** | **0.64 s** | **100%** | **2e-7 / 9e-7** | **7.6e-10** |
+| DIPY CLARABEL | 36 s | — | — | — |
+
+- **Against CLARABEL,** IPM agrees exactly as well as tight ADMM: µFA p99 1e-4, the same objective. The remaining difference is CLARABEL's own tolerance, since it violates the cone by up to 1e-5 in 65% of voxels.
+- **Feasibility:** IPM's output is strictly feasible (minimum eigenvalue +1.6e-11).
+- **DiB_70** (full rank, 72k voxels, almost all constrained; `scripts/bench_constrained.py`; DiB_217 is missing from the local sparse checkout):
+  - IPM: 15.1 s, all converged, median 26 Newton steps.
+  - ADMM: 78.9 s.
+  - Agreement with CLARABEL is the same as ADMM at tight tolerances (µFA p99 5.3e-5).
+
+**Whole sessions** (`scripts/bench_ipm.py`, `results/bench_ipm_m1max.json`). All voxels, default chunking. Error against IPM at 1e-11 in float64, over violating, non-collapsed voxels:
+
+| | HHS (95.8k vox, rank 23) | | Cardiff data1 b ≤ 2 (47.8k, full rank) | |
+|---|---|---|---|---|
+| | time | µFA p99 / max | time | µFA p99 / max |
+| CPU ADMM | 107 s (85% conv.) | 2e-4 / 1e-3 | 7.5 s | 2e-4 / 5e-4 |
+| CPU ADMM, 300 iterations | 56 s | 2e-3 / 5e-3 | 7.4 s | same |
+| **CPU IPM** | **11.7 s** (23 / 46 steps) | **2e-7 / 9e-6** | **4.6 s** | **2e-6 / 3e-4** |
+| MPS ADMM (float32) | 30 s (71% conv.) | 2e-4 / 1e-3 | 12.1 s | 2e-4 / 5e-4 |
+| **MPS IPM** (float32) | **4.3 s** (98% conv.) | **2e-4 / 2e-3** | **1.9 s** | **5e-5 / 3e-4** |
+
+(MPS timings in this run were about 25% slower than earlier the same day: ADMM 22.8 s then, IPM 3.0 s. Compare within a row group.)
+
+- **Speed:** 9× on CPU and 7× on MPS for HHS. Cardiff: 1.6× on CPU (ADMM converges there in about 200 iterations) and 6× on MPS.
+- **Convergence:** IPM converges every voxel in float64. ADMM leaves 15% of HHS voxels short of its own stopping rule.
+- **Float32 floor:** about 2e-4 p99 in µFA on HHS for both solvers. It comes from the float32 problem data (H, g), not the solver.
+- **The cheap alternative** (capping ADMM at 300 iterations) halves the time but costs 10× in accuracy. Not worth it now.
+
+**Where the time goes, and what to optimize next** (measured, 60k systems per step; details in the `qtilab/ipm.py` docstring):
+- **MPS: PyTorch's batched linear algebra is the bottleneck.** The 28 × 28 Cholesky + solve takes 39 ms, barely faster than CPU (68 ms in float64).
+  - A one-thread-per-voxel Metal kernel (`torch.mps.compile_shader`) does it in 7.6 ms (5.2×, same accuracy).
+  - The 6 × 6 inverses take 18 ms through torch.linalg and 1.6 ms written as column operations.
+  - A Metal kernel for the whole Newton step is the obvious next step. My estimate (not measured) is HHS in under 1 s on MPS.
+  - torch.compile of an unrolled Cholesky fails on MPS: the generated kernel exceeds Metal's buffer-argument limit.
+- **CPU:** the cost is the Cholesky (68 ms), the barrier-Hessian gathers (55 ms) and the small inverses (28 ms). The line search costs about as much as it saves on CPU, but it is still a small net gain.
+- **Algorithmic:** a primal-dual method with Nesterov–Todd scaling and Mehrotra predictor–corrector (CLARABEL's) typically takes 10–20 iterations instead of about 23.
+- **Not run on CUDA yet.** The line-search `eigvalsh` goes through `tensors.batched` because of CUDA's workspace problem.
+
+**Open decisions:**
+- Make IPM the default solver. It is faster, fully converged and strictly feasible, but every number in these notes so far is ADMM's, which agrees to ≤ 1e-3 in µFA.
+- Add RICE's D_max bound. In a barrier formulation it is one more log det term.

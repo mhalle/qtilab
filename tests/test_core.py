@@ -74,6 +74,48 @@ def test_constrained_is_feasible_and_never_worse_than_projection():
     assert torch.allclose(pc[ok], pw[ok])
 
 
+def test_barrier_hessian_matches_autograd():
+    """ipm.sym_kron is the Hessian of -log det in Mandel coordinates (3x3 and 6x6)."""
+    from qtilab import ipm
+    g = torch.Generator().manual_seed(4)
+    for n, mat, vec, idx, sc in ((3, tensors.mat3, tensors.vec6, tensors.IDX6, tensors.SCALE6),
+                                 (6, tensors.mat6, tensors.vec21, tensors.IDX21, tensors.SCALE21)):
+        A = torch.randn(n, n + 3, generator=g, dtype=torch.float64)
+        v = vec((A @ A.T / (n + 3) + 0.2 * torch.eye(n, dtype=torch.float64))[None])[0]
+        Hn = torch.autograd.functional.hessian(lambda u: -torch.logdet(mat(u)), v)
+        gn = torch.autograd.functional.jacobian(lambda u: -torch.logdet(mat(u)), v)
+        Ainv = torch.linalg.inv(mat(v))
+        K = ipm.sym_kron(Ainv[None], ipm._kron_index(idx, sc, "cpu", torch.float64))[0]
+        assert torch.allclose(K, Hn, atol=1e-10)
+        assert torch.allclose(-vec(Ainv[None])[0], gn, atol=1e-10)
+
+
+@pytest.mark.parametrize("drop_pte", [False, True])
+def test_ipm_matches_tight_admm(drop_pte):
+    """The interior-point solver reaches the same constrained optimum as ADMM run to tight tolerances,
+    on a full-rank protocol and on LTE + STE (rank 23, with the ridge), and its output is strictly feasible."""
+    p = _protocol()
+    if drop_pte:
+        p = p.subset([s != "PTE" for s in p.shapes])
+    sim = simulate.simulate(p, 1500, g=torch.Generator().manual_seed(5), prior=simulate.Prior(snr=(10, 30)))
+    X, S = p.design_matrix(), sim["signal"]
+    bad = fit.violates(fit.wls(X, S))
+    assert bad.float().mean() > 0.2
+    pa, _ = fit.constrained(X, S, eps_abs=1e-10, eps_rel=1e-8, max_iter=20000)
+    pi, info = fit.constrained(X, S, solver="ipm")
+    assert info.converged_fraction == 1.0 and info.extra["failed_fraction"] == 0.0
+    assert not bool(fit.violates(pi).any())
+    w = fit._weights(X, S, None)
+    H, g = fit._normal_equations(X, fit._log_signal(S), w)
+    J = lambda q: 0.5 * torch.einsum("vi,vij,vj->v", q, H, q) - (g * q).sum(-1)
+    rss = 0.5 * ((w * (pa @ X.T - fit._log_signal(S))) ** 2).sum(-1)
+    assert float(((J(pi) - J(pa)) / rss)[bad].max()) < 1e-7
+    ua, ui = scalars.scalars(pa)["ufa"], scalars.scalars(pi)["ufa"]
+    assert float((ua - ui)[bad].abs().max()) < 1e-3
+    assert float((ua - ui)[bad].abs().median()) < 1e-6
+    assert torch.equal(pi[~bad], pa[~bad])                  # feasible WLS voxels are untouched
+
+
 def test_rank_deficient_wls_float32_matches_float64():
     """LTE + STE only (rank 23): float32 WLS must solve in the 23-dim row space and match float64.
 

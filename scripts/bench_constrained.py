@@ -31,7 +31,7 @@ if not cache.exists():
 ref = np.load(cache)
 idx = ref["idx"]
 
-for kw in [dict(), dict(eps_abs=1e-7, eps_rel=1e-5)]:
+for kw in [dict(), dict(eps_abs=1e-7, eps_rel=1e-5), dict(solver="ipm")]:
     t = time.perf_counter()
     pc, info = fit.constrained(X, St, **kw)
     dt = time.perf_counter() - t
@@ -39,6 +39,6 @@ for kw in [dict(), dict(eps_abs=1e-7, eps_rel=1e-5)]:
     errs = {k: np.median(np.abs(sc[k].numpy() * (1e-3 if k == "md" else 1) - ref[k])) for k in KEYS}
     p99 = {k: np.percentile(np.abs(sc[k].numpy() * (1e-3 if k == "md" else 1) - ref[k]), 99) for k in KEYS}
     print(f"{kw or 'defaults'}: {dt:.1f} s for {S.shape[0]} voxels ({info.n_violating} constrained), "
-          f"iters {info.iterations}, converged {info.converged_fraction:.4f}")
+          f"iters {info.iterations}, converged {info.converged_fraction:.4f}" + (f", Newton steps {info.extra}" if info.extra else ""))
     print("   median |d| vs CLARABEL:", {k: f"{v:.1e}" for k, v in errs.items()})
     print("   p99    |d| vs CLARABEL:", {k: f"{v:.1e}" for k, v in p99.items()})

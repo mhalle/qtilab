@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 
 import torch
 
+from . import ipm
 from .tensors import batched, mat3, mat6, psd_project, vec6, vec21
 
 MIN_SIGNAL = 1e-4  # DIPY's MIN_POSITIVE_SIGNAL
@@ -227,7 +228,7 @@ def _admm(H, g, x0, rho=1.0, max_iter=1000, eps_abs=1e-6, eps_rel=1e-4,
     return z * s, it, 1.0 - act.numel() / V
 
 
-def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
+def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", **solver_kw):
     """QTI+ (dc): WLS with <D> >= 0 and C >= 0. Returns (params, FitInfo).
 
     For a rank-deficient protocol (e.g. LTE + STE only, rank 23) the objective is flat along the
@@ -236,12 +237,14 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
     the standard scalars do not depend on the unobserved directions.
 
     ``chunk``: voxels per batch, default 20k on CPU and 250k on GPUs (see ``_chunk``).
+    ``solver``: "admm" (``_admm``) or "ipm" (``ipm.barrier``, a batched interior-point method); ``solver_kw``
+    go to it.
     """
     chunk = _chunk(S, chunk)
     rank = int(torch.linalg.matrix_rank(X))
     full_rank = rank == X.shape[1]
     Q = None if full_rank else _row_space(X, rank)
-    out, n_bad, iters, conv = [], 0, 0, []
+    out, n_bad, iters, conv, extra = [], 0, 0, [], []
     for i in range(0, S.shape[0], chunk):
         s = S[i:i + chunk]
         w = _weights(X, s, None if weights is None else weights[i:i + chunk])
@@ -250,10 +253,19 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
         bad = violates(p)
         if bool(bad.any()):
             Hb = H[bad]
+            lam = None
             if not full_rank and ridge > 0:
                 lam = ridge * torch.diagonal(Hb, dim1=-2, dim2=-1).mean(-1)
                 Hb = Hb + lam[:, None, None] * torch.eye(Hb.shape[-1], dtype=Hb.dtype, device=Hb.device)
-            pb, it, cf = _admm(Hb, g[bad], p[bad], **admm_kw)
+            if solver == "ipm":
+                y = _log_signal(s[bad])
+                f_scale = 0.5 * ((w[bad] * (p[bad] @ X.T - y)) ** 2).sum(-1)
+                f_scale = f_scale + 1e-6 * 0.5 * ((w[bad] * y) ** 2).sum(-1)   # floor for noise-free signals
+                # the gradient at the WLS point, computed once (in float32 p does not solve H p = g exactly)
+                pb, it, cf, ex = ipm.barrier(Hb, g[bad], p[bad], f_scale, **solver_kw)
+                extra.append(ex)
+            else:
+                pb, it, cf = _admm(Hb, g[bad], p[bad], **solver_kw)
             p = p.clone()
             p[bad] = pb
             n_bad += int(bad.sum())
@@ -261,7 +273,12 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, **admm_kw):
             conv.append((cf, int(bad.sum())))
         out.append(p)
     cf = (sum(c * n for c, n in conv) / max(1, sum(n for _, n in conv))) if conv else 1.0
-    return torch.cat(out), FitInfo("constrained", S.shape[0], n_bad, iters, cf)
+    ex = {}
+    if extra:
+        ex = {"max_steps": max(e["max_steps"] for e in extra), "median_steps": extra[0]["median_steps"],
+              **{k: max(e[k] for e in extra) for k in ("failed_fraction", "failed_near_target", "failed_dc", "failed_newton",
+                                                "uncertified_fraction")}}
+    return torch.cat(out), FitInfo("constrained", S.shape[0], n_bad, iters, cf, ex)
 
 
 def predict(X, params):

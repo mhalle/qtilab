@@ -5,7 +5,7 @@ On HHS the design is rank-deficient: fit.constrained adds a small ridge and ADMM
 and every real-data result rests on it. This compares, on the same voxels of one aligned session:
 
 * qtilab constrained, default settings, and with tight tolerances (separates solver tolerance from a
-  formulation difference);
+  formulation difference), with ADMM (the default) and with the interior-point solver (``solver="ipm"``);
 * DIPY SDPdc with CLARABEL (reference) and with SCS (DIPY's default; a solver-vs-solver baseline).
 
 Scalars are compared directly. Because the scalars cannot tell which solution is better, each solution is
@@ -61,12 +61,18 @@ t = time.perf_counter(); res["qtilab"], info = fit.constrained(X, St); t_q = tim
 t = time.perf_counter()
 res["qtilab_tight"], info_t = fit.constrained(X, St, eps_abs=1e-9, eps_rel=1e-7, max_iter=20000)
 t_qt = time.perf_counter() - t
+t = time.perf_counter(); res["qtilab_ipm"], info_i = fit.constrained(X, St, solver="ipm"); t_i = time.perf_counter() - t
+t = time.perf_counter()
+res["qtilab_ipm_tight"], info_it = fit.constrained(X, St, solver="ipm", eps_rel=1e-11)
+t_it = time.perf_counter() - t
+print(f"qtilab ipm:     {t_i:.1f} s, converged {info_i.converged_fraction:.4f}, Newton steps {info_i.extra}", flush=True)
+print(f"qtilab ipm tight: {t_it:.1f} s, converged {info_it.converged_fraction:.4f}, Newton steps {info_it.extra}", flush=True)
 print(f"qtilab default: {t_q:.1f} s, converged {info.converged_fraction:.4f}, iters {info.iterations}", flush=True)
 print(f"qtilab tight:   {t_qt:.1f} s, converged {info_t.converged_fraction:.4f}, iters {info_t.iterations}", flush=True)
 
 gtab = gradient_table(a["bvals"], bvecs=a["bvecs"].T if a["bvecs"].shape[0] == 3 else a["bvecs"],
                       btens=np.array(shapes))
-timing = {"qtilab": t_q, "qtilab_tight": t_qt}
+timing = {"qtilab": t_q, "qtilab_tight": t_qt, "qtilab_ipm": t_i, "qtilab_ipm_tight": t_it}
 for solver in ("CLARABEL", "SCS"):
     cache = paths.WORK / f"dipy_sdpdc_{solver}_sub{sub}_ses{ses}_{n_bad}_{n_ok}.npz"
     if cache.exists() and np.array_equal(np.load(cache)["idx"], idx):
@@ -120,12 +126,15 @@ def compare(a_, b_, mask):
 
 report = {"sub": sub, "ses": ses, "protocol_volumes": prot.n, "rank": prot.rank(), "n_violating": n_bad,
           "n_nonviolating": n_ok, "seconds": timing,
-          "qtilab_converged_fraction": {"default": info.converged_fraction, "tight": info_t.converged_fraction},
+          "qtilab_converged_fraction": {"default": info.converged_fraction, "tight": info_t.converged_fraction,
+                                        "ipm": info_i.converged_fraction, "ipm_tight": info_it.converged_fraction},
+          "ipm_newton_steps": {"default": info_i.extra, "tight": info_it.extra},
           "min_eigenvalue": {k: {"min": float(min_eig(v).min()), "frac_below_-1e-9": float((min_eig(v) < -1e-9).float().mean())}
                              for k, v in res.items()},
           "violating": {}, "nonviolating": {}}
 pairs = [("qtilab", "dipy_CLARABEL"), ("qtilab_tight", "dipy_CLARABEL"), ("dipy_SCS", "dipy_CLARABEL"),
-         ("qtilab", "qtilab_tight")]
+         ("qtilab", "qtilab_tight"), ("qtilab_ipm", "dipy_CLARABEL"), ("qtilab_ipm_tight", "dipy_CLARABEL"),
+         ("qtilab_ipm", "qtilab_tight"), ("qtilab_ipm_tight", "qtilab_tight")]
 for name, m in (("violating", viol), ("nonviolating", ~viol)):
     for a_, b_ in pairs:
         report[name][f"{a_} vs {b_}"] = compare(a_, b_, m)
