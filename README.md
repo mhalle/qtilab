@@ -51,7 +51,7 @@ uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help   # or run 
 
 ## Command line
 
-`qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI series and writes scalar maps. `qtilab info` prints the protocol (shells, shapes, design rank) without fitting, and `qtilab docs` prints every command's help and this README as one Markdown text. The command line follows [tractline](https://github.com/mhalle/tractline)'s, so the two can be merged later.
+`qtilab fit` fits constrained QTI (QTI+ "dc") to NIfTI series and writes scalar maps. `qtilab info` prints the protocol (shells, shapes, design rank) without fitting, and `qtilab docs` prints every command's help, this README and the guide as one Markdown text. The [command-line guide](docs/guide.md) explains the inputs, the outputs and the options in full (`qtilab docs guide` prints it). The command line follows [tractline](https://github.com/mhalle/tractline)'s, so the two can be merged later.
 
 ```
 qtilab fit sub-01/dwi/sub-01_acq-linear_dwi.nii.gz sub-01/dwi/sub-01_acq-spherical_dwi.nii.gz --nifti out/sub-01

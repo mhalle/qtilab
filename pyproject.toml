@@ -31,6 +31,7 @@ packages = ["qtilab"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "README.md" = "qtilab/_docs/README.md"     # for `qtilab docs` in an installed copy
+"docs/guide.md" = "qtilab/_docs/guide.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

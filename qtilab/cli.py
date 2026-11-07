@@ -2,7 +2,7 @@
 
     qtilab fit sub-01/dwi/sub-01_acq-linear_dwi.nii.gz sub-01/dwi/sub-01_acq-spherical_dwi.nii.gz --nifti out/sub-01
     qtilab info sub-01/dwi/sub-01_acq-*_dwi.nii.gz        # the protocol: shells, shapes, QTI design rank
-    qtilab docs                                           # the commands' help and the README as one Markdown text
+    qtilab docs                                           # the guide, the README and the commands' help as one Markdown text
 
 Or run without installing:
 
@@ -385,7 +385,7 @@ def _provenance(summary, s, absolute):
                if "converged_fraction" in summary else {})}
 
 
-DOCS = {"readme": "README.md"}
+DOCS = {"readme": "README.md", "guide": "guide.md"}
 
 
 def _doc(name: str) -> str:
@@ -395,7 +395,8 @@ def _doc(name: str) -> str:
     packaged = files("qtilab") / "_docs" / DOCS[name]
     if packaged.is_file():
         return packaged.read_text(encoding="utf-8")
-    local = Path(__file__).resolve().parents[1] / DOCS[name]
+    root = Path(__file__).resolve().parents[1]
+    local = root / (DOCS[name] if name == "readme" else f"docs/{DOCS[name]}")
     if local.is_file():
         return local.read_text(encoding="utf-8")
     raise click.ClickException(f"{DOCS[name]} is not in this installation")
@@ -412,15 +413,17 @@ def _helps() -> str:
 
 
 @main.command()
-@click.argument("what", type=click.Choice(["all", "readme", "help"]), default="all")
+@click.argument("what", type=click.Choice(["all", "readme", "guide", "help"]), default="all")
 def docs(what):
-    """Print qtilab's documentation as one Markdown text, for reading or for an LLM: its version, every command's help
-    and the README (all: the default), or one of them. Pipe it on, e.g. `qtilab docs | pbcopy`."""
+    """Print qtilab's documentation as one Markdown text, for reading or for an LLM: its version, every command's help,
+    the README and the guide (all: the default), or one of them. Pipe it on, e.g. `qtilab docs | pbcopy`."""
     parts = []
     if what in ("all", "help"):
         parts.append(f"# qtilab {_version()}: the commands\n\n{_helps()}")
     if what in ("all", "readme"):
         parts.append(_doc("readme"))
+    if what in ("all", "guide"):
+        parts.append(_doc("guide"))
     click.echo("\n\n---\n\n".join(parts))
 
 

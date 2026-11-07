@@ -82,3 +82,6 @@ def test_fit_rejects_mismatched_inputs_in_one_line(tmp_path):
 def test_docs_prints_help_and_readme():
     r = CliRunner().invoke(main, ["docs"])
     assert r.exit_code == 0 and "## qtilab fit --help" in r.output and "## Command line" in r.output
+    assert "# qtilab: the command-line guide" in r.output
+    g = CliRunner().invoke(main, ["docs", "guide"])
+    assert g.exit_code == 0 and g.output.startswith("# qtilab: the command-line guide") and "## qtilab fit --help" not in g.output
