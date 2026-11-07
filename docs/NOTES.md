@@ -1343,4 +1343,16 @@ Prompted by RICE's per-voxel interior-point solves (previous entry): the useful 
 - **Fit time** in `prepare_session.py`: 12 s instead of about 2 min.
 - Scripts that pass ADMM's options now ask for it explicitly: `validate_dipy_hhs.py`, `bench_constrained.py`, `bench_ipm.py` and the tests.
 
-**Open:** RICE's D_max bound (one more log det term in the barrier). Re-measure the CUDA memory peak after the `eigh` fix.
+**CUDA memory after the `eigh` fix** (Modal; this run was scheduled on an A10, 24 GB; `results/modal_check_hhs_sub01_ses01_A10.json`):
+
+| | float32 time | float32 peak | float64 time | float64 peak |
+|---|---|---|---|---|
+| ADMM | 7.1 s | 5.3 GB | 33.4 s | 10.2 GB |
+| IPM | 1.0 s | 5.7 GB | 3.4 s | 10.8 GB |
+
+- **IPM's peak is now ADMM's.** It was 16 / 32 GB on the L40S before the fix; the float64 run would not have fit on this card.
+- **µFA against the tight fit:**
+  - float32: p99 2e-4 for both solvers. The max is 3e-3 for IPM (7e-4 on the L40S) vs 7e-4 for ADMM; that is a few voxels at float32's limit.
+  - float64: IPM is within 9e-7, ADMM within 7e-4.
+
+**Open:** RICE's D_max bound (one more log det term in the barrier).
