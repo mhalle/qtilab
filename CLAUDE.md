@@ -88,6 +88,9 @@ python scripts/network_regions.py --tags _v2 _v4long _v4longfw _v5 _v5_notd _v5_
 python scripts/low_snr_bias.py --tags _v4longfw _v5 _v5_snr20   # real SNR by region + simulated low-SNR bias, ~5 min
 python scripts/prepare_session.py 01 02   # also 01 03, 02 01, 06 01; then the held-out grid in scripts/prior_heldout_summary.py's docstring
 python scripts/prior_heldout_summary.py
+# cohort (H7): all 66 sessions, then regional ICCs (classical vs network)
+scripts/cohort_run.sh                                            # 1 h 45 min; resumable; logs in work/logs/cohort
+python scripts/cohort_icc.py --tag _v5                           # -> results/cohort_icc_v5.json
 # v2-era results rerun with v4 (NOTES 2026-11-06, last entry)
 python scripts/posterior_smoke.py 0 --prior 4 --test-snr 20 35 --model results/posterior_smoke_hhs_v4long.pt --tag _v4long_test20_35
 python scripts/consistency.py B results/posterior_smoke_hhs_v4long.pt _v4long; python scripts/consistency.py C results/posterior_smoke_hhs_v4long.pt _v4long
@@ -162,9 +165,13 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - Option: coarse match on rotation-invariant features, then re-simulate candidate tissues rotated to the voxel's fiber direction.
    - Or predict from the network posterior.
    - Also calibrate surprise within FA bins, because the floor differs between WM and GM.
-3. **Cohort run for H7 (reliability).**
-   - Align, fit (constrained) and run network inference for all 66 sessions on GPU.
-   - Report whole-brain regional ICCs, classical vs network.
+3. **Cohort run for H7 (reliability): done for regional medians** (NOTES 2026-11-06, cohort entry).
+   - All 66 sessions are prepared, segmented and mapped with v5 (`scripts/cohort_run.sh`, 1 h 45 min; resumable). `scripts/cohort_icc.py` gives ICC(1,1) by FastSurfer region.
+   - The network does not raise regional ICCs. It shrinks within- and between-subject spread together. WM FA_t is better (+0.23); GM MD_t is worse (−0.4).
+   - Open:
+     - voxelwise/small-ROI reliability;
+     - a simulated cohort with known subject differences;
+     - prior dependence (`TAG=_v4long scripts/cohort_run.sh`).
    - The 5-subject pilot: under v2 the network cut session-to-session variation about 5× while keeping between-subject differences, but most of that was the prior. With v4long, WM tissue µFA between/within is 1.5 (classical 0.9, v2 3.9; `results/consistency_*_v4long.json`, NOTES 2026-11-06).
 4. **Longer network training on GPU**, across several protocols with random measurement subsets, for protocol invariance. This is the hook for the embedding work.
    - Fix the prior's FA_t gap first: v2 has 1.3% of tissue at FA 0.3–0.5, real data 22.5%, so FA_t (and C_c) is biased low in dispersed WM (NOTES 2026-11-06, `scripts/prior_fa_gap.py`).

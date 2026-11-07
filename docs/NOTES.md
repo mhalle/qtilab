@@ -1057,3 +1057,60 @@ Three long runs, each v5 with one addition removed (12,000 × 2048, seed 0, `--e
 - **Caveat:** the brainstem's real noise is mostly physiological (structured, likely cardiac). The simulator's noise is Rician thermal plus a white signal-proportional term, so v5's low-SNR behaviour there is right in direction but not proven in size.
 - **Status:** keep v5 as trained. Open: the WM FA_t gap (about 0.04), a structured physiological-noise model for the brainstem, and a held-out check of the noise options.
 
+## 2026-11-06: cohort run, all 66 sessions — test–retest reliability (H7): the network does not raise regional ICCs
+
+`scripts/cohort_run.sh` prepared, segmented and mapped every session. It took 1 h 45 min on the M1 Max, with no failures:
+- align and fit as before (CPU, float64), in 2 CPU lanes;
+- FastSurfer asegdkt (haversack, MPS) and v5's whole-brain posterior, one GPU job at a time.
+
+`scripts/cohort_icc.py` → `results/cohort_icc_v5.json`:
+- **Inputs:** regional medians in voxels ≥ 80% one FastSurfer region, per session; 22 subjects × 3 sessions.
+- **ICC(1,1)** (one-way random effects) with a 2000-resample bootstrap over subjects, and the bootstrap interval of ICC(network) − ICC(classical).
+- **Pairs:** classical against the network's tissue moments, and against its full-distribution µFA, MD and C_MD.
+
+**Classical reliability is modest.** It is lowest for the QTI-specific quantities:
+
+| | ICC range |
+|---|---|
+| FA | 0.27–0.74 |
+| MD | 0.46–0.79 |
+| µFA | −0.05–0.57 (cerebral WM 0.57; cortex 0.07) |
+| C_c | 0.11–0.63 |
+| C_MD | 0.06–0.56 |
+
+Between-subject differences are small in this cohort. The between-subject CV of MD is 1.4–4.6% against a within-subject CV of 0.9–2.5%.
+
+**Network against classical:** the bootstrap intervals of the difference exclude 0 only here:
+- **FA_t, cerebral WM:** +0.23 [+0.03, +0.37] (0.43 → 0.65).
+- **µFA_t, cerebellar cortex:** −0.39 [−0.73, −0.01].
+- **MD_t, worse in GM:**
+  - cortex −0.44 (0.46 → 0.02);
+  - caudate −0.47;
+  - cerebellar cortex −0.39.
+
+  The network's full-distribution MD matches classical MD (0.50, 0.77, 0.82). So removing free water costs MD reliability in GM. This is not a session-level trade-off with f_fw: within subjects, MD_t and f_fw changes are uncorrelated (r ≈ 0 in cortex and cerebellar cortex, −0.3 in caudate).
+
+**Near misses and the rest:**
+- **Brainstem:** FA_t +0.26 [−0.03, +0.54] and µFA_t +0.26 [−0.01, +0.49]. That fits v5's low-SNR handling, but it is not established.
+- **C_MD,t:** higher in every region (+0.02 to +0.27), but no interval excludes 0.
+- **The 7-subject preview misled.** WM C_MD 0.22 → 0.73 at 7 subjects is 0.21 → 0.23 at 22.
+
+**The network shrinks within- and between-subject variation together.** Comparing within-subject CV with between-subject CV of the subject means, classical against network:
+
+| | within-subject CV | between-subject CV |
+|---|---|---|
+| C_MD | 17–76% → 3–10% | 12–48% → 3–12% |
+| µFA | ~2× lower | 1.5–4× lower |
+
+Their ratio, and so the ICC, barely moves. Subjects rank much the same either way:
+- correlation of subject means for µFA: 0.84–0.95 in most regions (cerebellar cortex 0.20);
+- for C_MD: 0.69–0.93 (putamen 0.20, pallidum 0.55).
+
+This is the full-cohort version of the 2026-11-06 pilot lesson: a lower test–retest CV from a prior-informed estimator is not higher reliability.
+
+**Reading:**
+- **Regional medians average away the voxel noise the network is good at.** What remains between sessions is systematic: registration and partial volume against each session's FastSurfer, per-volume gains, physiology. The network cannot remove that, and it scales between-subject differences down with it.
+- **The sessions are menstrual-cycle phases**, the dataset's purpose, so part of the within-subject variation may be biological. All these ICCs are lower bounds on measurement reliability.
+- **H7, answered for regional medians:** the network adds accuracy (bias correction), not reliability. Exceptions are WM FA_t (better) and GM MD_t (worse).
+- **Untested:** voxelwise or small-ROI reliability, where noise matters. Is the shrunken between-subject spread of C_MD closer to the truth? That needs a simulated cohort with known subject differences. Does the shrinkage depend on the prior? Rerun the posteriors with another network (`TAG=_v4long scripts/cohort_run.sh`, ~40 min; the other steps are skipped).
+
