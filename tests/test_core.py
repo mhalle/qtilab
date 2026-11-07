@@ -114,6 +114,8 @@ def test_ipm_matches_tight_admm(drop_pte):
     assert float((ua - ui)[bad].abs().max()) < 1e-3
     assert float((ua - ui)[bad].abs().median()) < 1e-6
     assert torch.equal(pi[~bad], pa[~bad])                  # feasible WLS voxels are untouched
+    pc, _ = fit.constrained(X, S, solver="ipm", ipm_chunk=97)   # sub-batched barrier calls: same answer
+    assert torch.allclose(pc, pi, rtol=0, atol=1e-12)
 
 
 def test_rank_deficient_wls_float32_matches_float64():

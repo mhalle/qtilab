@@ -1327,7 +1327,11 @@ Prompted by RICE's per-voxel interior-point solves (previous entry): the useful 
   - torch.compile of an unrolled Cholesky fails on MPS: the generated kernel exceeds Metal's buffer-argument limit.
 - **CPU:** the cost is the Cholesky (68 ms), the barrier-Hessian gathers (55 ms) and the small inverses (28 ms). The line search costs about as much as it saves on CPU, but it is still a small net gain.
 - **Algorithmic:** a primal-dual method with Nesterov–Todd scaling and Mehrotra predictor–corrector (CLARABEL's) typically takes 10–20 iterations instead of about 23.
-- **Not run on CUDA yet.** The line-search `eigvalsh` goes through `tensors.batched` because of CUDA's workspace problem.
+- **CUDA** (Modal L40S, `scripts/modal_check_hhs.py`, `results/modal_check_hhs_sub01_ses01_L40S.json`, whole HHS session):
+  - float32: IPM 0.8 s (98% converged) vs ADMM 4.6 s (70%). µFA vs the tight float64 fit: p99 2e-4 for both, max 7e-4 (IPM) vs 6e-4 (ADMM).
+  - float64: IPM 3.0 s (100%) vs ADMM 12.6 s (85%). µFA within 8e-7 of the tight fit (ADMM 7e-4).
+  - **Memory:** IPM's peak was 16 GB in float32 and 32 GB in float64 for 59k constrained voxels in one call, about 3× ADMM's 5.3 GB. The GPU chunk size had been set from ADMM's estimate, so a 16–24 GB card could have run out of memory.
+  - Fixed: on GPUs the constrained voxels now go to `ipm.barrier` in sub-batches sized from free memory at 75k × element size bytes per voxel (`fit._ipm_chunk`). That gives one call for HHS on the M1 Max (74k) and the L40S in float32 (61k), and about 29k on a 24 GB card. Sub-batching is tested to give identical results. The fix is not yet re-run on CUDA.
 
 **Open decisions:**
 - Make IPM the default solver. It is faster, fully converged and strictly feasible, but every number in these notes so far is ADMM's, which agrees to ≤ 1e-3 in µFA.

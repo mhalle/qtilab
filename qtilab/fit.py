@@ -228,7 +228,23 @@ def _admm(H, g, x0, rho=1.0, max_iter=1000, eps_abs=1e-6, eps_rel=1e-4,
     return z * s, it, 1.0 - act.numel() / V
 
 
-def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", **solver_kw):
+IPM_BYTES_PER_VOXEL = 75_000   # x element size: peak per constrained voxel of ipm.barrier (CUDA, 2026-11-07)
+IPM_STATS = ("max_steps", "failed_fraction", "failed_near_target", "failed_dc", "failed_newton", "uncertified_fraction")
+
+
+def _ipm_chunk(H, chunk):
+    """Constrained voxels per ``ipm.barrier`` call: ``chunk`` if given; all on CPU; on a GPU as many as fit in
+    ``GPU_MEMORY_FRACTION`` of free memory. Measured on an L40S, HHS (59k constrained voxels in one call):
+    16 GB peak in float32 and 32 GB in float64, about 3x ADMM's (``_bytes_per_voxel`` is sized for ADMM)."""
+    if chunk is not None:
+        return int(chunk)
+    free = _gpu_free_bytes(H.device) if H.device.type != "cpu" else None
+    if free is None:
+        return max(1, H.shape[0])
+    return max(GPU_CHUNK_MIN, int(GPU_MEMORY_FRACTION * free) // (H.element_size() * IPM_BYTES_PER_VOXEL))
+
+
+def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", ipm_chunk=None, **solver_kw):
     """QTI+ (dc): WLS with <D> >= 0 and C >= 0. Returns (params, FitInfo).
 
     For a rank-deficient protocol (e.g. LTE + STE only, rank 23) the objective is flat along the
@@ -238,7 +254,7 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", **sol
 
     ``chunk``: voxels per batch, default 20k on CPU and 250k on GPUs (see ``_chunk``).
     ``solver``: "admm" (``_admm``) or "ipm" (``ipm.barrier``, a batched interior-point method); ``solver_kw``
-    go to it.
+    go to it. ``ipm_chunk``: constrained voxels per interior-point call (default: see ``_ipm_chunk``).
     """
     chunk = _chunk(S, chunk)
     rank = int(torch.linalg.matrix_rank(X))
@@ -262,7 +278,15 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", **sol
                 f_scale = 0.5 * ((w[bad] * (p[bad] @ X.T - y)) ** 2).sum(-1)
                 f_scale = f_scale + 1e-6 * 0.5 * ((w[bad] * y) ** 2).sum(-1)   # floor for noise-free signals
                 # the gradient at the WLS point, computed once (in float32 p does not solve H p = g exactly)
-                pb, it, cf, ex = ipm.barrier(Hb, g[bad], p[bad], f_scale, **solver_kw)
+                gb, xb, n = g[bad], p[bad], Hb.shape[0]
+                step = _ipm_chunk(Hb, ipm_chunk)
+                parts = [ipm.barrier(Hb[j:j + step], gb[j:j + step], xb[j:j + step], f_scale[j:j + step], **solver_kw)
+                         for j in range(0, n, step)]
+                pb = torch.cat([q[0] for q in parts])
+                it = max(q[1] for q in parts)
+                cf = sum(q[2] * len(q[0]) for q in parts) / n
+                ex = {k: max(q[3][k] for q in parts) for k in IPM_STATS}
+                ex["median_steps"] = parts[0][3]["median_steps"]
                 extra.append(ex)
             else:
                 pb, it, cf = _admm(Hb, g[bad], p[bad], **solver_kw)
@@ -275,9 +299,7 @@ def constrained(X, S, weights=None, chunk=None, ridge=1e-6, solver="admm", **sol
     cf = (sum(c * n for c, n in conv) / max(1, sum(n for _, n in conv))) if conv else 1.0
     ex = {}
     if extra:
-        ex = {"max_steps": max(e["max_steps"] for e in extra), "median_steps": extra[0]["median_steps"],
-              **{k: max(e[k] for e in extra) for k in ("failed_fraction", "failed_near_target", "failed_dc", "failed_newton",
-                                                "uncertified_fraction")}}
+        ex = {k: max(e[k] for e in extra) for k in IPM_STATS} | {"median_steps": extra[0]["median_steps"]}
     return torch.cat(out), FitInfo("constrained", S.shape[0], n_bad, iters, cf, ex)
 
 
