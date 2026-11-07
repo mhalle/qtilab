@@ -12,7 +12,10 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   2. Run `uv run pytest`.
   3. Merge `dev` into `main` (fast-forward when possible).
   4. Tag `vX.Y.Z` on `main` and push the branch and tag. Push only when asked.
-- CI (`.github/workflows/tests.yml`, macOS, `uv sync --locked` then pytest and a CLI smoke test) runs on pushes to `main` and `dev` and on PRs into `main`. Keep `uv.lock` in sync with `pyproject.toml`, or `--locked` fails.
+- CI (`.github/workflows/tests.yml`) runs on pushes to `main` and `dev` and on PRs into `main`. There are two jobs, each running pytest and a CLI smoke test, both on Python 3.12 (3.15 has no h5py wheel):
+  - **macOS:** `uv sync --locked`.
+  - **Linux:** every locked package from `uv export`, except that torch is the CPU-only wheel at the locked version (200 MB instead of 2.5 GB of CUDA).
+- Tests must not demand bitwise equality across batch sizes. Linux MKL rounds batched linear algebra differently with batch size. Keep `uv.lock` in sync with `pyproject.toml`, or `--locked` fails.
 
 ## Layout
 

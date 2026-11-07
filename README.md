@@ -47,7 +47,7 @@ uv tool install git+https://github.com/mhalle/qtilab@v0.1.0      # then: qtilab 
 uvx --from git+https://github.com/mhalle/qtilab@v0.1.0 qtilab --help   # or run without installing
 ```
 
-**Branches:** `main` is stable; every release is a tag on it (`v0.1.0`, ...). `dev` is where work happens and may be unstable. CI (GitHub Actions, macOS) runs the tests on both branches and on pull requests into `main`.
+**Branches:** `main` is stable; every release is a tag on it (`v0.1.0`, ...). `dev` is where work happens and may be unstable. CI (GitHub Actions: macOS, and Linux with CPU-only torch) runs the tests on both branches and on pull requests into `main`.
 
 ## Command line
 
