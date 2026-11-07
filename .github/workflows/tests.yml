@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test-macos:
     # macOS: PyTorch's macOS wheels are small and CPU/MPS-only; the Linux PyPI wheels pull ~2.5 GB of CUDA libraries.
     runs-on: macos-latest
     timeout-minutes: 30
@@ -26,3 +26,31 @@ jobs:
         run: |
           uv run qtilab --version
           uv run qtilab fit --help > /dev/null
+
+  test-linux-cpu:
+    # Linux with CPU-only torch (~200 MB instead of ~2.5 GB of CUDA libraries). Every other package is installed at
+    # its locked version (uv export); torch comes from PyTorch's CPU index at the locked version.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+      - name: Install (locked, CPU torch)
+        run: |
+          TORCH=$(uv export --frozen --no-hashes --no-emit-project --group dev | grep -E '^torch==' | cut -d' ' -f1)
+          uv export --frozen --no-hashes --no-emit-project --group dev \
+            | grep -vE '^(torch|triton|nvidia-|cuda-)' > requirements-nocuda.txt
+          uv venv
+          uv pip install "${TORCH}+cpu" --index-url https://download.pytorch.org/whl/cpu
+          uv pip install -r requirements-nocuda.txt
+          uv pip install --no-deps -e .
+          uv pip list | grep -iE '^(torch|nvidia|triton) ' || true
+      - name: Tests (no downloaded data needed)
+        run: uv run --no-sync pytest -q
+      - name: CLI smoke test
+        run: |
+          uv run --no-sync qtilab --version
+          uv run --no-sync qtilab fit --help > /dev/null
