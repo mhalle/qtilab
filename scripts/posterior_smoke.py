@@ -38,14 +38,33 @@ ap.add_argument("--pulsation", type=float, default=0.0, help="extra fluid noise,
 ap.add_argument("--gain-sd", type=float, default=0.0, help="per-measurement gain jitter sd")
 ap.add_argument("--exact-fw", action="store_true", help="free water as an exactly weighted compartment (simulate.sample_brain exact_fw), in training and test")
 ap.add_argument("--model", default="", help="with steps = 0: evaluate this saved model instead of the tag's (output still named by --tag)")
+ap.add_argument("--protocol", default="hhs", choices=["hhs", "cardiff"],
+                help="hhs: sub-01 ses-01's table; cardiff: data1's table (qtilab.cardiff); outputs posterior_smoke_{protocol}{tag}")
+ap.add_argument("--prior-set", nargs="*", default=[], metavar="KEY=LO,HI",
+                help="override brain-prior ranges, e.g. ax_dd=0.99,1.0 (stick axons); the prior becomes a dict")
+ap.add_argument("--bmax", type=float, default=None, help="keep only volumes with b <= bmax (ms/µm²)")
 args = ap.parse_args()
+prior = args.prior
+if args.prior_set:
+    from qtilab.simulate import BRAIN_PRIORS
+    prior = dict(BRAIN_PRIORS[args.prior])
+    for kv in args.prior_set:
+        k, v = kv.split("=")
+        prior[k] = tuple(float(x) for x in v.split(","))
 fm = dict(exact_fw=args.exact_fw, td_ratio=args.td_ratio, alpha=tuple(args.alpha) if args.alpha else None,
           pulsation=args.pulsation, gain_sd=args.gain_sd)   # forward-model options, training and test
 steps = args.steps
 tag = args.tag
-model_path = f"results/posterior_smoke_hhs{tag}.pt"
+model_path = f"results/posterior_smoke_{args.protocol}{tag}.pt"
 torch.set_num_threads(2)
-prot = session_protocol("01", "01")
+if args.protocol == "cardiff":
+    from qtilab.cardiff import subject_protocol
+    prot = subject_protocol("data1")
+else:
+    prot = session_protocol("01", "01")
+if args.bmax is not None:
+    prot = prot.subset(prot.b <= args.bmax + 0.06)
+    print(f"protocol restricted to b <= {args.bmax:g}: {prot.n} volumes, rank {prot.rank()}", flush=True)
 if args.shapes:
     prot = prot.subset(prot.keep_shapes(args.shapes.split(",")))
     print(f"protocol restricted to {args.shapes} + b0: {prot.n} volumes, rank {prot.rank()}", flush=True)
@@ -65,7 +84,7 @@ t0 = time.perf_counter()
 if steps == 0:                                   # evaluation only, from the saved model
     net.load_state_dict(torch.load(args.model or model_path, map_location="cpu"))
 for step in range(1, steps + 1):
-    b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=args.prior,
+    b = posterior.simulate_batch(prot, args.batch, g=g, snr=tuple(args.snr), prior_version=prior,
                                  **fm, **sim_kw)
     loss = loss_fn(b.x, b.y)
     opt.zero_grad(); loss.backward()
@@ -82,7 +101,7 @@ if args.no_eval:
 # ---- held-out evaluation
 net.eval()
 gt = torch.Generator().manual_seed(12345)
-test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=args.prior,
+test = posterior.simulate_batch(prot, 4000, g=gt, snr=tuple(args.test_snr), prior_version=prior,
                                 **fm)
 smp = net.sample(test.x, n=100)                         # (n, V, T)
 pm = smp.mean(0).numpy()
@@ -133,6 +152,8 @@ for i, k in enumerate(T):
     print(f"  {k:7s} {cov50[i]:.2f} / {cov90[i]:.2f}   median 90% width {np.median(hi90[:, i] - lo90[:, i]):.3f}")
 res["coverage50"] = dict(zip(T, map(float, cov50)))
 res["coverage90"] = dict(zip(T, map(float, cov90)))
+res["prior_set"] = args.prior_set
 res["prior"], res["snr"], res["test_snr"] = args.prior, list(args.snr), list(args.test_snr)
 res["forward_model"] = {**fm, "alpha": list(fm["alpha"]) if fm["alpha"] else None}
-json.dump(res, open(f"results/posterior_smoke_hhs{tag}.json", "w"), indent=1)
+res["protocol"], res["bmax"], res["n_volumes"] = args.protocol, args.bmax, prot.n
+json.dump(res, open(f"results/posterior_smoke_{args.protocol}{tag}.json", "w"), indent=1)

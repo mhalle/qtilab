@@ -166,8 +166,9 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
 
     Ranges above are ``version=1``; ``version=2`` (default) widens them, see ``BRAIN_PRIORS``. ``version`` may
     also be a dict of the same keys (for prior experiments); optional keys ``wm_nb`` (probabilities of
-    1, 2, 3 bundles, default (0.6, 0.3, 0.1)) and ``wm_alpha`` (integer Dirichlet concentration of the
-    bundle weights, default 2).
+    1, 2, 3 bundles, default (0.6, 0.3, 0.1)), ``wm_alpha`` (integer Dirichlet concentration of the
+    bundle weights, default 2), ``ax_dd`` (intra-axonal D_Delta range, default (0.9, 1.0); 1 is a stick) and
+    ``gm_ndd`` (GM neurite D_Delta range, default (0.8, 1.0)).
 
     ``exact_fw=True``: free water is not one of the M sampled micro-tensors (whose count is random, and
     often 0 at a few percent of free water) but one extra micro-tensor (3 I) carrying exactly the voxel's
@@ -194,7 +195,7 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     for k in range(3):
         a, e = 2 * k, 2 * k + 1
         w[:, a] = bw[:, k] * f_ax[:, k]; w[:, e] = bw[:, k] * (1 - f_ax[:, k])
-        d_iso[:, a] = u(*P['ax_d']); d_del[:, a] = u(0.9, 1.0)
+        d_iso[:, a] = u(*P['ax_d']); d_del[:, a] = u(*P.get('ax_dd', (0.9, 1.0)))
         d_iso[:, e] = u(*P['ex_d']); d_del[:, e] = u(*P['ex_dd'])
         dk = lu(*P['wm_disp']); disp[:, a] = dk; disp[:, e] = dk
         mu[:, e] = mu[:, a]
@@ -205,7 +206,7 @@ def sample_brain(V, M=64, g=None, dtype=torch.float64, device="cpu", class_probs
     f_n, f_s = u(*P['gm_fn']), u(*P['gm_fs'])
     f_s = torch.minimum(f_s, 0.95 - f_n)                 # keep the extracellular fraction positive
     gw[:, 0], gw[:, 1], gw[:, 2] = f_n, f_s, 1 - f_n - f_s
-    gd[:, 0], gdd[:, 0], gdisp[:, 0] = u(*P['gm_nd']), u(0.8, 1.0), lu(0.8, 3.0)
+    gd[:, 0], gdd[:, 0], gdisp[:, 0] = u(*P['gm_nd']), u(*P.get('gm_ndd', (0.8, 1.0))), lu(0.8, 3.0)
     gd[:, 1], gdd[:, 1] = u(*P['gm_sd']), 0.0
     gd[:, 2], gdd[:, 2], gdisp[:, 2] = u(*P['gm_ed']), u(*P['gm_edd']), lu(0.5, 3.0)
     fw_gm = u(*P['fw_gm'])

@@ -1,0 +1,453 @@
+{
+ "sub": "data1",
+ "series": "ec",
+ "rician": false,
+ "k": 20,
+ "bank": 200000,
+ "n_vox": 47117,
+ "shells": [
+  "LTE3",
+  "LTE4.5",
+  "LTE6",
+  "PTE3",
+  "PTE4.5",
+  "PTE6",
+  "STE3",
+  "STE4.5",
+  "STE6"
+ ],
+ "results": {
+  "WM-like": {
+   "n": 7452,
+   "classical": {
+    "LTE3": {
+     "bias_pct": 17.5,
+     "abs_pct": 17.5,
+     "abs_noise_sd": 50.36
+    },
+    "LTE4.5": {
+     "bias_pct": 118.4,
+     "abs_pct": 118.4,
+     "abs_noise_sd": 266.56
+    },
+    "LTE6": {
+     "bias_pct": 742.7,
+     "abs_pct": 742.7,
+     "abs_noise_sd": 1995.36
+    },
+    "PTE3": {
+     "bias_pct": -3.1,
+     "abs_pct": 5.5,
+     "abs_noise_sd": 7.86
+    },
+    "PTE4.5": {
+     "bias_pct": -5.3,
+     "abs_pct": 14.0,
+     "abs_noise_sd": 11.75
+    },
+    "PTE6": {
+     "bias_pct": 1.8,
+     "abs_pct": 23.8,
+     "abs_noise_sd": 19.3
+    },
+    "STE3": {
+     "bias_pct": -0.2,
+     "abs_pct": 6.1,
+     "abs_noise_sd": 3.87
+    },
+    "STE4.5": {
+     "bias_pct": -8.4,
+     "abs_pct": 18.2,
+     "abs_noise_sd": 5.19
+    },
+    "STE6": {
+     "bias_pct": -28.8,
+     "abs_pct": 40.1,
+     "abs_noise_sd": 6.32
+    }
+   },
+   "prior v4": {
+    "LTE3": {
+     "bias_pct": -7.7,
+     "abs_pct": 7.9,
+     "abs_noise_sd": 21.26
+    },
+    "LTE4.5": {
+     "bias_pct": -13.1,
+     "abs_pct": 13.3,
+     "abs_noise_sd": 27.06
+    },
+    "LTE6": {
+     "bias_pct": -18.3,
+     "abs_pct": 18.6,
+     "abs_noise_sd": 44.56
+    },
+    "PTE3": {
+     "bias_pct": 3.9,
+     "abs_pct": 4.4,
+     "abs_noise_sd": 6.1
+    },
+    "PTE4.5": {
+     "bias_pct": 0.6,
+     "abs_pct": 6.0,
+     "abs_noise_sd": 4.71
+    },
+    "PTE6": {
+     "bias_pct": -4.3,
+     "abs_pct": 9.8,
+     "abs_noise_sd": 7.39
+    },
+    "STE3": {
+     "bias_pct": -2.5,
+     "abs_pct": 3.6,
+     "abs_noise_sd": 2.26
+    },
+    "STE4.5": {
+     "bias_pct": -15.0,
+     "abs_pct": 15.2,
+     "abs_noise_sd": 4.37
+    },
+    "STE6": {
+     "bias_pct": -40.6,
+     "abs_pct": 40.6,
+     "abs_noise_sd": 6.41
+    }
+   },
+   "prior v2": {
+    "LTE3": {
+     "bias_pct": -6.9,
+     "abs_pct": 7.1,
+     "abs_noise_sd": 18.96
+    },
+    "LTE4.5": {
+     "bias_pct": -13.1,
+     "abs_pct": 13.2,
+     "abs_noise_sd": 26.72
+    },
+    "LTE6": {
+     "bias_pct": -19.3,
+     "abs_pct": 19.3,
+     "abs_noise_sd": 46.57
+    },
+    "PTE3": {
+     "bias_pct": 3.9,
+     "abs_pct": 4.6,
+     "abs_noise_sd": 6.1
+    },
+    "PTE4.5": {
+     "bias_pct": -0.1,
+     "abs_pct": 6.4,
+     "abs_noise_sd": 5.13
+    },
+    "PTE6": {
+     "bias_pct": -6.4,
+     "abs_pct": 10.7,
+     "abs_noise_sd": 8.23
+    },
+    "STE3": {
+     "bias_pct": -3.9,
+     "abs_pct": 4.7,
+     "abs_noise_sd": 2.85
+    },
+    "STE4.5": {
+     "bias_pct": -17.6,
+     "abs_pct": 17.8,
+     "abs_noise_sd": 5.15
+    },
+    "STE6": {
+     "bias_pct": -43.1,
+     "abs_pct": 43.2,
+     "abs_noise_sd": 6.89
+    }
+   }
+  },
+  "GM-like": {
+   "n": 14151,
+   "classical": {
+    "LTE3": {
+     "bias_pct": 21.7,
+     "abs_pct": 21.7,
+     "abs_noise_sd": 50.43
+    },
+    "LTE4.5": {
+     "bias_pct": 125.8,
+     "abs_pct": 125.8,
+     "abs_noise_sd": 171.29
+    },
+    "LTE6": {
+     "bias_pct": 571.3,
+     "abs_pct": 571.3,
+     "abs_noise_sd": 762.4
+    },
+    "PTE3": {
+     "bias_pct": 3.0,
+     "abs_pct": 7.6,
+     "abs_noise_sd": 12.64
+    },
+    "PTE4.5": {
+     "bias_pct": 22.1,
+     "abs_pct": 26.2,
+     "abs_noise_sd": 21.14
+    },
+    "PTE6": {
+     "bias_pct": 68.7,
+     "abs_pct": 68.8,
+     "abs_noise_sd": 40.45
+    },
+    "STE3": {
+     "bias_pct": -0.6,
+     "abs_pct": 12.6,
+     "abs_noise_sd": 11.29
+    },
+    "STE4.5": {
+     "bias_pct": 9.8,
+     "abs_pct": 36.3,
+     "abs_noise_sd": 14.36
+    },
+    "STE6": {
+     "bias_pct": 26.4,
+     "abs_pct": 65.2,
+     "abs_noise_sd": 13.73
+    }
+   },
+   "prior v4": {
+    "LTE3": {
+     "bias_pct": 3.9,
+     "abs_pct": 5.2,
+     "abs_noise_sd": 12.3
+    },
+    "LTE4.5": {
+     "bias_pct": 10.7,
+     "abs_pct": 12.8,
+     "abs_noise_sd": 17.24
+    },
+    "LTE6": {
+     "bias_pct": 13.8,
+     "abs_pct": 17.8,
+     "abs_noise_sd": 23.52
+    },
+    "PTE3": {
+     "bias_pct": 6.5,
+     "abs_pct": 6.6,
+     "abs_noise_sd": 10.93
+    },
+    "PTE4.5": {
+     "bias_pct": 16.2,
+     "abs_pct": 16.4,
+     "abs_noise_sd": 11.96
+    },
+    "PTE6": {
+     "bias_pct": 22.6,
+     "abs_pct": 23.3,
+     "abs_noise_sd": 13.19
+    },
+    "STE3": {
+     "bias_pct": -1.4,
+     "abs_pct": 4.6,
+     "abs_noise_sd": 4.12
+    },
+    "STE4.5": {
+     "bias_pct": -3.1,
+     "abs_pct": 11.9,
+     "abs_noise_sd": 4.58
+    },
+    "STE6": {
+     "bias_pct": -12.7,
+     "abs_pct": 23.4,
+     "abs_noise_sd": 4.53
+    }
+   },
+   "prior v2": {
+    "LTE3": {
+     "bias_pct": 4.5,
+     "abs_pct": 5.4,
+     "abs_noise_sd": 12.68
+    },
+    "LTE4.5": {
+     "bias_pct": 11.2,
+     "abs_pct": 12.5,
+     "abs_noise_sd": 17.08
+    },
+    "LTE6": {
+     "bias_pct": 12.9,
+     "abs_pct": 16.5,
+     "abs_noise_sd": 22.18
+    },
+    "PTE3": {
+     "bias_pct": 6.4,
+     "abs_pct": 6.5,
+     "abs_noise_sd": 10.76
+    },
+    "PTE4.5": {
+     "bias_pct": 15.5,
+     "abs_pct": 15.8,
+     "abs_noise_sd": 11.57
+    },
+    "PTE6": {
+     "bias_pct": 20.6,
+     "abs_pct": 21.9,
+     "abs_noise_sd": 12.63
+    },
+    "STE3": {
+     "bias_pct": -1.5,
+     "abs_pct": 4.4,
+     "abs_noise_sd": 3.89
+    },
+    "STE4.5": {
+     "bias_pct": -3.2,
+     "abs_pct": 10.8,
+     "abs_noise_sd": 4.19
+    },
+    "STE6": {
+     "bias_pct": -12.9,
+     "abs_pct": 21.4,
+     "abs_noise_sd": 4.17
+    }
+   }
+  },
+  "CSF-like": {
+   "n": 6523,
+   "classical": {
+    "LTE3": {
+     "bias_pct": 169.9,
+     "abs_pct": 169.9,
+     "abs_noise_sd": 146.99
+    },
+    "LTE4.5": {
+     "bias_pct": 7161.9,
+     "abs_pct": 7161.9,
+     "abs_noise_sd": 3625.69
+    },
+    "LTE6": {
+     "bias_pct": 3349402.1,
+     "abs_pct": 3349402.1,
+     "abs_noise_sd": 1558490.27
+    },
+    "PTE3": {
+     "bias_pct": 95.2,
+     "abs_pct": 98.2,
+     "abs_noise_sd": 74.18
+    },
+    "PTE4.5": {
+     "bias_pct": 2987.8,
+     "abs_pct": 2987.8,
+     "abs_noise_sd": 1316.9
+    },
+    "PTE6": {
+     "bias_pct": 485611.9,
+     "abs_pct": 485611.9,
+     "abs_noise_sd": 170490.55
+    },
+    "STE3": {
+     "bias_pct": 92.2,
+     "abs_pct": 97.9,
+     "abs_noise_sd": 39.39
+    },
+    "STE4.5": {
+     "bias_pct": 2518.6,
+     "abs_pct": 2518.6,
+     "abs_noise_sd": 620.04
+    },
+    "STE6": {
+     "bias_pct": 248386.0,
+     "abs_pct": 248386.0,
+     "abs_noise_sd": 38625.01
+    }
+   },
+   "prior v4": {
+    "LTE3": {
+     "bias_pct": 37.4,
+     "abs_pct": 41.3,
+     "abs_noise_sd": 31.52
+    },
+    "LTE4.5": {
+     "bias_pct": 51.0,
+     "abs_pct": 54.3,
+     "abs_noise_sd": 24.02
+    },
+    "LTE6": {
+     "bias_pct": 56.0,
+     "abs_pct": 60.1,
+     "abs_noise_sd": 26.25
+    },
+    "PTE3": {
+     "bias_pct": 5.9,
+     "abs_pct": 19.2,
+     "abs_noise_sd": 12.39
+    },
+    "PTE4.5": {
+     "bias_pct": 5.7,
+     "abs_pct": 25.6,
+     "abs_noise_sd": 7.91
+    },
+    "PTE6": {
+     "bias_pct": -3.3,
+     "abs_pct": 30.1,
+     "abs_noise_sd": 8.58
+    },
+    "STE3": {
+     "bias_pct": -9.6,
+     "abs_pct": 22.2,
+     "abs_noise_sd": 7.2
+    },
+    "STE4.5": {
+     "bias_pct": -32.7,
+     "abs_pct": 38.7,
+     "abs_noise_sd": 6.5
+    },
+    "STE6": {
+     "bias_pct": -63.3,
+     "abs_pct": 67.5,
+     "abs_noise_sd": 8.25
+    }
+   },
+   "prior v2": {
+    "LTE3": {
+     "bias_pct": 32.4,
+     "abs_pct": 39.0,
+     "abs_noise_sd": 27.82
+    },
+    "LTE4.5": {
+     "bias_pct": 41.9,
+     "abs_pct": 49.4,
+     "abs_noise_sd": 21.07
+    },
+    "LTE6": {
+     "bias_pct": 44.6,
+     "abs_pct": 53.7,
+     "abs_noise_sd": 23.22
+    },
+    "PTE3": {
+     "bias_pct": 3.0,
+     "abs_pct": 18.6,
+     "abs_noise_sd": 11.54
+    },
+    "PTE4.5": {
+     "bias_pct": 0.4,
+     "abs_pct": 26.1,
+     "abs_noise_sd": 7.62
+    },
+    "PTE6": {
+     "bias_pct": -11.2,
+     "abs_pct": 32.5,
+     "abs_noise_sd": 9.18
+    },
+    "STE3": {
+     "bias_pct": -10.1,
+     "abs_pct": 21.1,
+     "abs_noise_sd": 6.57
+    },
+    "STE4.5": {
+     "bias_pct": -34.8,
+     "abs_pct": 42.1,
+     "abs_noise_sd": 6.8
+    },
+    "STE6": {
+     "bias_pct": -62.1,
+     "abs_pct": 68.4,
+     "abs_noise_sd": 8.26
+    }
+   }
+  }
+ }
+}
