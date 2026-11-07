@@ -40,7 +40,10 @@ with a GPU-friendly PyTorch core. The scientific direction and findings so far a
   - The phantoms used by `scripts/phantoms_dib.py` live in the same repo under `DATA/{water,oil,hex}/MD-dMRI`; add them to the sparse checkout.
 - **Hormone Health Study** (22 subjects × 3 sessions, LTE+STE, CC0, 8.8 GB): run `python scripts/fetch_hhs.py data/hhs`, then set `QTILAB_HHS_ROOT=data/hhs` if it lives elsewhere.
   - Several scripts read an aligned session saved by `hhs.load_session` (`hhs_sub01_ses01_aligned.npz`) and a classical fit of it (`results/hhs_sub01_ses01.npz`). Regenerate both on a new machine; paths are at the top of each script.
-- **Cardiff b-tensor data** (Afzali 2021, CC BY, DOI 10.17035/d.2021.0135083057, under 1 GB): not fetched yet. The repository sits behind a browser check, so download it by hand.
+- **Cardiff b-tensor data** (Afzali 2021, CC BY 4.0, DOI 10.17035/d.2021.0135083057): run `scripts/fetch_cardiff.sh data/cardiff` (251.5 MB zip, md5-checked; Figshare's API skips the web page's browser check).
+  - Two participants (`data1`, `data2`) on the 3T Connectom, 3 mm isotropic, TE 88 ms, 70×70×42. LTE and PTE have 439 volumes each, STE 182, plus a reversed-PE STE b0. There are no JSON sidecars or waveforms.
+  - The bval files list nominal shells 0–12 ms/µm² for all three encodings, more than the dataset description gives. The powder-averaged decay is consistent with the nominal b at low b (LTE > PTE > STE at every shell). STE reaches the noise floor (~0.01 of S0) by b ≈ 6.
+  - PTE bvecs repeat LTE's directions; presumably they are the plane normals (unverified).
 
 ## Reproducing the results (in order)
 
@@ -185,4 +188,4 @@ GPU runs use `device="mps"` (PyTorch 2.15 MPS confirmed working), or Modal for C
    - Generic prior: spherical encoding cuts GM µFA error by about 25–30%, with no gain in WM.
    - Next: apply LTE-only models to a legacy multi-shell dataset (HCP-style), and quantify prior dependence there.
 6. **Real waveforms.** DiB ships its waveforms. For HHS, ask the authors (Erlangen waveforms, Martin et al. 2020). Replace the single spectral ratio with real encoding spectra.
-7. **Cardiff b = 3–10 extrapolation test** once the data is downloaded by hand.
+7. **Cardiff b = 3–12 extrapolation test** (data fetched 2026-11-06; needs a loader, protocol and motion/eddy correction first).
