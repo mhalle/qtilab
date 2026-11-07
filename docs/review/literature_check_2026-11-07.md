@@ -115,3 +115,26 @@
 3. Try Epstein-style maximum-likelihood labels as a less prior-dominated baseline.
 4. Run a targeted novelty search (ISMRM 2025–26, CDMRI) before claiming the amortized-posterior QTI.
 5. Read the RICE paper before scoping a tools paper.
+
+## Addendum: RICE (iRICE + CWLLS) compared with qtilab
+
+Read from the [arXiv HTML](https://arxiv.org/html/2608.27212), v3. Code: github.com/CollapsarEcho/iRICE-CWLLS (not downloaded). Their imaging data are not public.
+
+| | iRICE + CWLLS (Yu et al. 2026) | qtilab |
+|---|---|---|
+| Model | 2nd-order cumulant, ℓ = 0 and 2 only: **8 coefficients** (D₀, five D^{2m}, Q₀, T₀). Discards the ℓ = 2/4 covariance terms | Full QTI, **28 parameters** (S0, ⟨D⟩ 6, ℂ 21); rank 23 on LTE+STE (HHS), full rank with PTE (DiB, Cardiff) |
+| Protocol | LTE+STE only. 20 volumes, 1.5 min: b0, LTE b = 1 × 10 (dodecahedron), LTE b = 2 × 6 (icosahedron), STE b = 2 × 3 | Any b-tensor table |
+| Constraints | Necessary conditions on the 8 coefficients: 0 ⪯ D ⪯ D_max·I (D_max = 3.075), Q₀, T₀ ≥ 0, and a new Bhatia–Davis bound Q₀ + T₀ + ⅕D₂² ≤ D₀(D_max − D₀). Not equivalent to the QTI+ constraints | QTI+ "dc": ⟨D⟩ ⪰ 0, ℂ ⪰ 0 and the dc relaxation (6×6 and 3×3 SDP cones). **No upper diffusivity bound**; allows µFA > 1 and C_c > 1 in a few thousand voxels |
+| Solver | WLLS, then CVXPY + MOSEK only on violating voxels (33% in the patient) | Batched ADMM on every voxel, GPU or CPU; matches DIPY SDPdc/CLARABEL |
+| Speed | 27 s for about 40k voxels on a 24-core i9. Their constrained QTI reference took 72 min ("160×") | About 200k voxels in 26–32 s on M1 Max MPS (one chunk), 7 s float32 on an A10, about 100 s on the M1 CPU |
+| Validation | Simulation (two DTDs, SNR 30) and 14 volunteers, both qualitative, with no numerical agreement vs QTI. One glioma patient (violation counts). One-volunteer resolution/SNR test. No repeatability | Numerical match to DIPY on DiB and HHS; 66-session test–retest cohort; posterior network |
+| Learned components | None. The same group (Goedicke, Laun, Kuder) has a separate ML-QTI abstract (ISMRM 2024 #3464) | Posterior network (set encoder + flow) |
+
+**Positioning:**
+- RICE's speed claim is against a slow constrained QTI fit. qtilab's GPU fit solves the *full* constrained QTI problem in about the same wall time, so speed alone is no reason to drop to 8 coefficients.
+- Their real contribution is the reduced protocol: 20 volumes and 1.5 min. The direction sets are 5-designs, so the discarded ℓ = 4 terms average out of the ℓ = 0 estimates. That only holds for their direction sets.
+- **Borrow:** the upper diffusivity bound D_max and their mean-dependent variance bound are physically justified, and qtilab has neither. They may remove our µFA > 1 and C_c > 1 voxels and tame C_MD at CSF interfaces.
+- **Open, can be tested here:**
+  1. Accuracy against truth on their 20-volume protocol (simulation), RICE vs our constrained QTI vs a network trained on that protocol. Use a generic or published DTD set, not our brain prior, to avoid favouring the network.
+  2. iRICE on HHS (LTE+STE, non-5-design directions), where ℓ = 4 aliasing could bias it.
+  3. Adding D_max to our constraints.
