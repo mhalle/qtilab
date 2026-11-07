@@ -1217,3 +1217,53 @@ Median signed error (prediction − observed) / observed, data1 / data2:
 - **What it does show:** on real data the b ≤ 2 and b ≤ 6 networks agree to about 0.01 in WM and disagree by 0.02–0.04 in GM tissue µFA, subject-dependent, where the prior's high-b signal is known to be wrong. That bounds how much of the GM tissue µFA is set by the prior's assumed high-b behaviour: about 0.02–0.04, or 3–6%.
 - **Classical b ≤ 2 behaves on real data as simulation predicts** relative to the network, consistent with, but not proof of, the truncation correction being right in direction and size for MD.
 - Next, if pursued: a GM prior with faster high-b decay (an exchange-like term or a non-Gaussian neurite compartment) and check whether the b ≤ 2 vs b ≤ 6 GM gap closes. Two subjects only.
+
+## 2026-11-07: RICE (iRICE + CWLLS) run against qtilab — same answers on a full protocol; different µFA definition
+
+**Setup.** The authors' package (github.com/CollapsarEcho/iRICE-CWLLS, commit 8cf9c90) was cloned to `work/ext/` and run unmodified.
+- **Solver:** CLARABEL, since there is no MOSEK licence. All 12 of its tests pass. Residual constraint violations are 0.03% of voxels on HHS.
+- **Script:** `scripts/rice_compare.py` → `results/rice_compare.json` (literature context: `docs/review/literature_check_2026-11-07.md`).
+- **iRICE** is the second-order cumulant without its ℓ = 4 covariance terms: 13 coefficients for LTE+STE. Its constraints are 0 ⪯ D ⪯ 3.1·I, Q₀ ≥ 0, T₀ ≥ 0, and a mean-dependent bound on total variance. It solves only the voxels whose least-squares estimate violates a constraint.
+
+**Its µFA is a different quantity.**
+- iRICE's `uFA` is Lasič's µFA, 1.5a / (a + 3 MD²). QTI's (Westin's) is 1.5a / (a + 3(MD² + V_MD)). Here a = ⟨|dev D|²⟩ over the micro-tensors, so the difference is whether the isotropic variance V_MD sits in the denominator.
+- Lasič's µFA can exceed 1 for genuine distributions with size variance (3% of the generic prior's truth).
+- On exact second-order signals with the HHS protocol, iRICE recovers the Lasič µFA within 0.002. Against Westin's it reads +0.03 (WM) to +0.05 (GM) high with no noise at all.
+- Both definitions are scored below, from the same qtilab fit (`ufa`: Westin; `ufa_l`: Lasič).
+
+**Simulation, HHS protocol** (107 volumes, LTE+STE, QTI rank 23). Median signed / absolute error against truth, brain prior v4, 3,000 voxels:
+
+| | WM µFA_L | WM MD | WM C_MD | GM µFA_L | GM MD | GM C_MD |
+|---|---|---|---|---|---|---|
+| iRICE CWLLS, SNR 50 | −0.009 / 0.021 | −0.039 / 0.040 | −0.095 / 0.095 | +0.006 / 0.041 | −0.057 / 0.057 | −0.116 / 0.116 |
+| qtilab constrained, SNR 50 | −0.010 / 0.020 | −0.038 / 0.038 | −0.102 / 0.102 | +0.012 / 0.042 | −0.058 / 0.058 | −0.124 / 0.124 |
+| iRICE CWLLS, SNR 20 | −0.014 / 0.034 | −0.041 / 0.047 | −0.051 / 0.073 | −0.005 / 0.076 | −0.054 / 0.061 | −0.088 / 0.093 |
+| qtilab constrained, SNR 20 | −0.015 / 0.029 | −0.023 / 0.038 | −0.073 / 0.080 | +0.040 / 0.070 | −0.048 / 0.055 | −0.125 / 0.126 |
+
+- **Practically the same estimator here.** Dropping the ℓ = 4 terms costs ≤ 0.006 on exact signals (WM MD and C_MD), and nothing visible with noise.
+- **The bias is shared.** The dominant error in both is cumulant truncation (C_MD −0.07 to −0.13, MD −0.04 to −0.06), which neither method corrects.
+- iRICE's µFA_L bias in GM at SNR 20 is smaller (−0.005 vs +0.040). The generic prior gives the same picture.
+
+**Simulation, their 20-volume protocol** (b0; LTE b = 1 × 10 and b = 2 × 6; STE b = 2 × 3). QTI's design rank is 18 of 28 here, so full QTI is not identifiable and qtilab's fit is constrained only by the cone. Brain v4:
+- **Without noise,** both are fine: iRICE µFA_L −0.009 (WM), +0.017 (GM).
+- **At SNR 50 and 20,** both over-estimate GM µFA_L badly: iRICE +0.20 / +0.25, qtilab +0.13 / +0.21. WM is +0.05 / +0.06 for iRICE and −0.003 / +0.03 for qtilab.
+- **Unconstrained least squares** is far worse: GM µFA_L +0.33 / +0.52, with µFA > 1 in 36–74% of voxels. The constraints are doing most of the work.
+- **Conclusion:** at this SNR, a 1.5-minute protocol's GM µFA is dominated by the positive noise bias, with either estimator. The paper's simulations (SNR 30) are qualitative and do not show this.
+
+**Real data,** HHS sub-01 ses-01 (95,801 voxels; CPU; iRICE with 8 workers):
+
+| | WM-like MD | WM µFA_L | WM C_MD | GM-like MD | GM µFA_L | GM C_MD | time |
+|---|---|---|---|---|---|---|---|
+| iRICE WLLS | 0.878 | 0.868 | 0.040 | 0.921 | 0.596 | 0.104 | 4.5 s |
+| iRICE CWLLS | 0.884 | 0.858 | 0.031 | 0.921 | 0.584 | 0.103 | 51 s (36% re-solved) |
+| qtilab constrained | 0.890 | 0.857 (Westin 0.849) | 0.043 | 0.923 | 0.583 (Westin 0.559) | 0.100 | 104 s (all voxels; 26–32 s on MPS) |
+
+- **On the same definition,** regional medians agree within 0.006 (MD), 0.001 (µFA_L) and 0.012 (WM C_MD; iRICE's constraint shrinks C_MD more).
+- **Their D_max bound does not stop µFA_L > 1:** 1.2% of WM voxels with iRICE vs 0.9% with qtilab.
+
+**What it means:**
+- **On a full LTE+STE protocol, iRICE and constrained QTI are interchangeable** for MD, µFA and C_MD: same accuracy, same truncation bias, comparable time on CPU. qtilab has the GPU.
+- **QTI's extra is C_c and the full covariance,** which need planar encoding; LTE+STE (HHS) does not identify them anyway (rank 23).
+- **iRICE's real niche is the short protocol,** where QTI is not identifiable. There GM µFA is badly biased at realistic SNR by either estimator.
+- **Reporting:** iRICE's uFA is not QTI's µFA. On real GM it is 0.024 higher (0.583 vs 0.559), which is larger than most of the effects we report. Any comparison must state the definition.
+- **For a tools paper,** "fast constrained QTI" is not distinguished from iRICE on speed or accuracy for LTE+STE data. Only the full model (PTE, C_c) and the GPU batching set it apart.

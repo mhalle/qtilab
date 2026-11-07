@@ -122,7 +122,7 @@ Read from the [arXiv HTML](https://arxiv.org/html/2608.27212), v3. Code: github.
 
 | | iRICE + CWLLS (Yu et al. 2026) | qtilab |
 |---|---|---|
-| Model | 2nd-order cumulant, ℓ = 0 and 2 only: **8 coefficients** (D₀, five D^{2m}, Q₀, T₀). Discards the ℓ = 2/4 covariance terms | Full QTI, **28 parameters** (S0, ⟨D⟩ 6, ℂ 21); rank 23 on LTE+STE (HHS), full rank with PTE (DiB, Cardiff) |
+| Model | 2nd-order cumulant (RICE, Coelho et al. 2026) without the ℓ = 4 covariance terms: **13 coefficients** for LTE+STE (`irice13`: D00, D2m ×5, S00, S2m ×5, A00), 18 with planar encoding. *(An earlier version of this table said 8, from the paper's scalar summary; the code fits 13.)* | Full QTI, **28 parameters** (S0, ⟨D⟩ 6, ℂ 21); rank 23 on LTE+STE (HHS), full rank with PTE (DiB, Cardiff) |
 | Protocol | LTE+STE only. 20 volumes, 1.5 min: b0, LTE b = 1 × 10 (dodecahedron), LTE b = 2 × 6 (icosahedron), STE b = 2 × 3 | Any b-tensor table |
 | Constraints | Necessary conditions on the 8 coefficients: 0 ⪯ D ⪯ D_max·I (D_max = 3.075), Q₀, T₀ ≥ 0, and a new Bhatia–Davis bound Q₀ + T₀ + ⅕D₂² ≤ D₀(D_max − D₀). Not equivalent to the QTI+ constraints | QTI+ "dc": ⟨D⟩ ⪰ 0, ℂ ⪰ 0 and the dc relaxation (6×6 and 3×3 SDP cones). **No upper diffusivity bound**; allows µFA > 1 and C_c > 1 in a few thousand voxels |
 | Solver | WLLS, then CVXPY + MOSEK only on violating voxels (33% in the patient) | Batched ADMM on every voxel, GPU or CPU; matches DIPY SDPdc/CLARABEL |
@@ -138,3 +138,9 @@ Read from the [arXiv HTML](https://arxiv.org/html/2608.27212), v3. Code: github.
   1. Accuracy against truth on their 20-volume protocol (simulation), RICE vs our constrained QTI vs a network trained on that protocol. Use a generic or published DTD set, not our brain prior, to avoid favouring the network.
   2. iRICE on HHS (LTE+STE, non-5-design directions), where ℓ = 4 aliasing could bias it.
   3. Adding D_max to our constraints.
+
+### RICE, run (2026-11-07)
+
+Their package was cloned to `work/ext/iRICE-CWLLS` (commit 8cf9c90, not committed here) and run directly, with CLARABEL standing in for MOSEK. All 12 of their tests pass. The comparison is in `scripts/rice_compare.py` → `results/rice_compare.json`; the results are in NOTES (2026-11-07, RICE entry).
+
+**Definition correction:** iRICE's `uFA` is Lasič's µFA, which leaves the isotropic variance out of the denominator. It is not QTI's (Westin's) µFA. On real HHS data it reads 0.008 (WM) to 0.024 (GM) higher for the same tissue.
